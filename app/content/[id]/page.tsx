@@ -1,5 +1,27 @@
+import { Metadata } from 'next';
 import Link from 'next/link';
 import { Calendar, User, Tag, Download, Share2, Printer } from 'lucide-react';
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+  // In a real app, you would fetch the content data here based on the ID
+  const title = `Mathematics Class 10 Important Questions & Chapter-wise Notes 2024`;
+  const description = `Comprehensive guide for Class 10 Mathematics. Chapter-wise notes and important questions for revision.`;
+  
+  return {
+    title: title,
+    description: description,
+    openGraph: {
+      title: `${title} | Teacher Info Portal`,
+      description: description,
+      url: `/content/${id}`,
+      type: 'article',
+      publishedTime: '2024-04-12T00:00:00.000Z',
+      authors: ['Admin'],
+      tags: ['Mathematics', 'Class 10', 'Study Materials'],
+    },
+  };
+}
 
 export async function generateStaticParams() {
   // Generate some mock IDs for static export

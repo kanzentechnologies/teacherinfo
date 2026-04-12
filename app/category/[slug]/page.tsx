@@ -1,5 +1,21 @@
+import { Metadata } from 'next';
 import Link from 'next/link';
 import { FileText, Download, Calendar } from 'lucide-react';
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const title = slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+  
+  return {
+    title: `${title} Resources`,
+    description: `Browse the latest ${title.toLowerCase()} resources, study materials, and updates for teachers and aspirants.`,
+    openGraph: {
+      title: `${title} Resources | Teacher Info Portal`,
+      description: `Browse the latest ${title.toLowerCase()} resources, study materials, and updates for teachers and aspirants.`,
+      url: `/category/${slug}`,
+    },
+  };
+}
 
 export async function generateStaticParams() {
   const categories = ['updates', 'study-materials', 'previous-papers', 'jobs', 'results', 'downloads'];

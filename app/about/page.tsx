@@ -1,3 +1,15 @@
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'About Us',
+  description: 'Learn about Teacher Info Portal, our mission to empower educators with quality study materials, previous papers, and job notifications.',
+  openGraph: {
+    title: 'About Us | Teacher Info Portal',
+    description: 'Learn about Teacher Info Portal, our mission to empower educators with quality study materials, previous papers, and job notifications.',
+    url: '/about',
+  },
+};
+
 export default function AboutPage() {
   return (
     <div className="bg-white border border-border-main p-6 md:p-10">
