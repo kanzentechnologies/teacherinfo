@@ -22,7 +22,7 @@ export function AnnouncementsPanel() {
             <li key={index} className="flex gap-2 items-start border-b border-border-main pb-3 last:border-0 last:pb-0">
               <div className="mt-1 w-2 h-2 rounded-full bg-accent flex-shrink-0"></div>
               <div>
-                <Link href="#" className="text-sm text-text-main hover:text-primary hover:underline font-medium">
+                <Link href={`/content/${index + 10}`} className="text-sm text-text-main hover:text-primary hover:underline font-medium">
                   {item.title}
                 </Link>
                 {item.isNew && (
@@ -35,7 +35,7 @@ export function AnnouncementsPanel() {
           ))}
         </ul>
         <div className="mt-4 text-right">
-          <Link href="/announcements" className="text-sm text-secondary hover:underline font-bold">
+          <Link href="/category/gos-and-proceedings" className="text-sm text-secondary hover:underline font-bold">
             View All Announcements
           </Link>
         </div>

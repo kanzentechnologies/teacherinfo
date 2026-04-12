@@ -4,27 +4,22 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { Menu, X, ChevronDown } from 'lucide-react';
 
-const navItems = [
+type NavItem = {
+  name: string;
+  href: string;
+  dropdown?: string[];
+};
+
+const navItems: NavItem[] = [
   { name: 'Home', href: '/' },
-  { name: 'Latest Updates', href: '/category/updates' },
-  { 
-    name: 'Study Materials', 
-    href: '/category/study-materials',
-    dropdown: ['Mathematics', 'Science', 'English', 'General Knowledge']
-  },
-  { 
-    name: 'Previous Papers', 
-    href: '/category/previous-papers',
-    dropdown: ['AP DSC', 'TET', 'SSC', 'Other Exams']
-  },
-  { 
-    name: 'Job Notifications', 
-    href: '/category/jobs',
-    dropdown: ['Government Jobs', 'Teaching Jobs', 'Private Jobs']
-  },
-  { name: 'Results', href: '/category/results' },
-  { name: 'Downloads', href: '/category/downloads' },
-  { name: 'About', href: '/about' },
+  { name: 'Useful Links', href: '/category/useful-links' },
+  { name: 'Income Tax', href: '/category/income-tax' },
+  { name: 'GO’s & Proceedings', href: '/category/gos-and-proceedings' },
+  { name: 'Softwares', href: '/category/softwares' },
+  { name: 'Forms', href: '/category/forms' },
+  { name: 'Academics', href: '/category/academics' },
+  { name: 'Services', href: '/category/services' },
+  { name: 'Contact Us', href: '/contact' },
 ];
 
 export function Navigation() {

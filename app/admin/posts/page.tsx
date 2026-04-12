@@ -1,15 +1,15 @@
 import Link from 'next/link';
-import { PlusCircle, FileText, Users, Settings, Bell, BarChart } from 'lucide-react';
+import { PlusCircle } from 'lucide-react';
 import { AdminWrapper } from '@/components/admin/AdminWrapper';
 
-export default function AdminDashboard() {
+export default function PostsPage() {
   return (
     <AdminWrapper>
       <div className="flex flex-col gap-6">
         <div className="bg-white border border-border-main p-4 sm:p-6 flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold text-primary">Admin Dashboard</h1>
-            <p className="text-sm text-text-muted">Welcome back, Administrator</p>
+            <h1 className="text-2xl font-bold text-primary">Manage Posts</h1>
+            <p className="text-sm text-text-muted">View, edit, and delete posts</p>
           </div>
           <Link 
             href="/admin/posts/new" 
@@ -20,33 +20,7 @@ export default function AdminDashboard() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[
-            { label: 'Total Posts', value: '1,245', icon: FileText, color: 'text-blue-600' },
-            { label: 'Total Categories', value: '18', icon: Users, color: 'text-green-600' },
-            { label: 'Announcements', value: '12', icon: Bell, color: 'text-orange-600' },
-            { label: 'Page Views', value: '45.2K', icon: BarChart, color: 'text-purple-600' },
-          ].map((stat, index) => {
-            const Icon = stat.icon;
-            return (
-              <div key={index} className="bg-white border border-border-main p-4 flex items-center gap-4">
-                <div className={`p-3 bg-gray-100 rounded-full ${stat.color}`}>
-                  <Icon size={24} />
-                </div>
-                <div>
-                  <div className="text-sm text-text-muted font-medium">{stat.label}</div>
-                  <div className="text-2xl font-bold text-text-main">{stat.value}</div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
         <div className="bg-white border border-border-main">
-          <div className="bg-gray-100 border-b border-border-main px-4 py-3 flex justify-between items-center">
-            <h3 className="font-bold text-primary">Recent Activity</h3>
-            <Link href="/admin/posts" className="text-sm text-secondary hover:underline">View All Posts</Link>
-          </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
               <thead className="bg-gray-50 border-b border-border-main text-text-muted">
@@ -59,7 +33,7 @@ export default function AdminDashboard() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border-main">
-                {[1, 2, 3, 4, 5].map((i) => (
+                {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
                   <tr key={i} className="hover:bg-hover-bg">
                     <td className="px-4 py-3 font-medium text-text-main">AP DSC 2024 Notification Details {i}</td>
                     <td className="px-4 py-3 text-text-muted">Job Notifications</td>
@@ -75,6 +49,14 @@ export default function AdminDashboard() {
                 ))}
               </tbody>
             </table>
+          </div>
+          <div className="p-4 border-t border-border-main flex justify-center">
+            <div className="flex gap-1">
+              <button className="px-3 py-1 border border-border-main bg-gray-100 text-text-muted cursor-not-allowed">Previous</button>
+              <button className="px-3 py-1 border border-primary bg-primary text-white">1</button>
+              <button className="px-3 py-1 border border-border-main hover:bg-gray-50">2</button>
+              <button className="px-3 py-1 border border-border-main hover:bg-gray-50">Next</button>
+            </div>
           </div>
         </div>
       </div>

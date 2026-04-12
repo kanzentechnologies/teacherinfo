@@ -1,4 +1,4 @@
-import Image from 'next/image';
+import Link from 'next/link';
 
 export function HeroBanner() {
   return (
@@ -9,9 +9,9 @@ export function HeroBanner() {
           Access the latest study materials, previous question papers, and job notifications. 
           A dedicated portal for teaching professionals and aspirants to stay updated and prepared.
         </p>
-        <button className="bg-accent text-primary font-bold py-2 px-6 rounded-sm hover:bg-yellow-400 transition-colors">
+        <Link href="/category/academics" className="inline-block bg-accent text-primary font-bold py-2 px-6 rounded-sm hover:bg-yellow-400 transition-colors">
           Explore Materials
-        </button>
+        </Link>
       </div>
       {/* Decorative background element */}
       <div className="absolute right-0 top-0 h-full w-1/3 bg-secondary/50 transform skew-x-12 translate-x-10"></div>

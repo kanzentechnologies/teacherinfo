@@ -15,9 +15,9 @@ export function Footer() {
           <h3 className="text-lg font-bold mb-4 border-b border-white/20 pb-2">Quick Links</h3>
           <ul className="space-y-2 text-sm text-gray-300">
             <li><Link href="/" className="hover:text-accent hover:underline">Home</Link></li>
-            <li><Link href="/category/updates" className="hover:text-accent hover:underline">Latest Updates</Link></li>
-            <li><Link href="/category/jobs" className="hover:text-accent hover:underline">Job Notifications</Link></li>
-            <li><Link href="/category/results" className="hover:text-accent hover:underline">Results</Link></li>
+            <li><Link href="/category/useful-links" className="hover:text-accent hover:underline">Useful Links</Link></li>
+            <li><Link href="/category/income-tax" className="hover:text-accent hover:underline">Income Tax</Link></li>
+            <li><Link href="/category/gos-and-proceedings" className="hover:text-accent hover:underline">GO’s & Proceedings</Link></li>
             <li><Link href="/about" className="hover:text-accent hover:underline">About Us</Link></li>
           </ul>
         </div>
@@ -25,10 +25,10 @@ export function Footer() {
         <div>
           <h3 className="text-lg font-bold mb-4 border-b border-white/20 pb-2">Resources</h3>
           <ul className="space-y-2 text-sm text-gray-300">
-            <li><Link href="/category/study-materials" className="hover:text-accent hover:underline">Study Materials</Link></li>
-            <li><Link href="/category/previous-papers" className="hover:text-accent hover:underline">Previous Papers</Link></li>
-            <li><Link href="/category/downloads" className="hover:text-accent hover:underline">Downloads & Forms</Link></li>
-            <li><Link href="/sitemap" className="hover:text-accent hover:underline">Sitemap</Link></li>
+            <li><Link href="/category/softwares" className="hover:text-accent hover:underline">Softwares</Link></li>
+            <li><Link href="/category/forms" className="hover:text-accent hover:underline">Forms</Link></li>
+            <li><Link href="/category/academics" className="hover:text-accent hover:underline">Academics</Link></li>
+            <li><Link href="/category/services" className="hover:text-accent hover:underline">Services</Link></li>
           </ul>
         </div>
 
@@ -37,6 +37,8 @@ export function Footer() {
           <ul className="space-y-2 text-sm text-gray-300">
             <li>Email: support@teacherinfo.net</li>
             <li>Working Hours: 10:00 AM to 6:00 PM (Mon-Sat)</li>
+            <li className="pt-2"><Link href="/contact" className="text-accent hover:underline font-bold">Contact Us</Link></li>
+            <li className="pt-2"><Link href="/admin" className="text-gray-400 hover:text-white hover:underline">Admin Login</Link></li>
           </ul>
         </div>
       </div>
@@ -44,6 +46,7 @@ export function Footer() {
       <div className="bg-[#002244] py-4 px-4 text-center text-xs text-gray-400">
         <p>&copy; {new Date().getFullYear()} Teacher Info Portal. All rights reserved.</p>
         <p className="mt-1">Disclaimer: This is an informational website. We do not claim to be an official government portal.</p>
+        <p className="mt-1">Designed and developed by <a href="https://amcny.github.io/kanzen_technologies/" target="_blank" rel="noopener noreferrer" className="hover:text-white hover:underline">Kanzen Technologies PVT LTD</a>.</p>
       </div>
     </footer>
   );

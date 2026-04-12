@@ -1,13 +1,13 @@
 import Link from 'next/link';
-import { BookOpen, FileText, Briefcase, Award, Download, Users } from 'lucide-react';
+import { Calculator, FileText, Monitor, ClipboardList, BookOpen, Briefcase } from 'lucide-react';
 
 const links = [
-  { name: 'Study Materials', icon: BookOpen, href: '/category/study-materials', color: 'bg-blue-50 text-blue-700 border-blue-200' },
-  { name: 'Previous Papers', icon: FileText, href: '/category/previous-papers', color: 'bg-green-50 text-green-700 border-green-200' },
-  { name: 'Job Notifications', icon: Briefcase, href: '/category/jobs', color: 'bg-purple-50 text-purple-700 border-purple-200' },
-  { name: 'Results', icon: Award, href: '/category/results', color: 'bg-orange-50 text-orange-700 border-orange-200' },
-  { name: 'Downloads', icon: Download, href: '/category/downloads', color: 'bg-teal-50 text-teal-700 border-teal-200' },
-  { name: 'Community', icon: Users, href: '/community', color: 'bg-rose-50 text-rose-700 border-rose-200' },
+  { name: 'Income Tax', icon: Calculator, href: '/category/income-tax', color: 'bg-blue-50 text-blue-700 border-blue-200' },
+  { name: 'GO’s & Proceedings', icon: FileText, href: '/category/gos-and-proceedings', color: 'bg-green-50 text-green-700 border-green-200' },
+  { name: 'Softwares', icon: Monitor, href: '/category/softwares', color: 'bg-purple-50 text-purple-700 border-purple-200' },
+  { name: 'Forms', icon: ClipboardList, href: '/category/forms', color: 'bg-orange-50 text-orange-700 border-orange-200' },
+  { name: 'Academics', icon: BookOpen, href: '/category/academics', color: 'bg-teal-50 text-teal-700 border-teal-200' },
+  { name: 'Services', icon: Briefcase, href: '/category/services', color: 'bg-rose-50 text-rose-700 border-rose-200' },
 ];
 
 export function QuickLinks() {

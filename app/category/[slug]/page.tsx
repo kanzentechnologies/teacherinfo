@@ -18,7 +18,11 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 }
 
 export async function generateStaticParams() {
-  const categories = ['updates', 'study-materials', 'previous-papers', 'jobs', 'results', 'downloads'];
+  const categories = [
+    'useful-links', 'income-tax', 'gos-and-proceedings', 
+    'softwares', 'forms', 'academics', 'services',
+    'updates', 'study-materials', 'previous-papers', 'jobs', 'results', 'downloads'
+  ];
   return categories.map((slug) => ({
     slug: slug,
   }));
