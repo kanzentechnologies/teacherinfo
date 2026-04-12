@@ -1,6 +1,13 @@
 import Link from 'next/link';
 import { FileText, Download, Calendar } from 'lucide-react';
 
+export async function generateStaticParams() {
+  const categories = ['updates', 'study-materials', 'previous-papers', 'jobs', 'results', 'downloads'];
+  return categories.map((slug) => ({
+    slug: slug,
+  }));
+}
+
 export default async function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   

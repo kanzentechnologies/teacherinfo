@@ -1,6 +1,13 @@
 import Link from 'next/link';
 import { Calendar, User, Tag, Download, Share2, Printer } from 'lucide-react';
 
+export async function generateStaticParams() {
+  // Generate some mock IDs for static export
+  return Array.from({ length: 10 }).map((_, i) => ({
+    id: i.toString(),
+  }));
+}
+
 export default async function ContentPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   
