@@ -36,7 +36,6 @@ export function Footer() {
           <h3 className="text-lg font-bold mb-4 border-b border-white/20 pb-2">Contact</h3>
           <ul className="space-y-2 text-sm text-gray-300">
             <li>Email: support@teacherinfo.net</li>
-            <li>Helpline: 1800-XXX-XXXX</li>
             <li>Working Hours: 10:00 AM to 6:00 PM (Mon-Sat)</li>
           </ul>
         </div>

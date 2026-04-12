@@ -20,12 +20,6 @@ export function Header() {
           <p className="text-sm text-text-muted">Comprehensive Educational Resources & Updates</p>
         </div>
       </div>
-      <div className="hidden md:flex items-center gap-4">
-        <div className="text-right">
-          <div className="text-sm font-bold text-text-main">Helpline Number</div>
-          <div className="text-lg text-primary font-bold">1800-XXX-XXXX</div>
-        </div>
-      </div>
     </header>
   );
 }
