@@ -1,21 +1,71 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AdminWrapper } from '@/components/admin/AdminWrapper';
 import { PlusCircle, Edit, Trash2 } from 'lucide-react';
-
-const mockCategories = [
-  { id: 1, name: 'Useful Links', slug: 'useful-links', parent: null, count: 12 },
-  { id: 2, name: 'Income Tax', slug: 'income-tax', parent: null, count: 5 },
-  { id: 3, name: 'GO’s & Proceedings', slug: 'gos-and-proceedings', parent: null, count: 45 },
-  { id: 4, name: 'Softwares', slug: 'softwares', parent: null, count: 8 },
-  { id: 5, name: 'Forms', slug: 'forms', parent: null, count: 24 },
-  { id: 6, name: 'Academics', slug: 'academics', parent: null, count: 156 },
-  { id: 7, name: 'Services', slug: 'services', parent: null, count: 10 },
-];
+import { getCategories, saveCategories, Category } from '@/lib/categoryStore';
 
 export default function CategoriesManagementPage() {
+  const [categories, setCategories] = useState<Category[]>([]);
   const [isAdding, setIsAdding] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  
+  const [name, setName] = useState('');
+  const [slug, setSlug] = useState('');
+  const [parentId, setParentId] = useState<string | null>(null);
+  const [description, setDescription] = useState('');
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setCategories(getCategories());
+  }, []);
+
+  const resetForm = () => {
+    setName('');
+    setSlug('');
+    setParentId(null);
+    setDescription('');
+    setIsAdding(false);
+    setEditingId(null);
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const newCategory: Category = {
+      id: editingId || Date.now().toString(),
+      name,
+      slug: slug || name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
+      parentId,
+      description
+    };
+
+    let newCategories = [...categories];
+    if (editingId) {
+      newCategories = newCategories.map(c => c.id === editingId ? newCategory : c);
+    } else {
+      newCategories.push(newCategory);
+    }
+
+    setCategories(newCategories);
+    saveCategories(newCategories);
+    resetForm();
+  };
+
+  const handleEdit = (cat: Category) => {
+    setName(cat.name);
+    setSlug(cat.slug);
+    setParentId(cat.parentId);
+    setDescription(cat.description);
+    setEditingId(cat.id);
+    setIsAdding(true);
+  };
+
+  const handleDelete = (id: string) => {
+    if (!confirm('Are you sure?')) return;
+    const newCategories = categories.filter(c => c.id !== id);
+    setCategories(newCategories);
+    saveCategories(newCategories);
+  };
 
   return (
     <AdminWrapper>
@@ -36,32 +86,57 @@ export default function CategoriesManagementPage() {
 
         {isAdding && (
           <div className="bg-white border border-border-main p-6">
-            <h2 className="text-lg font-bold text-primary mb-4 border-b border-border-main pb-2">Add New Category</h2>
-            <form className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <h2 className="text-lg font-bold text-primary mb-4 border-b border-border-main pb-2">
+              {editingId ? 'Edit Category' : 'Add New Category'}
+            </h2>
+            <form className="grid grid-cols-1 md:grid-cols-2 gap-4" onSubmit={handleSubmit}>
               <div>
                 <label className="block text-sm font-bold text-primary mb-1">Category Name</label>
-                <input type="text" className="w-full border border-border-main p-2 text-sm" placeholder="e.g. Study Materials" />
+                <input 
+                  type="text" 
+                  className="w-full border border-border-main p-2 text-sm" 
+                  placeholder="e.g. Study Materials" 
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                />
               </div>
               <div>
                 <label className="block text-sm font-bold text-primary mb-1">Slug</label>
-                <input type="text" className="w-full border border-border-main p-2 text-sm" placeholder="e.g. study-materials" />
+                <input 
+                  type="text" 
+                  className="w-full border border-border-main p-2 text-sm" 
+                  placeholder="e.g. study-materials" 
+                  value={slug}
+                  onChange={(e) => setSlug(e.target.value)}
+                />
               </div>
               <div>
                 <label className="block text-sm font-bold text-primary mb-1">Parent Category</label>
-                <select className="w-full border border-border-main p-2 text-sm bg-white">
+                <select 
+                  className="w-full border border-border-main p-2 text-sm bg-white"
+                  value={parentId || ''}
+                  onChange={(e) => setParentId(e.target.value || null)}
+                >
                   <option value="">None (Top Level)</option>
-                  {mockCategories.map(c => (
+                  {categories.filter(c => c.id !== editingId).map(c => (
                     <option key={c.id} value={c.id}>{c.name}</option>
                   ))}
                 </select>
               </div>
               <div>
                 <label className="block text-sm font-bold text-primary mb-1">Description</label>
-                <input type="text" className="w-full border border-border-main p-2 text-sm" placeholder="Brief description" />
+                <input 
+                  type="text" 
+                  className="w-full border border-border-main p-2 text-sm" 
+                  placeholder="Brief description" 
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                />
               </div>
               <div className="md:col-span-2 flex justify-end gap-2 mt-2">
-                <button type="button" onClick={() => setIsAdding(false)} className="px-4 py-2 border border-border-main text-sm font-bold">Cancel</button>
-                <button type="button" className="px-4 py-2 bg-primary text-white text-sm font-bold">Save Category</button>
+                <button type="button" onClick={resetForm} className="px-4 py-2 border border-border-main text-sm font-bold">Cancel</button>
+                <button type="submit" className="px-4 py-2 bg-primary text-white text-sm font-bold">Save Category</button>
               </div>
             </form>
           </div>
@@ -74,21 +149,17 @@ export default function CategoriesManagementPage() {
                 <tr>
                   <th className="px-4 py-3 font-medium">Name</th>
                   <th className="px-4 py-3 font-medium">Slug</th>
-                  <th className="px-4 py-3 font-medium">Posts Count</th>
                   <th className="px-4 py-3 font-medium text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border-main">
-                {mockCategories.map((category) => (
+                {categories.map((category) => (
                   <tr key={category.id} className="hover:bg-hover-bg">
                     <td className="px-4 py-3 font-bold text-primary">{category.name}</td>
                     <td className="px-4 py-3 text-text-muted">{category.slug}</td>
-                    <td className="px-4 py-3 text-text-muted">
-                      <span className="bg-gray-100 px-2 py-1 rounded-sm border border-gray-200">{category.count}</span>
-                    </td>
                     <td className="px-4 py-3 text-right">
-                      <button className="text-secondary hover:underline mr-3 inline-flex items-center gap-1"><Edit size={14}/> Edit</button>
-                      <button className="text-red-600 hover:underline inline-flex items-center gap-1"><Trash2 size={14}/> Delete</button>
+                      <button onClick={() => handleEdit(category)} className="text-secondary hover:underline mr-3 inline-flex items-center gap-1"><Edit size={14}/> Edit</button>
+                      <button onClick={() => handleDelete(category.id)} className="text-red-600 hover:underline inline-flex items-center gap-1"><Trash2 size={14}/> Delete</button>
                     </td>
                   </tr>
                 ))}

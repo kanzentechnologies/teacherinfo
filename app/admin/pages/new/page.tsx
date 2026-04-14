@@ -2,18 +2,34 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import RichTextEditor from '@/components/admin/RichTextEditor';
 import { AdminWrapper } from '@/components/admin/AdminWrapper';
+import { getPages, savePages, StaticPage } from '@/lib/pageStore';
 
 export default function CreatePage() {
+  const router = useRouter();
   const [title, setTitle] = useState('');
   const [slug, setSlug] = useState('');
   const [content, setContent] = useState('');
+  const [status, setStatus] = useState<'Published' | 'Draft'>('Published');
 
   const handlePublish = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log({ title, slug, content });
-    alert('Page published successfully!');
+    
+    const pages = getPages();
+    const newPage: StaticPage = {
+      id: Date.now().toString(),
+      title,
+      slug: slug.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
+      content,
+      status,
+      lastUpdated: new Date().toISOString().split('T')[0],
+    };
+
+    savePages([...pages, newPage]);
+    alert('Page created successfully!');
+    router.push('/admin/pages');
   };
 
   return (
@@ -61,6 +77,20 @@ export default function CreatePage() {
 
           <div>
             <label className="block text-sm font-bold text-primary mb-2">
+              Status
+            </label>
+            <select 
+              value={status}
+              onChange={(e) => setStatus(e.target.value as any)}
+              className="w-full md:w-1/3 border border-border-main p-2 text-sm focus:outline-none focus:border-secondary bg-white"
+            >
+              <option value="Published">Published</option>
+              <option value="Draft">Draft</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-bold text-primary mb-2">
               Page Content
             </label>
             <RichTextEditor value={content} onChange={setContent} />
@@ -69,15 +99,16 @@ export default function CreatePage() {
           <div className="pt-4 border-t border-border-main flex justify-end gap-4">
             <button
               type="button"
+              onClick={() => router.push('/admin/pages')}
               className="px-6 py-2 border border-border-main text-text-main hover:bg-gray-50 text-sm font-bold transition-colors"
             >
-              Save Draft
+              Cancel
             </button>
             <button
               type="submit"
               className="px-6 py-2 bg-primary text-white hover:bg-secondary text-sm font-bold transition-colors"
             >
-              Publish Page
+              Save Page
             </button>
           </div>
         </form>
