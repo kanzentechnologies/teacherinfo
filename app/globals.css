@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
 @theme {
   --color-primary: #003366;
@@ -122,4 +123,15 @@ body {
 .tiptap a {
   color: #005ea5;
   text-decoration: underline;
+}
+
+/* Bubble and Floating Menu Styles */
+.tippy-box {
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.tippy-content {
+  padding: 0 !important;
 }

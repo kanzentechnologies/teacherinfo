@@ -10,6 +10,8 @@ const adminLinks = [
   { name: 'Categories', href: '/admin/categories' },
   { name: 'Announcements', href: '/admin/announcements' },
   { name: 'Navbar Menu', href: '/admin/navbar' },
+  { name: 'Contact Management', href: '/admin/contact' },
+  { name: 'Service Management', href: '/admin/services' },
   { name: 'Files', href: '/admin/files' },
 ];
 

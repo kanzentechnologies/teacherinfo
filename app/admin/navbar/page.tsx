@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { AdminWrapper } from '@/components/admin/AdminWrapper';
-import { PlusCircle, GripVertical, Edit, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
+import { PlusCircle, GripVertical, Edit, Trash2 } from 'lucide-react';
 import { getMenu, saveMenu, MenuItem } from '@/lib/menuStore';
+import { Reorder } from 'motion/react';
 
 export default function NavbarManagementPage() {
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
@@ -25,6 +26,16 @@ export default function NavbarManagementPage() {
     setMenuItems(newMenu);
     saveMenu(newMenu);
     window.dispatchEvent(new Event('menuUpdated'));
+  };
+
+  const handleReorderChildren = (parentId: number, newChildren: MenuItem[]) => {
+    const newMenu = menuItems.map(item => {
+      if (item.id === parentId) {
+        return { ...item, children: newChildren };
+      }
+      return item;
+    });
+    handleSaveMenu(newMenu);
   };
 
   const resetForm = () => {
@@ -116,20 +127,6 @@ export default function NavbarManagementPage() {
     setIsAdding(true);
   };
 
-  const moveItem = (index: number, direction: 'up' | 'down') => {
-    const newMenu = [...menuItems];
-    if (direction === 'up' && index > 0) {
-      const temp = newMenu[index];
-      newMenu[index] = newMenu[index - 1];
-      newMenu[index - 1] = temp;
-    } else if (direction === 'down' && index < newMenu.length - 1) {
-      const temp = newMenu[index];
-      newMenu[index] = newMenu[index + 1];
-      newMenu[index + 1] = temp;
-    }
-    handleSaveMenu(newMenu);
-  };
-
   return (
     <AdminWrapper>
       <div className="flex flex-col gap-6">
@@ -214,16 +211,16 @@ export default function NavbarManagementPage() {
         <div className="bg-white border border-border-main">
           <div className="bg-gray-100 border-b border-border-main px-4 py-3">
             <h3 className="font-bold text-primary">Current Menu Structure</h3>
+            <p className="text-xs text-text-muted">Drag items using the handle to reorder</p>
           </div>
           <div className="p-4">
-            <ul className="space-y-2">
-              {menuItems.map((item, index) => (
-                <li key={item.id} className="border border-border-main bg-white">
+            <Reorder.Group axis="y" values={menuItems} onReorder={handleSaveMenu} className="space-y-2">
+              {menuItems.map((item) => (
+                <Reorder.Item key={item.id} value={item} className="border border-border-main bg-white select-none">
                   <div className="flex items-center justify-between p-3 hover:bg-gray-50">
                     <div className="flex items-center gap-3">
-                      <div className="flex flex-col gap-1 text-gray-400 cursor-pointer">
-                        <ChevronUp size={14} className="hover:text-primary" onClick={() => moveItem(index, 'up')} />
-                        <ChevronDown size={14} className="hover:text-primary" onClick={() => moveItem(index, 'down')} />
+                      <div className="text-gray-400 cursor-grab active:cursor-grabbing p-1 hover:text-primary transition-colors">
+                        <GripVertical size={20} />
                       </div>
                       <div>
                         <span className="font-bold text-text-main">{item.title}</span>
@@ -240,27 +237,36 @@ export default function NavbarManagementPage() {
                   </div>
                   
                   {item.children && item.children.length > 0 && (
-                    <ul className="pl-10 pr-3 pb-3 space-y-2 border-t border-border-main pt-3 bg-gray-50">
-                      {item.children.map((child) => (
-                        <li key={child.id} className="flex items-center justify-between p-2 border border-border-main bg-white">
-                          <div className="flex items-center gap-3">
-                            <GripVertical size={16} className="text-gray-400" />
-                            <div>
-                              <span className="font-bold text-text-main text-sm">{child.title}</span>
-                              <div className="text-xs text-secondary">{child.link}</div>
+                    <div className="pl-10 pr-3 pb-3 border-t border-border-main pt-3 bg-gray-50">
+                      <Reorder.Group 
+                        axis="y" 
+                        values={item.children} 
+                        onReorder={(newChildren) => handleReorderChildren(item.id, newChildren)}
+                        className="space-y-2"
+                      >
+                        {item.children.map((child) => (
+                          <Reorder.Item key={child.id} value={child} className="flex items-center justify-between p-2 border border-border-main bg-white select-none">
+                            <div className="flex items-center gap-3">
+                              <div className="text-gray-400 cursor-grab active:cursor-grabbing p-1 hover:text-primary transition-colors">
+                                <GripVertical size={16} />
+                              </div>
+                              <div>
+                                <span className="font-bold text-text-main text-sm">{child.title}</span>
+                                <div className="text-xs text-secondary">{child.link}</div>
+                              </div>
                             </div>
-                          </div>
-                          <div className="flex items-center gap-3">
-                            <button onClick={() => handleEdit(child, item.id.toString())} className="text-secondary hover:underline text-xs">Edit</button>
-                            <button onClick={() => handleDelete(child.id, true, item.id)} className="text-red-600 hover:underline text-xs">Delete</button>
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
+                            <div className="flex items-center gap-3">
+                              <button onClick={() => handleEdit(child, item.id.toString())} className="text-secondary hover:underline text-xs">Edit</button>
+                              <button onClick={() => handleDelete(child.id, true, item.id)} className="text-red-600 hover:underline text-xs">Delete</button>
+                            </div>
+                          </Reorder.Item>
+                        ))}
+                      </Reorder.Group>
+                    </div>
                   )}
-                </li>
+                </Reorder.Item>
               ))}
-            </ul>
+            </Reorder.Group>
           </div>
         </div>
       </div>
