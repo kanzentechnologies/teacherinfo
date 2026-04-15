@@ -14,6 +14,7 @@ export default function StaticPageView() {
 
   useEffect(() => {
     if (slug) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPage(getPageBySlug(slug as string));
     }
     setLoading(false);
