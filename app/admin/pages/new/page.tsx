@@ -47,7 +47,11 @@ export default function CreatePage() {
       status: finalStatus,
       date: new Date().toISOString().split('T')[0],
     };
-    await savePages([newPage]); // we only need to pass the new page for upsert
+    
+    const allPages = await getPages();
+    const newPages = [newPage, ...allPages];
+    
+    await savePages(newPages);
     alert('Page saved successfully!');
     router.push('/admin/pages');
   };

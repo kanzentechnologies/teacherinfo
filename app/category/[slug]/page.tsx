@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
-import { FileText, Download, Calendar } from 'lucide-react';
+import { FileText, Download, Calendar, Link as LinkIcon } from 'lucide-react';
 import { getPostsByCategory } from '@/lib/postStore';
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
@@ -72,14 +72,29 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
                     <td className="border border-border-main p-3 text-center">{index + 1}</td>
                     <td className="border border-border-main p-3">
                       <div className="flex items-start gap-2">
-                         <FileText size={16} className="text-secondary mt-0.5 flex-shrink-0" />
+                         {item.type === 'Link' ? (
+                           <LinkIcon size={16} className="text-secondary mt-0.5 flex-shrink-0" />
+                         ) : (
+                           <FileText size={16} className="text-secondary mt-0.5 flex-shrink-0" />
+                         )}
                         <div>
-                          <Link href={`/content/${item.id}`} className="font-medium text-secondary hover:underline">
-                            {item.title}
-                          </Link>
+                          {item.type === 'Link' ? (
+                            <a href={item.externalUrl || '#'} target="_blank" rel="noopener noreferrer" className="font-medium text-secondary hover:underline">
+                              {item.title}
+                            </a>
+                          ) : (
+                            <Link href={`/content/${item.id}`} className="font-medium text-secondary hover:underline">
+                              {item.title}
+                            </Link>
+                          )}
                           {item.type === 'PDF' && (
                             <span className="ml-2 inline-block bg-red-100 text-red-800 text-[10px] px-1.5 py-0.5 rounded-sm border border-red-200">
                               PDF {item.fileSize || 'Download'}
+                            </span>
+                          )}
+                          {item.type === 'Link' && (
+                            <span className="ml-2 inline-block bg-blue-100 text-blue-800 text-[10px] px-1.5 py-0.5 rounded-sm border border-blue-200">
+                              External Link
                             </span>
                           )}
                         </div>
@@ -95,6 +110,10 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
                       {item.type === 'PDF' && item.fileUrl ? (
                         <a href={item.fileUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 bg-secondary text-white px-3 py-1.5 text-xs rounded-sm hover:bg-primary transition-colors">
                           <Download size={14} /> Download
+                        </a>
+                      ) : item.type === 'Link' ? (
+                        <a href={item.externalUrl || '#'} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 bg-green-600 text-white px-3 py-1.5 text-xs rounded-sm hover:bg-green-700 transition-colors">
+                          Visit Link
                         </a>
                       ) : (
                         <Link href={`/content/${item.id}`} className="inline-flex items-center gap-1 bg-gray-200 text-text-main px-3 py-1.5 text-xs rounded-sm hover:bg-gray-300 transition-colors">

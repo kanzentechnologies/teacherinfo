@@ -63,10 +63,13 @@ export default function EditPage() {
       slug,
       content,
       status: newStatus || status,
-      date: new Date().toISOString().split('T')[0],
+      date: page.date || new Date().toISOString().split('T')[0],
     };
 
-    await savePages([updatedPage]);
+    const allPages = await getPages();
+    const newPages = allPages.map(p => p.id === updatedPage.id ? updatedPage : p);
+
+    await savePages(newPages);
     alert('Page updated successfully!');
     router.push('/admin/pages');
   };

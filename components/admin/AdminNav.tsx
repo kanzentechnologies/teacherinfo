@@ -8,10 +8,12 @@ const adminLinks = [
   { name: 'Dashboard', href: '/admin/dashboard' },
   { name: 'Pages', href: '/admin/pages' },
   { name: 'Categories', href: '/admin/categories' },
+  { name: 'Posts', href: '/admin/posts' },
   { name: 'Announcements', href: '/admin/announcements' },
   { name: 'Navbar Menu', href: '/admin/navbar' },
   { name: 'Contact Management', href: '/admin/contact' },
-  { name: 'Useful / Quick Links', href: '/admin/quick-links' },
+  { name: 'Useful Links', href: '/admin/quick-links' },
+  { name: 'Homepage Icons', href: '/admin/homepage-quick-links' },
   { name: 'Service Management', href: '/admin/services' },
   { name: 'Important Links', href: '/admin/important-links' },
 ];

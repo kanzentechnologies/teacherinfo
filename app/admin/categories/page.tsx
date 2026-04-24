@@ -197,6 +197,7 @@ export default function CategoriesManagementPage() {
                       <span className="bg-gray-100 px-2 py-1 rounded-sm border border-gray-200">{category.count}</span>
                     </td>
                     <td className="px-4 py-3 text-right">
+                      <a href={`/admin/posts?category=${category.slug}`} className="text-secondary hover:underline mr-3 inline-flex items-center gap-1 font-bold">Manage Posts</a>
                       <button onClick={() => handleEdit(category)} className="text-secondary hover:underline mr-3 inline-flex items-center gap-1"><Edit size={14}/> Edit</button>
                       <button onClick={() => handleDelete(category.id)} className="text-red-600 hover:underline inline-flex items-center gap-1"><Trash2 size={14}/> Delete</button>
                     </td>

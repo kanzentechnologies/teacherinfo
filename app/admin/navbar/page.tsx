@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { AdminWrapper } from '@/components/admin/AdminWrapper';
-import { PlusCircle, GripVertical, Edit, Trash2 } from 'lucide-react';
+import { PlusCircle, GripVertical, Edit, Trash2, FileEdit } from 'lucide-react';
 import { getMenu, saveMenu, MenuItem } from '@/lib/menuStore';
 import { getPages, Page } from '@/lib/pageStore';
 import { getCategories, Category } from '@/lib/categoryStore';
@@ -129,6 +130,18 @@ export default function NavbarManagementPage() {
     setParentId(parentIdStr || '');
     setEditingId(item.id);
     setIsAdding(true);
+  };
+
+  const getEditContentUrl = (item: MenuItem): string | null => {
+    if (item.type === 'page') {
+      const slug = item.link.startsWith('/') ? item.link.slice(1) : item.link;
+      const page = pages.find(p => p.slug === slug || p.slug === `/${slug}`);
+      if (page) return `/admin/pages/${page.id}/edit`;
+    } else if (item.type === 'category') {
+      const slug = item.link.startsWith('/category/') ? item.link.replace('/category/', '') : item.link;
+      return `/admin/posts?category=${slug}`;
+    }
+    return null;
   };
 
   return (
@@ -273,6 +286,11 @@ export default function NavbarManagementPage() {
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
+                      {(item.type === 'page' || item.type === 'category') && getEditContentUrl(item) && (
+                        <Link href={getEditContentUrl(item)!} className="text-secondary hover:underline text-sm flex items-center gap-1 font-bold">
+                          <FileEdit size={14}/> Edit Content
+                        </Link>
+                      )}
                       <button onClick={() => handleEdit(item)} className="text-secondary hover:underline text-sm flex items-center gap-1"><Edit size={14}/> Edit</button>
                       <button onClick={() => handleDelete(item.id, false)} className="text-red-600 hover:underline text-sm flex items-center gap-1"><Trash2 size={14}/> Delete</button>
                     </div>
@@ -298,6 +316,11 @@ export default function NavbarManagementPage() {
                               </div>
                             </div>
                             <div className="flex items-center gap-3">
+                              {(child.type === 'page' || child.type === 'category') && getEditContentUrl(child) && (
+                                <Link href={getEditContentUrl(child)!} className="text-secondary hover:underline text-xs flex items-center gap-1 font-bold">
+                                  <FileEdit size={12}/> Edit Content
+                                </Link>
+                              )}
                               <button onClick={() => handleEdit(child, item.id.toString())} className="text-secondary hover:underline text-xs">Edit</button>
                               <button onClick={() => handleDelete(child.id, true, item.id)} className="text-red-600 hover:underline text-xs">Delete</button>
                             </div>

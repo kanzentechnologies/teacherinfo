@@ -8,9 +8,10 @@ export type Post = {
   content: string;
   status: 'Published' | 'Draft';
   date: string;
-  type: 'Article' | 'PDF';
+  type: 'Article' | 'PDF' | 'Link';
   fileUrl?: string;
   fileSize?: string;
+  externalUrl?: string;
 };
 
 export const defaultPosts: Post[] = [

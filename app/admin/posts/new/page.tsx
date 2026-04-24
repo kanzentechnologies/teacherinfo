@@ -12,17 +12,21 @@ function PostForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const editId = searchParams.get('edit');
+  const defaultCategory = searchParams.get('category');
 
   const [title, setTitle] = useState('');
   const [slug, setSlug] = useState('');
   const [autoSlug, setAutoSlug] = useState(true);
-  const [categorySlug, setCategorySlug] = useState('');
+  const [categorySlug, setCategorySlug] = useState(defaultCategory || '');
   const [content, setContent] = useState('');
   const [status, setStatus] = useState<'Published' | 'Draft'>('Published');
-  const [type, setType] = useState<'Article' | 'PDF'>('Article');
+  const [type, setType] = useState<'Article' | 'PDF' | 'Link'>('Article');
+  const [externalUrl, setExternalUrl] = useState('');
   
   const [categories, setCategories] = useState<Category[]>([]);
   const [posts, setPosts] = useState<Post[]>([]);
+
+  const [originalDate, setOriginalDate] = useState<string>('');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -40,6 +44,8 @@ function PostForm() {
           setContent(postToEdit.content);
           setStatus(postToEdit.status);
           setType(postToEdit.type || 'Article');
+          setOriginalDate(postToEdit.date);
+          setExternalUrl(postToEdit.externalUrl || '');
         }
       }
     };
@@ -69,6 +75,10 @@ function PostForm() {
   const handleSave = async (e: React.FormEvent, submitStatus: 'Published' | 'Draft') => {
     e.preventDefault();
     if (!title || !slug || !categorySlug) return;
+    if (type === 'Link' && !externalUrl) {
+      alert("External URL is required for Link type.");
+      return;
+    }
 
     const newPost: Post = {
       id: editId || crypto.randomUUID(),
@@ -78,7 +88,8 @@ function PostForm() {
       content,
       status: submitStatus,
       type,
-      date: new Date().toISOString().split('T')[0],
+      externalUrl: type === 'Link' ? externalUrl : undefined,
+      date: originalDate || new Date().toISOString().split('T')[0],
     };
 
     let updatedPosts;
@@ -89,15 +100,33 @@ function PostForm() {
     }
 
     await savePosts(updatedPosts);
-    router.push('/admin/posts');
+    if (defaultCategory === 'useful-links') {
+      router.push('/admin/quick-links');
+    } else if (defaultCategory) {
+      router.push(`/admin/posts?category=${defaultCategory}`);
+    } else {
+      router.push('/admin/posts');
+    }
+  };
+
+  const getBackLink = () => {
+    if (defaultCategory === 'useful-links') return '/admin/quick-links';
+    if (defaultCategory) return `/admin/posts?category=${defaultCategory}`;
+    return '/admin/posts';
+  };
+
+  const getBackText = () => {
+    if (defaultCategory === 'useful-links') return 'Back to Useful Links';
+    if (defaultCategory) return `Back to ${defaultCategory.replace(/-/g, ' ')}`;
+    return 'Back to Posts';
   };
 
   return (
     <div className="max-w-5xl mx-auto p-6 bg-white border border-border-main">
       <div className="flex justify-between items-center mb-6 border-b border-border-main pb-4">
         <h1 className="text-2xl font-bold text-primary">{editId ? 'Edit Post' : 'Create New Post'}</h1>
-        <Link href="/admin/posts" className="text-sm text-secondary hover:underline">
-          Back to Posts
+        <Link href={getBackLink()} className="text-sm text-secondary hover:underline capitalize">
+          {getBackText()}
         </Link>
       </div>
 
@@ -163,21 +192,41 @@ function PostForm() {
             <select
               id="type"
               value={type}
-              onChange={(e) => setType(e.target.value as 'Article' | 'PDF')}
+              onChange={(e) => setType(e.target.value as 'Article' | 'PDF' | 'Link')}
               className="w-full border border-border-main p-2 text-sm focus:outline-none focus:border-secondary bg-white"
             >
               <option value="Article">Article</option>
               <option value="PDF">PDF Download</option>
+              <option value="Link">External Link</option>
             </select>
           </div>
+          
+          {type === 'Link' && (
+            <div className="md:col-span-2">
+              <label htmlFor="externalUrl" className="block text-sm font-bold text-primary mb-2">
+                External Link URL
+              </label>
+              <input
+                type="url"
+                id="externalUrl"
+                value={externalUrl}
+                onChange={(e) => setExternalUrl(e.target.value)}
+                className="w-full border border-border-main p-2 text-sm focus:outline-none focus:border-secondary"
+                placeholder="https://example.com"
+                required={type === 'Link'}
+              />
+            </div>
+          )}
         </div>
 
-        <div>
-          <label className="block text-sm font-bold text-primary mb-2">
-            Content
-          </label>
-          <RichTextEditor value={content} onChange={setContent} />
-        </div>
+        {type !== 'Link' && (
+          <div>
+            <label className="block text-sm font-bold text-primary mb-2">
+              Content
+            </label>
+            <RichTextEditor value={content} onChange={setContent} />
+          </div>
+        )}
 
         <div className="pt-4 border-t border-border-main flex justify-end gap-4">
           <button

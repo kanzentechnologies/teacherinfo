@@ -10,10 +10,12 @@ import { getCategories } from '@/lib/categoryStore';
 import { getAnnouncements } from '@/lib/announcementStore';
 import { getImportantLinks } from '@/lib/importantLinkStore';
 import { getQuickLinks } from '@/lib/quickLinkStore';
+import { getPosts } from '@/lib/postStore';
 
 export default async function Home() {
-  const [pages, categories, announcements, importantLinks, quickLinks] = await Promise.all([
+  const [pages, posts, categories, announcements, importantLinks, quickLinks] = await Promise.all([
     getPages(),
+    getPosts(),
     getCategories(),
     getAnnouncements(),
     getImportantLinks(),
@@ -22,6 +24,8 @@ export default async function Home() {
 
   const publishedPages = pages.filter(p => p.status === 'Published');
   const recentPages = [...publishedPages].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  
+  const publishedPosts = posts.filter(p => p.status === 'Published');
   
   const activeAnnouncements = announcements.filter(a => a.status === 'Active');
 
@@ -34,7 +38,7 @@ export default async function Home() {
         <div className="lg:col-span-2 flex flex-col gap-6">
           <QuickLinks links={quickLinks} />
           <AdPlaceholder format="fluid" className="w-full h-[150px] border-primary/20 bg-primary/5" label="In-feed Advertisement" />
-          <ContentSections categories={categories} pages={recentPages} />
+          <ContentSections categories={categories} posts={publishedPosts} pages={recentPages} />
         </div>
         <div className="flex flex-col gap-6">
           <AnnouncementsPanel announcements={activeAnnouncements.slice(0, 5)} />

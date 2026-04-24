@@ -609,6 +609,17 @@ export default function RichTextEditor({ value, onChange, placeholder = 'Start w
     },
   });
 
+  const [initialValueSet, setInitialValueSet] = React.useState(false);
+
+  React.useEffect(() => {
+    if (editor && value !== undefined && typeof value === 'string') {
+      if (!initialValueSet && value !== '') {
+        editor.commands.setContent(value);
+        setInitialValueSet(true);
+      }
+    }
+  }, [editor, value, initialValueSet]);
+
   return (
     <div className="border border-border-main bg-white rounded-md overflow-hidden flex flex-col focus-within:border-secondary transition-colors shadow-sm">
       <Toolbar editor={editor} />
