@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { Calendar, User, Tag, Download, Share2, Printer } from 'lucide-react';
+import { AdPlaceholder } from '@/components/ads/AdPlaceholder';
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
@@ -37,10 +38,11 @@ export default async function ContentPage({ params }: { params: Promise<{ id: st
     <div className="flex flex-col lg:flex-row gap-6">
       <div className="lg:w-3/4 flex flex-col gap-6">
         <div className="bg-white border border-border-main p-6">
-          <div className="mb-4">
-            <span className="bg-accent text-primary text-xs font-bold px-2 py-1 rounded-sm uppercase tracking-wider">
+          <div className="mb-4 flex flex-col md:flex-row justify-between md:items-center gap-4">
+            <span className="bg-accent text-primary text-xs font-bold px-2 py-1 rounded-sm uppercase tracking-wider self-start">
               Study Materials
             </span>
+            <AdPlaceholder format="fluid" className="w-full md:w-[320px] h-[50px] !m-0" label="Sponsor" />
           </div>
           
           <h1 className="text-2xl md:text-3xl font-bold text-primary mb-4 leading-tight">
@@ -70,6 +72,10 @@ export default async function ContentPage({ params }: { params: Promise<{ id: st
               Students preparing for their final examinations will find these chapter-wise notes and important questions highly beneficial for their revision.
             </p>
             
+            <div className="my-6">
+              <AdPlaceholder format="fluid" className="w-full h-[100px]" label="In-article Ad" />
+            </div>
+
             <h3 className="text-lg font-bold text-primary mt-8 mb-4">Contents Covered:</h3>
             <ul className="list-disc pl-6 mb-6 space-y-2">
               <li>Real Numbers and Polynomials</li>
@@ -115,6 +121,7 @@ export default async function ContentPage({ params }: { params: Promise<{ id: st
             </div>
           </div>
         </div>
+        <AdPlaceholder format="fluid" className="w-full h-[90px]" />
       </div>
 
       <div className="lg:w-1/4 flex flex-col gap-6">
@@ -136,6 +143,11 @@ export default async function ContentPage({ params }: { params: Promise<{ id: st
               </li>
             ))}
           </ul>
+        </div>
+        
+        <div className="sticky top-6">
+          <AdPlaceholder format="skyscraper" className="hidden lg:flex" />
+          <AdPlaceholder format="rectangle" className="flex lg:hidden" />
         </div>
       </div>
     </div>
