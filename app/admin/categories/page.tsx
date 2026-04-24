@@ -1,24 +1,23 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AdminWrapper } from '@/components/admin/AdminWrapper';
 import { PlusCircle, Edit, Trash2 } from 'lucide-react';
-
-const mockCategories = [
-  { id: 1, name: 'Useful Links', slug: 'useful-links', parent: null, count: 12 },
-  { id: 2, name: 'Income Tax', slug: 'income-tax', parent: null, count: 5 },
-  { id: 3, name: 'GO’s & Proceedings', slug: 'gos-and-proceedings', parent: null, count: 45 },
-  { id: 4, name: 'Softwares', slug: 'softwares', parent: null, count: 8 },
-  { id: 5, name: 'Forms', slug: 'forms', parent: null, count: 24 },
-  { id: 6, name: 'Academics', slug: 'academics', parent: null, count: 156 },
-  { id: 7, name: 'Services', slug: 'services', parent: null, count: 10 },
-];
+import { Category, getCategories, saveCategories } from '@/lib/categoryStore';
 
 export default function CategoriesManagementPage() {
+  const [categories, setCategories] = useState<Category[]>([]);
   const [isAdding, setIsAdding] = useState(false);
   const [name, setName] = useState('');
   const [slug, setSlug] = useState('');
+  const [description, setDescription] = useState('');
+  const [parentId, setParentId] = useState('');
   const [autoSlug, setAutoSlug] = useState(true);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setCategories(getCategories());
+  }, []);
 
   const generateSlug = (text: string) => {
     return text
@@ -38,6 +37,35 @@ export default function CategoriesManagementPage() {
   const handleSlugChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSlug(e.target.value);
     setAutoSlug(false);
+  };
+
+  const handleSave = () => {
+    if (!name || !slug) return;
+    const newCategory = {
+      id: Date.now().toString(),
+      name,
+      slug,
+      description,
+      parentId: parentId || null,
+      count: 0
+    };
+    const updated = [...categories, newCategory];
+    saveCategories(updated);
+    setCategories(updated);
+    setIsAdding(false);
+    setName('');
+    setSlug('');
+    setDescription('');
+    setParentId('');
+    setAutoSlug(true);
+  };
+
+  const handleDelete = (id: string) => {
+    if (confirm('Are you sure you want to delete this category?')) {
+      const updated = categories.filter(c => c.id !== id);
+      saveCategories(updated);
+      setCategories(updated);
+    }
   };
 
   return (
@@ -86,20 +114,30 @@ export default function CategoriesManagementPage() {
               </div>
               <div>
                 <label className="block text-sm font-bold text-primary mb-1">Parent Category</label>
-                <select className="w-full border border-border-main p-2 text-sm bg-white">
+                <select 
+                  className="w-full border border-border-main p-2 text-sm bg-white"
+                  value={parentId}
+                  onChange={(e) => setParentId(e.target.value)}
+                >
                   <option value="">None (Top Level)</option>
-                  {mockCategories.map(c => (
+                  {categories.map(c => (
                     <option key={c.id} value={c.id}>{c.name}</option>
                   ))}
                 </select>
               </div>
               <div>
                 <label className="block text-sm font-bold text-primary mb-1">Description</label>
-                <input type="text" className="w-full border border-border-main p-2 text-sm" placeholder="Brief description" />
+                <input 
+                  type="text" 
+                  className="w-full border border-border-main p-2 text-sm" 
+                  placeholder="Brief description" 
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                />
               </div>
               <div className="md:col-span-2 flex justify-end gap-2 mt-2">
                 <button type="button" onClick={() => setIsAdding(false)} className="px-4 py-2 border border-border-main text-sm font-bold">Cancel</button>
-                <button type="button" className="px-4 py-2 bg-primary text-white text-sm font-bold">Save Category</button>
+                <button type="button" onClick={handleSave} className="px-4 py-2 bg-primary text-white text-sm font-bold">Save Category</button>
               </div>
             </form>
           </div>
@@ -117,7 +155,7 @@ export default function CategoriesManagementPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border-main">
-                {mockCategories.map((category) => (
+                {categories.map((category) => (
                   <tr key={category.id} className="hover:bg-hover-bg">
                     <td className="px-4 py-3 font-bold text-primary">{category.name}</td>
                     <td className="px-4 py-3 text-text-muted">{category.slug}</td>
@@ -126,13 +164,18 @@ export default function CategoriesManagementPage() {
                     </td>
                     <td className="px-4 py-3 text-right">
                       <button className="text-secondary hover:underline mr-3 inline-flex items-center gap-1"><Edit size={14}/> Edit</button>
-                      <button className="text-red-600 hover:underline inline-flex items-center gap-1"><Trash2 size={14}/> Delete</button>
+                      <button onClick={() => handleDelete(category.id)} className="text-red-600 hover:underline inline-flex items-center gap-1"><Trash2 size={14}/> Delete</button>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
+          {categories.length === 0 && (
+            <div className="p-8 text-center text-gray-500">
+              No categories found.
+            </div>
+          )}
         </div>
       </div>
     </AdminWrapper>
