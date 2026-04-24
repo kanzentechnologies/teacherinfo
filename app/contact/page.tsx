@@ -9,8 +9,10 @@ export default function ContactPage() {
   const [contacts, setContacts] = useState<Contact[]>([]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setContacts(getContacts());
+    const fetchContacts = async () => {
+      setContacts(await getContacts());
+    };
+    fetchContacts();
   }, []);
 
   return (

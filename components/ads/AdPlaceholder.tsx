@@ -1,4 +1,7 @@
+'use client';
+
 import React from 'react';
+import { usePathname } from 'next/navigation';
 
 type AdFormat = 'leaderboard' | 'rectangle' | 'skyscraper' | 'fluid';
 
@@ -13,6 +16,12 @@ export const AdPlaceholder: React.FC<AdPlaceholderProps> = ({
   className = '',
   label = 'Advertisement'
 }) => {
+  const pathname = usePathname();
+  
+  if (pathname && pathname.startsWith('/admin')) {
+    return null;
+  }
+
   // Define format-specific dimensions and styles
   const formatStyles = {
     leaderboard: 'w-full max-w-[728px] h-[90px] mx-auto', // Typical desktop leaderboard, scales down roughly on mobile

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Lock, User } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 
 export default function AdminLogin() {
   const router = useRouter();
@@ -10,13 +11,38 @@ export default function AdminLogin() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
-  const handleLogin = (e: React.FormEvent) => {
+  const [loading, setLoading] = useState(false);
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Mock login
+    setLoading(true);
+    setError('');
+    
+    // First let's check if the mock credentials were used so we can show a prompt
     if (email === 'admin@teacherinfo.net' && password === 'admin123') {
-      router.push('/admin/dashboard');
-    } else {
-      setError('Invalid credentials. Please try again.');
+      setError('Please use the real admin credentials created in Supabase Authentication.');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      if (data.session) {
+        // Successful login
+        router.push('/admin/dashboard');
+      }
+    } catch (err: any) {
+      setError(err.message || 'Login failed. Check your credentials.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -87,7 +113,7 @@ export default function AdminLogin() {
         </form>
         
         <div className="mt-6 text-center text-xs text-text-muted">
-          <p>Mock Credentials: admin@teacherinfo.net / admin123</p>
+          <p>Login with your Supabase authenticated account.</p>
         </div>
       </div>
     </div>

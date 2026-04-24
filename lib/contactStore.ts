@@ -1,3 +1,5 @@
+import { supabase } from './supabase';
+
 export type Contact = {
   id: number;
   name: string;
@@ -29,21 +31,56 @@ export const defaultContacts: Contact[] = [
   }
 ];
 
-export const getContacts = (): Contact[] => {
-  if (typeof window === 'undefined') return defaultContacts;
-  const stored = localStorage.getItem('contact_details');
-  if (stored) {
-    try {
-      return JSON.parse(stored);
-    } catch (e) {
-      console.error('Failed to parse contacts from localStorage', e);
+let cachedContacts = [...defaultContacts];
+
+export const getContacts = async (): Promise<Contact[]> => {
+  const { data, error } = await supabase.from('contacts').select('*').order('order');
+  if (error) {
+    if (!error.message?.includes('schema cache') && !error.message?.includes('find the table')) {
+      console.error('Error fetching contacts:', error.message || error);
     }
+    return cachedContacts;
   }
-  return defaultContacts;
+  
+  if (data && data.length > 0) {
+    cachedContacts = data.map((row: any) => ({
+      id: row.id,
+      name: row.name,
+      designation: row.designation,
+      email: row.email,
+      phone: row.phone,
+      imageUrl: row.image_url,
+      order: row.order
+    })) as Contact[];
+  }
+  return cachedContacts;
 };
 
-export const saveContacts = (contacts: Contact[]) => {
-  if (typeof window !== 'undefined') {
-    localStorage.setItem('contact_details', JSON.stringify(contacts));
+export const saveContacts = async (contacts: Contact[]): Promise<void> => {
+  const mapped = contacts.map(c => ({
+    id: typeof c.id === 'string' ? parseInt(c.id, 10) : c.id,
+    name: c.name,
+    designation: c.designation,
+    email: c.email,
+    phone: c.phone,
+    image_url: c.imageUrl,
+    "order": c.order
+  }));
+  const { error } = await supabase.from('contacts').upsert(mapped, { onConflict: 'id' });
+  if (error) {
+    if (!error.message?.includes('schema cache') && !error.message?.includes('find the table')) {
+      console.error('Error saving contacts:', error.message || error);
+    }
   }
+  cachedContacts = [...contacts];
+};
+
+export const deleteContact = async (id: number): Promise<void> => {
+  const { error } = await supabase.from('contacts').delete().eq('id', id);
+  if (error) {
+    if (!error.message?.includes('schema cache') && !error.message?.includes('find the table')) {
+      console.error('Error deleting contact:', error.message || error);
+    }
+  }
+  cachedContacts = cachedContacts.filter(c => c.id !== id);
 };

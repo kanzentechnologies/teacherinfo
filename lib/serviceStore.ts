@@ -1,3 +1,5 @@
+import { supabase } from './supabase';
+
 export type Service = {
   id: number;
   title: string;
@@ -37,21 +39,39 @@ export const defaultServices: Service[] = [
   }
 ];
 
-export const getServices = (): Service[] => {
-  if (typeof window === 'undefined') return defaultServices;
-  const stored = localStorage.getItem('site_services');
-  if (stored) {
-    try {
-      return JSON.parse(stored);
-    } catch (e) {
-      console.error('Failed to parse services from localStorage', e);
+let cachedServices = [...defaultServices];
+
+export const getServices = async (): Promise<Service[]> => {
+  const { data, error } = await supabase.from('services').select('*').order('order');
+  if (error) {
+    if (!error.message?.includes('schema cache') && !error.message?.includes('find the table')) {
+      console.error('Error fetching services:', error.message || error);
     }
+    return cachedServices;
   }
-  return defaultServices;
+  
+  if (data && data.length > 0) {
+    cachedServices = data as Service[];
+  }
+  return cachedServices;
 };
 
-export const saveServices = (services: Service[]) => {
-  if (typeof window !== 'undefined') {
-    localStorage.setItem('site_services', JSON.stringify(services));
+export const saveServices = async (services: Service[]): Promise<void> => {
+  const { error } = await supabase.from('services').upsert(services, { onConflict: 'id' });
+  if (error) {
+    if (!error.message?.includes('schema cache') && !error.message?.includes('find the table')) {
+      console.error('Error saving services:', error.message || error);
+    }
   }
+  cachedServices = [...services];
+};
+
+export const deleteService = async (id: number): Promise<void> => {
+  const { error } = await supabase.from('services').delete().eq('id', id);
+  if (error) {
+    if (!error.message?.includes('schema cache') && !error.message?.includes('find the table')) {
+      console.error('Error deleting service:', error.message || error);
+    }
+  }
+  cachedServices = cachedServices.filter(s => s.id !== id);
 };

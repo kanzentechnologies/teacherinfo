@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { FileText, Download, Calendar } from 'lucide-react';
+import { getPostsByCategory } from '@/lib/postStore';
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
@@ -34,14 +35,8 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
   // Format slug to title
   const title = slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 
-  // Mock data
-  const items = Array.from({ length: 10 }).map((_, i) => ({
-    id: i,
-    title: `${title} - Important Document ${i + 1}`,
-    date: `1${i} Apr 2024`,
-    type: i % 3 === 0 ? 'PDF' : 'Article',
-    size: i % 3 === 0 ? '2.4 MB' : null,
-  }));
+  const posts = await getPostsByCategory(slug);
+  const publishedPosts = posts.filter(p => p.status === 'Published');
 
   return (
     <div className="flex flex-col gap-6">
@@ -50,7 +45,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
         
         <div className="mt-6">
           <div className="flex justify-between items-center mb-4 bg-gray-50 p-3 border border-border-main">
-            <span className="text-sm font-bold text-text-main">Showing {items.length} results</span>
+            <span className="text-sm font-bold text-text-main">Showing {publishedPosts.length} results</span>
             <div className="flex gap-2 items-center">
               <label htmlFor="sort" className="text-sm text-text-muted">Sort by:</label>
               <select id="sort" className="text-sm border border-border-main p-1 bg-white">
@@ -72,19 +67,19 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
                 </tr>
               </thead>
               <tbody>
-                {items.map((item, index) => (
+                {publishedPosts.map((item, index) => (
                   <tr key={item.id} className="hover:bg-hover-bg even:bg-gray-50">
                     <td className="border border-border-main p-3 text-center">{index + 1}</td>
                     <td className="border border-border-main p-3">
                       <div className="flex items-start gap-2">
-                        <FileText size={16} className="text-secondary mt-0.5 flex-shrink-0" />
+                         <FileText size={16} className="text-secondary mt-0.5 flex-shrink-0" />
                         <div>
                           <Link href={`/content/${item.id}`} className="font-medium text-secondary hover:underline">
                             {item.title}
                           </Link>
                           {item.type === 'PDF' && (
                             <span className="ml-2 inline-block bg-red-100 text-red-800 text-[10px] px-1.5 py-0.5 rounded-sm border border-red-200">
-                              PDF {item.size}
+                              PDF {item.fileSize || 'Download'}
                             </span>
                           )}
                         </div>
@@ -97,10 +92,10 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
                       </div>
                     </td>
                     <td className="border border-border-main p-3 text-center">
-                      {item.type === 'PDF' ? (
-                        <button className="inline-flex items-center gap-1 bg-secondary text-white px-3 py-1.5 text-xs rounded-sm hover:bg-primary transition-colors">
+                      {item.type === 'PDF' && item.fileUrl ? (
+                        <a href={item.fileUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 bg-secondary text-white px-3 py-1.5 text-xs rounded-sm hover:bg-primary transition-colors">
                           <Download size={14} /> Download
-                        </button>
+                        </a>
                       ) : (
                         <Link href={`/content/${item.id}`} className="inline-flex items-center gap-1 bg-gray-200 text-text-main px-3 py-1.5 text-xs rounded-sm hover:bg-gray-300 transition-colors">
                           View Details
@@ -109,18 +104,16 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
                     </td>
                   </tr>
                 ))}
+                
+                {publishedPosts.length === 0 && (
+                  <tr>
+                    <td colSpan={4} className="border border-border-main p-6 text-center text-text-muted">
+                      No matching records found in this category.
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
-          </div>
-
-          <div className="mt-6 flex justify-center">
-            <div className="flex gap-1">
-              <button className="px-3 py-1 border border-border-main bg-gray-100 text-text-muted cursor-not-allowed">Previous</button>
-              <button className="px-3 py-1 border border-primary bg-primary text-white">1</button>
-              <button className="px-3 py-1 border border-border-main hover:bg-gray-50">2</button>
-              <button className="px-3 py-1 border border-border-main hover:bg-gray-50">3</button>
-              <button className="px-3 py-1 border border-border-main hover:bg-gray-50">Next</button>
-            </div>
           </div>
         </div>
       </div>

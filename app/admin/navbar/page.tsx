@@ -22,26 +22,28 @@ export default function NavbarManagementPage() {
   const [parentId, setParentId] = useState<string>('');
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setMenuItems(getMenu());
-    setPages(getPages());
-    setCategories(getCategories());
+    const fetchAll = async () => {
+      setMenuItems(await getMenu());
+      setPages(await getPages());
+      setCategories(await getCategories());
+    };
+    fetchAll();
   }, []);
 
-  const handleSaveMenu = (newMenu: MenuItem[]) => {
+  const handleSaveMenu = async (newMenu: MenuItem[]) => {
     setMenuItems(newMenu);
-    saveMenu(newMenu);
+    await saveMenu(newMenu);
     window.dispatchEvent(new Event('menuUpdated'));
   };
 
-  const handleReorderChildren = (parentId: number, newChildren: MenuItem[]) => {
+  const handleReorderChildren = async (parentId: number, newChildren: MenuItem[]) => {
     const newMenu = menuItems.map(item => {
       if (item.id === parentId) {
         return { ...item, children: newChildren };
       }
       return item;
     });
-    handleSaveMenu(newMenu);
+    await handleSaveMenu(newMenu);
   };
 
   const resetForm = () => {
@@ -53,12 +55,12 @@ export default function NavbarManagementPage() {
     setEditingId(null);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title) return;
 
     const newItem: MenuItem = {
-      id: editingId || Date.now(),
+      id: editingId || Math.floor(Math.random() * 100000000),
       title,
       link: type === 'dropdown' ? '#' : link,
       type,
@@ -87,10 +89,6 @@ export default function NavbarManagementPage() {
         }
         return item;
       });
-      
-      // If parent changed, we need to move it
-      // For simplicity, let's just delete and re-add if we are editing and parent changed
-      // Actually, let's just handle simple edits for now
     } else {
       // Add new
       if (parentId) {
@@ -105,11 +103,11 @@ export default function NavbarManagementPage() {
       }
     }
 
-    handleSaveMenu(newMenu);
+    await handleSaveMenu(newMenu);
     resetForm();
   };
 
-  const handleDelete = (id: number, isChild: boolean, parentId?: number) => {
+  const handleDelete = async (id: number, isChild: boolean, parentId?: number) => {
     if (!confirm('Are you sure you want to delete this item?')) return;
 
     let newMenu = [...menuItems];
@@ -121,7 +119,7 @@ export default function NavbarManagementPage() {
     } else {
       newMenu = newMenu.filter(item => item.id !== id);
     }
-    handleSaveMenu(newMenu);
+    await handleSaveMenu(newMenu);
   };
 
   const handleEdit = (item: MenuItem, parentIdStr?: string) => {

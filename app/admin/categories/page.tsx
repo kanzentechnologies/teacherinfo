@@ -3,11 +3,12 @@
 import React, { useState, useEffect } from 'react';
 import { AdminWrapper } from '@/components/admin/AdminWrapper';
 import { PlusCircle, Edit, Trash2 } from 'lucide-react';
-import { Category, getCategories, saveCategories } from '@/lib/categoryStore';
+import { Category, getCategories, saveCategories, deleteCategory } from '@/lib/categoryStore';
 
 export default function CategoriesManagementPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [isAdding, setIsAdding] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [name, setName] = useState('');
   const [slug, setSlug] = useState('');
   const [description, setDescription] = useState('');
@@ -15,8 +16,10 @@ export default function CategoriesManagementPage() {
   const [autoSlug, setAutoSlug] = useState(true);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setCategories(getCategories());
+    const fetchCategories = async () => {
+      setCategories(await getCategories());
+    };
+    fetchCategories();
   }, []);
 
   const generateSlug = (text: string) => {
@@ -39,20 +42,9 @@ export default function CategoriesManagementPage() {
     setAutoSlug(false);
   };
 
-  const handleSave = () => {
-    if (!name || !slug) return;
-    const newCategory = {
-      id: Date.now().toString(),
-      name,
-      slug,
-      description,
-      parentId: parentId || null,
-      count: 0
-    };
-    const updated = [...categories, newCategory];
-    saveCategories(updated);
-    setCategories(updated);
+  const resetForm = () => {
     setIsAdding(false);
+    setEditingId(null);
     setName('');
     setSlug('');
     setDescription('');
@@ -60,10 +52,47 @@ export default function CategoriesManagementPage() {
     setAutoSlug(true);
   };
 
-  const handleDelete = (id: string) => {
+  const handleEdit = (category: Category) => {
+    setEditingId(category.id);
+    setName(category.name);
+    setSlug(category.slug);
+    setDescription(category.description || '');
+    setParentId(category.parentId || '');
+    setAutoSlug(false);
+    setIsAdding(true);
+  };
+
+  const handleSave = async () => {
+    if (!name || !slug) return;
+    
+    let updated;
+    if (editingId) {
+      updated = categories.map(c => 
+        c.id === editingId 
+          ? { ...c, name, slug, description, parentId: parentId || null }
+          : c
+      );
+    } else {
+      const newCategory = {
+        id: crypto.randomUUID(),
+        name,
+        slug,
+        description,
+        parentId: parentId || null,
+        count: 0
+      };
+      updated = [...categories, newCategory];
+    }
+    
+    await saveCategories(updated);
+    setCategories(updated);
+    resetForm();
+  };
+
+  const handleDelete = async (id: string) => {
     if (confirm('Are you sure you want to delete this category?')) {
-      const updated = categories.filter(c => c.id !== id);
-      saveCategories(updated);
+      await deleteCategory(id);
+      const updated = categories.filter((c: Category) => c.id !== id);
       setCategories(updated);
     }
   };
@@ -77,7 +106,10 @@ export default function CategoriesManagementPage() {
             <p className="text-sm text-text-muted">Organize content into categories</p>
           </div>
           <button 
-            onClick={() => setIsAdding(true)}
+            onClick={() => {
+              resetForm();
+              setIsAdding(true);
+            }}
             className="bg-accent text-primary font-bold py-2 px-4 rounded-sm hover:bg-yellow-400 transition-colors flex items-center gap-2 text-sm"
           >
             <PlusCircle size={18} />
@@ -87,7 +119,9 @@ export default function CategoriesManagementPage() {
 
         {isAdding && (
           <div className="bg-white border border-border-main p-6">
-            <h2 className="text-lg font-bold text-primary mb-4 border-b border-border-main pb-2">Add New Category</h2>
+            <h2 className="text-lg font-bold text-primary mb-4 border-b border-border-main pb-2">
+              {editingId ? 'Edit Category' : 'Add New Category'}
+            </h2>
             <form className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-bold text-primary mb-1">Category Name</label>
@@ -136,7 +170,7 @@ export default function CategoriesManagementPage() {
                 />
               </div>
               <div className="md:col-span-2 flex justify-end gap-2 mt-2">
-                <button type="button" onClick={() => setIsAdding(false)} className="px-4 py-2 border border-border-main text-sm font-bold">Cancel</button>
+                <button type="button" onClick={resetForm} className="px-4 py-2 border border-border-main text-sm font-bold">Cancel</button>
                 <button type="button" onClick={handleSave} className="px-4 py-2 bg-primary text-white text-sm font-bold">Save Category</button>
               </div>
             </form>
@@ -163,7 +197,7 @@ export default function CategoriesManagementPage() {
                       <span className="bg-gray-100 px-2 py-1 rounded-sm border border-gray-200">{category.count}</span>
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <button className="text-secondary hover:underline mr-3 inline-flex items-center gap-1"><Edit size={14}/> Edit</button>
+                      <button onClick={() => handleEdit(category)} className="text-secondary hover:underline mr-3 inline-flex items-center gap-1"><Edit size={14}/> Edit</button>
                       <button onClick={() => handleDelete(category.id)} className="text-red-600 hover:underline inline-flex items-center gap-1"><Trash2 size={14}/> Delete</button>
                     </td>
                   </tr>

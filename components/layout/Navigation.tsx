@@ -3,25 +3,27 @@
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { Menu, X, ChevronDown } from 'lucide-react';
-import { getMenu, defaultMenu, MenuItem } from '@/lib/menuStore';
+import { getMenu, MenuItem } from '@/lib/menuStore';
 
 export function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<number | null>(null);
-  const [navItems, setNavItems] = useState<MenuItem[]>(defaultMenu);
+  const [navItems, setNavItems] = useState<MenuItem[]>([]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setNavItems(getMenu());
+    const fetchNav = async () => {
+      setNavItems(await getMenu());
+    };
+    fetchNav();
     
     // Listen for storage events to update menu across tabs
     const handleStorage = () => {
-      setNavItems(getMenu());
+      fetchNav();
     };
     
     // Custom event for same-tab updates
     const handleMenuUpdate = () => {
-      setNavItems(getMenu());
+      fetchNav();
     };
 
     window.addEventListener('storage', handleStorage);

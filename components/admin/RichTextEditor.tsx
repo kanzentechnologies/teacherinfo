@@ -14,6 +14,7 @@ import { Placeholder } from '@tiptap/extension-placeholder';
 import { Color } from '@tiptap/extension-color';
 import { TextStyle } from '@tiptap/extension-text-style';
 import { Highlight } from '@tiptap/extension-highlight';
+import FontFamily from '@tiptap/extension-font-family';
 import { 
   Bold, 
   Italic, 
@@ -126,12 +127,14 @@ const ColorPicker = ({
   onSelect, 
   onReset, 
   resetLabel, 
-  onClose 
+  onClose,
+  currentColor
 }: { 
   onSelect: (color: string) => void, 
   onReset: () => void, 
   resetLabel: string,
-  onClose: () => void 
+  onClose: () => void,
+  currentColor?: string 
 }) => {
   const themeColors = [
     ['#ffffff', '#000000', '#e7e6e6', '#44546a', '#4472c4', '#ed7d31', '#a5a5a5', '#ffc000', '#5b9bd5', '#70ad47'],
@@ -176,7 +179,7 @@ const ColorPicker = ({
         </div>
       </div>
 
-      <div>
+      <div className="mb-2">
         <div className="text-[10px] font-bold text-gray-400 uppercase mb-1 px-1">Standard Colors</div>
         <div className="grid grid-cols-10 gap-0.5">
           {standardColors.map(color => (
@@ -191,6 +194,21 @@ const ColorPicker = ({
           ))}
         </div>
       </div>
+      
+      <div className="pt-2 border-t border-border-main mt-2">
+        <label className="w-full text-left px-2 py-1.5 text-xs hover:bg-gray-100 rounded flex items-center gap-2 cursor-pointer">
+          <Palette size={14} className="text-gray-500" />
+          <span>More Colors...</span>
+          <input 
+            type="color" 
+            className="sr-only" 
+            value={currentColor || '#000000'}
+            onChange={(e) => {
+              onSelect(e.target.value);
+            }}
+          />
+        </label>
+      </div>
     </div>
   );
 };
@@ -199,18 +217,20 @@ const Toolbar = ({ editor }: ToolbarProps) => {
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [showHighlightPicker, setShowHighlightPicker] = useState(false);
   const [showFontSizeDropdown, setShowFontSizeDropdown] = useState(false);
+  const [showFontFamilyDropdown, setShowFontFamilyDropdown] = useState(false);
   const [currentFontSize, setCurrentFontSize] = useState('16px');
+  const [currentFontFamily, setCurrentFontFamily] = useState('Arial');
 
   // Update local font size state when editor state changes
   React.useEffect(() => {
     if (!editor) return;
 
     const updateState = () => {
-      const attrs = editor.getAttributes('textStyle');
-      if (attrs.fontSize) {
-        setCurrentFontSize(attrs.fontSize);
+      const textStyleAttrs = editor.getAttributes('textStyle');
+      
+      if (textStyleAttrs.fontSize) {
+        setCurrentFontSize(textStyleAttrs.fontSize);
       } else {
-        // Fallback to checking marks at selection if getAttributes is empty
         const { selection } = editor.state;
         const mark = selection.$from.marks().find(m => m.type.name === 'textStyle');
         if (mark?.attrs.fontSize) {
@@ -218,6 +238,13 @@ const Toolbar = ({ editor }: ToolbarProps) => {
         } else {
           setCurrentFontSize('16px');
         }
+      }
+
+      const fontFamily = textStyleAttrs.fontFamily;
+      if (fontFamily) {
+        setCurrentFontFamily(fontFamily.replace(/['"]/g, ''));
+      } else {
+        setCurrentFontFamily('Arial');
       }
     };
 
@@ -236,6 +263,7 @@ const Toolbar = ({ editor }: ToolbarProps) => {
   }, [editor]);
 
   const fontSizeRef = React.useRef<HTMLDivElement>(null);
+  const fontFamilyRef = React.useRef<HTMLDivElement>(null);
   const colorRef = React.useRef<HTMLDivElement>(null);
   const highlightRef = React.useRef<HTMLDivElement>(null);
 
@@ -247,6 +275,9 @@ const Toolbar = ({ editor }: ToolbarProps) => {
       if (showFontSizeDropdown && fontSizeRef.current && !fontSizeRef.current.contains(target)) {
         setShowFontSizeDropdown(false);
       }
+      if (showFontFamilyDropdown && fontFamilyRef.current && !fontFamilyRef.current.contains(target)) {
+        setShowFontFamilyDropdown(false);
+      }
       if (showColorPicker && colorRef.current && !colorRef.current.contains(target)) {
         setShowColorPicker(false);
       }
@@ -257,7 +288,7 @@ const Toolbar = ({ editor }: ToolbarProps) => {
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [showColorPicker, showHighlightPicker, showFontSizeDropdown]);
+  }, [showColorPicker, showHighlightPicker, showFontSizeDropdown, showFontFamilyDropdown]);
 
   const setLink = useCallback(() => {
     if (!editor) return;
@@ -277,6 +308,22 @@ const Toolbar = ({ editor }: ToolbarProps) => {
 
   const standardFontSizes = [8, 9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 26, 28, 36, 48, 72];
   const fontSizeNumber = parseInt(currentFontSize) || 16;
+  
+  const fontFamilies = [
+    { name: 'Arial', value: 'Arial' },
+    { name: 'Times New Roman', value: 'Times New Roman' },
+    { name: 'Calibri', value: 'Calibri' },
+    { name: 'Courier New', value: 'Courier New' },
+    { name: 'Comic Sans MS', value: 'Comic Sans MS' },
+    { name: 'Georgia', value: 'Georgia' },
+    { name: 'Impact', value: 'Impact' },
+    { name: 'Tahoma', value: 'Tahoma' },
+    { name: 'Trebuchet MS', value: 'Trebuchet MS' },
+    { name: 'Verdana', value: 'Verdana' },
+    { name: 'Helvetica', value: 'Helvetica' },
+    { name: 'Garamond', value: 'Garamond' },
+    { name: 'Bookman Old Style', value: 'Bookman Old Style' }
+  ];
 
   const stepFontSize = (direction: 'up' | 'down') => {
     let nextSize;
@@ -299,6 +346,45 @@ const Toolbar = ({ editor }: ToolbarProps) => {
         <EditorButton onClick={() => editor.chain().focus().redo().run()} disabled={!editor.can().redo()} title="Redo"><Redo size={16} /></EditorButton>
       </div>
 
+      {/* Font Family (Word Style) */}
+      <div className="flex items-center gap-0.5 px-2 border-r border-border-main">
+        <div className="relative" ref={fontFamilyRef}>
+          <button 
+            type="button"
+            onClick={() => {
+              setShowFontFamilyDropdown(!showFontFamilyDropdown);
+              setShowFontSizeDropdown(false);
+              setShowColorPicker(false);
+              setShowHighlightPicker(false);
+            }}
+            className="flex items-center bg-white border border-border-main rounded px-2 py-1 h-8 min-w-[120px] justify-between hover:border-primary transition-colors"
+          >
+            <span className="text-sm text-gray-700 truncate max-w-[140px]" style={{ fontFamily: currentFontFamily }}>{currentFontFamily || 'Font'}</span>
+            <ChevronDown size={12} className="text-gray-400 ml-1 flex-shrink-0" />
+          </button>
+          
+          {showFontFamilyDropdown && (
+            <div className="absolute top-full left-0 mt-1 w-48 max-h-64 overflow-y-auto bg-white border border-border-main shadow-xl z-50 rounded-md animate-in fade-in zoom-in duration-150">
+              {fontFamilies.map(font => (
+                <button
+                  key={font.value}
+                  type="button"
+                  className={`w-full text-left px-3 py-1.5 text-sm hover:bg-gray-100 transition-colors ${currentFontFamily === font.value ? 'bg-blue-50 text-primary font-bold' : 'text-gray-700'}`}
+                  style={{ fontFamily: font.value }}
+                  onClick={() => {
+                    editor.chain().focus().setFontFamily(font.value).run();
+                    setCurrentFontFamily(font.value);
+                    setShowFontFamilyDropdown(false);
+                  }}
+                >
+                  {font.name}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* Font Size (Excel Style) */}
       <div className="flex items-center gap-0.5 px-2 border-r border-border-main">
         <div className="relative" ref={fontSizeRef}>
@@ -306,6 +392,7 @@ const Toolbar = ({ editor }: ToolbarProps) => {
             type="button"
             onClick={() => {
               setShowFontSizeDropdown(!showFontSizeDropdown);
+              setShowFontFamilyDropdown(false);
               setShowColorPicker(false);
               setShowHighlightPicker(false);
             }}
@@ -368,6 +455,7 @@ const Toolbar = ({ editor }: ToolbarProps) => {
               setShowColorPicker(!showColorPicker); 
               setShowHighlightPicker(false); 
               setShowFontSizeDropdown(false);
+              setShowFontFamilyDropdown(false);
             }}
             className={`p-1.5 hover:bg-gray-100 rounded flex flex-col items-center transition-colors ${showColorPicker ? 'bg-gray-100' : ''}`}
             title="Font Color"
@@ -381,6 +469,7 @@ const Toolbar = ({ editor }: ToolbarProps) => {
               onReset={() => editor.chain().focus().unsetColor().run()}
               resetLabel="Automatic"
               onClose={() => setShowColorPicker(false)}
+              currentColor={editor.getAttributes('textStyle').color}
             />
           )}
         </div>
@@ -392,6 +481,7 @@ const Toolbar = ({ editor }: ToolbarProps) => {
               setShowHighlightPicker(!showHighlightPicker); 
               setShowColorPicker(false); 
               setShowFontSizeDropdown(false);
+              setShowFontFamilyDropdown(false);
             }}
             className={`p-1.5 hover:bg-gray-100 rounded flex flex-col items-center transition-colors ${showHighlightPicker ? 'bg-gray-100' : ''}`}
             title="Fill Color"
@@ -405,6 +495,7 @@ const Toolbar = ({ editor }: ToolbarProps) => {
               onReset={() => editor.chain().focus().unsetHighlight().run()}
               resetLabel="No Fill"
               onClose={() => setShowHighlightPicker(false)}
+              currentColor={editor.getAttributes('highlight').color}
             />
           )}
         </div>
@@ -502,6 +593,7 @@ export default function RichTextEditor({ value, onChange, placeholder = 'Start w
         placeholder,
       }),
       TextStyle,
+      FontFamily,
       Color,
       Highlight.configure({ multicolor: true }),
       FontSize,

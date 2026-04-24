@@ -1,3 +1,5 @@
+import { supabase } from './supabase';
+
 export type MenuItem = {
   id: number;
   title: string;
@@ -28,21 +30,80 @@ export const defaultMenu: MenuItem[] = [
   { id: 7, title: 'Contact Us', link: '/contact', type: 'internal', order: 7, children: [] },
 ];
 
-export const getMenu = (): MenuItem[] => {
-  if (typeof window === 'undefined') return defaultMenu;
-  const stored = localStorage.getItem('navbar_menu');
-  if (stored) {
+let cachedMenu = [...defaultMenu];
+
+export const getMenu = async (): Promise<MenuItem[]> => {
+  const { data, error } = await supabase.from('menu_items').select('*').order('order');
+  if (error) {
+    if (!error.message?.includes('schema cache') && !error.message?.includes('find the table')) {
+      console.error('Error fetching menu:', error.message || error);
+    }
+    return cachedMenu;
+  }
+  
+  if (data && data.length > 0) {
     try {
-      return JSON.parse(stored);
-    } catch (e) {
-      console.error('Failed to parse menu from localStorage', e);
+      const topLevel = data.filter(item => !item.parent_id).sort((a,b) => a.order - b.order);
+      const builtMenu = topLevel.map(t => {
+        const children = data.filter(c => c.parent_id === t.id).sort((a,b) => a.order - b.order);
+        return {
+          id: t.id,
+          title: t.title,
+          link: t.link,
+          type: t.type as any,
+          order: t.order,
+          children: children.map(c => ({
+            id: c.id,
+            title: c.title,
+            link: c.link,
+            type: c.type as any,
+            order: c.order,
+          }))
+        };
+      });
+      if (builtMenu.length > 0) {
+        cachedMenu = builtMenu;
+      }
+    } catch(e) {
+      console.error(e);
     }
   }
-  return defaultMenu;
+  return cachedMenu;
 };
 
-export const saveMenu = (menu: MenuItem[]) => {
-  if (typeof window !== 'undefined') {
-    localStorage.setItem('navbar_menu', JSON.stringify(menu));
+export const saveMenu = async (menu: MenuItem[]): Promise<void> => {
+  await supabase.from('menu_items').delete().neq('id', 0); // Delete all
+  
+  const flatData: any[] = [];
+  menu.forEach((item, index) => {
+    const parentId = item.id || (Math.floor(Math.random() * 100000000));
+    flatData.push({
+      id: parentId, // using standard int mapping 
+      title: item.title,
+      link: item.link,
+      type: item.type,
+      order: item.order || index,
+      parent_id: null
+    });
+    if (item.children) {
+      item.children.forEach((child, cIndex) => {
+        flatData.push({
+          id: child.id || (Math.floor(Math.random() * 100000000)),
+          title: child.title,
+          link: child.link,
+          type: child.type,
+          order: child.order || cIndex,
+          parent_id: parentId
+        });
+      });
+    }
+  });
+
+  const { error } = await supabase.from('menu_items').insert(flatData);
+  if (error) {
+    if (!error.message?.includes('schema cache') && !error.message?.includes('find the table')) {
+      console.error('Error saving menu:', error.message || error);
+    }
   }
+  cachedMenu = [...menu];
 };

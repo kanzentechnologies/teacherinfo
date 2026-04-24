@@ -1,3 +1,5 @@
+import { supabase } from './supabase';
+
 export type Page = {
   id: string;
   title: string;
@@ -8,25 +10,43 @@ export type Page = {
 };
 
 export const defaultPages: Page[] = [
-  { id: '1', title: 'About Us', slug: '/about', content: '<p>About us page content...</p>', status: 'Published', date: '2024-01-15' },
-  { id: '2', title: 'Contact Us', slug: '/contact', content: '<p>Contact page content...</p>', status: 'Published', date: '2024-02-20' },
+  { id: 'd8c47b5c-4384-486a-8d76-5d29035a9632', title: 'About Us', slug: '/about', content: '<p>About us page content...</p>', status: 'Published', date: '2024-01-15' },
+  { id: 'f1a92e34-56b7-4981-a2c3-9d04e5f6a7b8', title: 'Contact Us', slug: '/contact', content: '<p>Contact page content...</p>', status: 'Published', date: '2024-02-20' },
 ];
 
-export const getPages = (): Page[] => {
-  if (typeof window === 'undefined') return defaultPages;
-  const stored = localStorage.getItem('site_pages');
-  if (stored) {
-    try {
-      return JSON.parse(stored);
-    } catch (e) {
-      console.error('Failed to parse pages from localStorage', e);
+let cachedPages = [...defaultPages];
+
+export const getPages = async (): Promise<Page[]> => {
+  const { data, error } = await supabase.from('pages').select('*');
+  if (error) {
+    if (!error.message?.includes('schema cache') && !error.message?.includes('find the table')) {
+      console.error('Error fetching pages:', error.message || error);
     }
+    return cachedPages;
   }
-  return defaultPages;
+  
+  if (data && data.length > 0) {
+    cachedPages = data as Page[];
+  }
+  return cachedPages;
 };
 
-export const savePages = (pages: Page[]) => {
-  if (typeof window !== 'undefined') {
-    localStorage.setItem('site_pages', JSON.stringify(pages));
+export const savePages = async (pages: Page[]): Promise<void> => {
+  const { error } = await supabase.from('pages').upsert(pages, { onConflict: 'id' });
+  if (error) {
+    if (!error.message?.includes('schema cache') && !error.message?.includes('find the table')) {
+      console.error('Error saving pages:', error.message || error);
+    }
   }
+  cachedPages = [...pages];
+};
+
+export const deletePage = async (id: string): Promise<void> => {
+  const { error } = await supabase.from('pages').delete().eq('id', id);
+  if (error) {
+    if (!error.message?.includes('schema cache') && !error.message?.includes('find the table')) {
+      console.error('Error deleting page:', error.message || error);
+    }
+  }
+  cachedPages = cachedPages.filter(p => p.id !== id);
 };

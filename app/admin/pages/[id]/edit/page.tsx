@@ -1,17 +1,37 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import RichTextEditor from '@/components/admin/RichTextEditor';
 import { AdminWrapper } from '@/components/admin/AdminWrapper';
-import { getPages, savePages } from '@/lib/pageStore';
+import { getPages, savePages, Page } from '@/lib/pageStore';
+import { useRouter, useParams } from 'next/navigation';
 
-export default function CreatePage() {
+export default function EditPage() {
   const router = useRouter();
+  const params = useParams() as { id: string };
+  const [page, setPage] = useState<Page | null>(null);
+
   const [title, setTitle] = useState('');
   const [slug, setSlug] = useState('');
-  const [autoSlug, setAutoSlug] = useState(true);
+  const [autoSlug, setAutoSlug] = useState(false);
+  const [content, setContent] = useState('');
+  const [status, setStatus] = useState<'Published' | 'Draft'>('Published');
+
+  useEffect(() => {
+    const fetchPage = async () => {
+      const pages = await getPages();
+      const p = pages.find(p => p.id === params.id);
+      if (p) {
+        setPage(p);
+        setTitle(p.title);
+        setSlug(p.slug);
+        setContent(p.content);
+        setStatus(p.status);
+      }
+    };
+    fetchPage();
+  }, [params.id]);
 
   const generateSlug = (text: string) => {
     return text
@@ -32,37 +52,38 @@ export default function CreatePage() {
     setSlug(e.target.value);
     setAutoSlug(false);
   };
-  const [content, setContent] = useState('');
 
-  const [status, setStatus] = useState<'Published' | 'Draft'>('Published');
-
-  const handlePublish = async (e: React.FormEvent, submitStatus?: 'Published' | 'Draft') => {
+  const handlePublish = async (e: React.FormEvent, newStatus?: 'Published' | 'Draft') => {
     e.preventDefault();
-    const finalStatus = submitStatus || status;
-    const newPage = {
-      id: crypto.randomUUID(), // assuming Supabase or standard UUID string
+    if (!page) return;
+
+    const updatedPage: Page = {
+      ...page,
       title,
       slug,
       content,
-      status: finalStatus,
+      status: newStatus || status,
       date: new Date().toISOString().split('T')[0],
     };
-    await savePages([newPage]); // we only need to pass the new page for upsert
-    alert('Page saved successfully!');
+
+    await savePages([updatedPage]);
+    alert('Page updated successfully!');
     router.push('/admin/pages');
   };
+
+  if (!page) return <AdminWrapper><div className="p-8">Loading...</div></AdminWrapper>;
 
   return (
     <AdminWrapper>
       <div className="max-w-5xl mx-auto p-6 bg-white border border-border-main">
         <div className="flex justify-between items-center mb-6 border-b border-border-main pb-4">
-          <h1 className="text-2xl font-bold text-primary">Create New Page</h1>
+          <h1 className="text-2xl font-bold text-primary">Edit Page</h1>
           <Link href="/admin/pages" className="text-sm text-secondary hover:underline">
             Back to Pages
           </Link>
         </div>
 
-        <form onSubmit={handlePublish} className="space-y-6">
+        <form className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label htmlFor="title" className="block text-sm font-bold text-primary mb-2">
@@ -74,7 +95,6 @@ export default function CreatePage() {
                 value={title}
                 onChange={handleTitleChange}
                 className="w-full border border-border-main p-2 text-sm focus:outline-none focus:border-secondary"
-                placeholder="e.g. About Us"
                 required
               />
             </div>
@@ -94,7 +114,6 @@ export default function CreatePage() {
                 value={slug}
                 onChange={handleSlugChange}
                 className="w-full border border-border-main p-2 text-sm focus:outline-none focus:border-secondary"
-                placeholder="e.g. about-us"
                 required
               />
             </div>
@@ -120,7 +139,7 @@ export default function CreatePage() {
               onClick={(e) => handlePublish(e, 'Published')}
               className="px-6 py-2 bg-primary text-white hover:bg-secondary text-sm font-bold transition-colors"
             >
-              Publish Page
+              Publish Updates
             </button>
           </div>
         </form>

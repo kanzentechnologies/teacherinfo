@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { AdminWrapper } from '@/components/admin/AdminWrapper';
 import { PlusCircle, Edit, Trash2, GripVertical } from 'lucide-react';
-import { getContacts, saveContacts, Contact } from '@/lib/contactStore';
+import { getContacts, saveContacts, deleteContact, Contact } from '@/lib/contactStore';
+import { FileUpload } from '@/components/ui/FileUpload';
 import { Reorder } from 'motion/react';
 import Image from 'next/image';
 
@@ -20,13 +21,15 @@ export default function ContactManagementPage() {
   const [imageUrl, setImageUrl] = useState('');
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setContacts(getContacts());
+    const fetchContacts = async () => {
+      setContacts(await getContacts());
+    };
+    fetchContacts();
   }, []);
 
-  const handleSaveContacts = (newContacts: Contact[]) => {
+  const handleSaveContacts = async (newContacts: Contact[]) => {
     setContacts(newContacts);
-    saveContacts(newContacts);
+    await saveContacts(newContacts);
   };
 
   const resetForm = () => {
@@ -39,12 +42,12 @@ export default function ContactManagementPage() {
     setEditingId(null);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !email) return;
 
     const newContact: Contact = {
-      id: editingId || Date.now(),
+      id: editingId || Math.floor(Math.random() * 100000000),
       name,
       designation,
       email,
@@ -60,14 +63,15 @@ export default function ContactManagementPage() {
       newContacts.push(newContact);
     }
 
-    handleSaveContacts(newContacts);
+    await handleSaveContacts(newContacts);
     resetForm();
   };
 
-  const handleDelete = (id: number) => {
+  const handleDelete = async (id: number) => {
     if (!confirm('Are you sure you want to delete this contact?')) return;
+    await deleteContact(id);
     const newContacts = contacts.filter(c => c.id !== id);
-    handleSaveContacts(newContacts);
+    setContacts(newContacts);
   };
 
   const handleEdit = (contact: Contact) => {
@@ -148,14 +152,16 @@ export default function ContactManagementPage() {
                 />
               </div>
               <div className="md:col-span-2">
-                <label className="block text-sm font-bold text-primary mb-1">Image URL</label>
-                <input 
-                  type="text" 
-                  className="w-full border border-border-main p-2 text-sm" 
-                  placeholder="https://example.com/image.jpg" 
-                  value={imageUrl}
-                  onChange={(e) => setImageUrl(e.target.value)}
+                <FileUpload 
+                  onUploadSuccess={(url) => setImageUrl(url)} 
+                  label="Profile Image" 
+                  accept="image/*"
                 />
+                {imageUrl && (
+                  <div className="mt-2 text-xs text-gray-500 break-all">
+                    Current URL: {imageUrl}
+                  </div>
+                )}
               </div>
               <div className="md:col-span-2 flex justify-end gap-2 mt-2">
                 <button type="button" onClick={resetForm} className="px-4 py-2 border border-border-main text-sm font-bold">Cancel</button>

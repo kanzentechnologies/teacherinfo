@@ -4,7 +4,7 @@ import './globals.css';
 import { Header } from '@/components/layout/Header';
 import { Navigation } from '@/components/layout/Navigation';
 import { Footer } from '@/components/layout/Footer';
-import { AdPlaceholder } from '@/components/ads/AdPlaceholder';
+import { ClientSideAd } from '@/components/ads/ClientSideAd';
 
 const notoSans = Noto_Sans({
   subsets: ['latin'],
@@ -65,13 +65,9 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
         <Header />
         <Navigation />
         <main id="main-content" className="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-8 py-6">
-          <div className="mb-6">
-            <AdPlaceholder format="leaderboard" />
-          </div>
+          <ClientSideAd format="leaderboard" wrapperClassName="mb-6" />
           {children}
-          <div className="mt-8">
-            <AdPlaceholder format="leaderboard" />
-          </div>
+          <ClientSideAd format="leaderboard" wrapperClassName="mt-8" />
         </main>
         <Footer />
       </body>

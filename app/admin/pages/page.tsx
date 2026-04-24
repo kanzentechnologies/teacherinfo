@@ -4,20 +4,22 @@ import Link from 'next/link';
 import { PlusCircle } from 'lucide-react';
 import { AdminWrapper } from '@/components/admin/AdminWrapper';
 import { useState, useEffect } from 'react';
-import { getPages, Page, savePages } from '@/lib/pageStore';
+import { getPages, Page, deletePage } from '@/lib/pageStore';
 
 export default function PagesManagementPage() {
   const [pages, setPages] = useState<Page[]>([]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setPages(getPages());
+    const fetchPages = async () => {
+      setPages(await getPages());
+    };
+    fetchPages();
   }, []);
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm('Are you sure you want to delete this page?')) {
-      const updatedPages = pages.filter(p => p.id !== id);
-      savePages(updatedPages);
+      await deletePage(id);
+      const updatedPages = pages.filter((p: Page) => p.id !== id);
       setPages(updatedPages);
     }
   };

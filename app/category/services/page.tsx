@@ -8,8 +8,10 @@ export default function ServicesCategoryPage() {
   const [services, setServices] = useState<Service[]>([]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setServices(getServices());
+    const fetchServices = async () => {
+      setServices(await getServices());
+    };
+    fetchServices();
   }, []);
 
   return (

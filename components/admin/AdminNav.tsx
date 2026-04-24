@@ -1,22 +1,29 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabase';
 
 const adminLinks = [
   { name: 'Dashboard', href: '/admin/dashboard' },
-  { name: 'Posts', href: '/admin/posts' },
   { name: 'Pages', href: '/admin/pages' },
   { name: 'Categories', href: '/admin/categories' },
   { name: 'Announcements', href: '/admin/announcements' },
   { name: 'Navbar Menu', href: '/admin/navbar' },
   { name: 'Contact Management', href: '/admin/contact' },
+  { name: 'Useful / Quick Links', href: '/admin/quick-links' },
   { name: 'Service Management', href: '/admin/services' },
-  { name: 'Files', href: '/admin/files' },
+  { name: 'Important Links', href: '/admin/important-links' },
 ];
 
 export function AdminNav() {
   const pathname = usePathname();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push('/admin');
+  };
 
   return (
     <div className="bg-primary text-white w-full md:w-64 flex-shrink-0 md:min-h-[calc(100vh-200px)]">
@@ -40,12 +47,12 @@ export function AdminNav() {
           );
         })}
         <li>
-          <Link
-            href="/admin"
-            className="block px-4 py-3 text-sm border-b border-white/10 hover:bg-red-700 text-red-200 transition-colors mt-8"
+          <button
+            onClick={handleLogout}
+            className="w-full text-left block px-4 py-3 text-sm border-b border-white/10 hover:bg-red-700 text-red-200 transition-colors mt-8"
           >
             Logout
-          </Link>
+          </button>
         </li>
       </ul>
     </div>
