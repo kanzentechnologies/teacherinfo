@@ -16,6 +16,29 @@ const mockCategories = [
 
 export default function CategoriesManagementPage() {
   const [isAdding, setIsAdding] = useState(false);
+  const [name, setName] = useState('');
+  const [slug, setSlug] = useState('');
+  const [autoSlug, setAutoSlug] = useState(true);
+
+  const generateSlug = (text: string) => {
+    return text
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)+/g, '');
+  };
+
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newName = e.target.value;
+    setName(newName);
+    if (autoSlug) {
+      setSlug(generateSlug(newName));
+    }
+  };
+
+  const handleSlugChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSlug(e.target.value);
+    setAutoSlug(false);
+  };
 
   return (
     <AdminWrapper>
@@ -40,11 +63,26 @@ export default function CategoriesManagementPage() {
             <form className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-bold text-primary mb-1">Category Name</label>
-                <input type="text" className="w-full border border-border-main p-2 text-sm" placeholder="e.g. Study Materials" />
+                <input 
+                  type="text" 
+                  value={name} 
+                  onChange={handleNameChange}
+                  className="w-full border border-border-main p-2 text-sm" 
+                  placeholder="e.g. Study Materials" 
+                />
               </div>
               <div>
-                <label className="block text-sm font-bold text-primary mb-1">Slug</label>
-                <input type="text" className="w-full border border-border-main p-2 text-sm" placeholder="e.g. study-materials" />
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-sm font-bold text-primary">Slug</label>
+                  <span className="text-xs text-gray-500">{autoSlug ? '(Auto-generated)' : '(Manual)'}</span>
+                </div>
+                <input 
+                  type="text" 
+                  value={slug} 
+                  onChange={handleSlugChange}
+                  className="w-full border border-border-main p-2 text-sm bg-gray-50 focus:bg-white" 
+                  placeholder="e.g. study-materials" 
+                />
               </div>
               <div>
                 <label className="block text-sm font-bold text-primary mb-1">Parent Category</label>

@@ -3,8 +3,25 @@
 import Link from 'next/link';
 import { PlusCircle } from 'lucide-react';
 import { AdminWrapper } from '@/components/admin/AdminWrapper';
+import { useState, useEffect } from 'react';
+import { getPages, Page, savePages } from '@/lib/pageStore';
 
 export default function PagesManagementPage() {
+  const [pages, setPages] = useState<Page[]>([]);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setPages(getPages());
+  }, []);
+
+  const handleDelete = (id: string) => {
+    if (confirm('Are you sure you want to delete this page?')) {
+      const updatedPages = pages.filter(p => p.id !== id);
+      savePages(updatedPages);
+      setPages(updatedPages);
+    }
+  };
+
   return (
     <AdminWrapper>
       <div className="flex flex-col gap-6">
@@ -35,15 +52,10 @@ export default function PagesManagementPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border-main">
-                {[
-                  { id: 1, title: 'About Us', slug: '/about', date: '2024-01-15', status: 'Published' },
-                  { id: 2, title: 'Contact Us', slug: '/contact', date: '2024-02-20', status: 'Published' },
-                  { id: 3, title: 'Privacy Policy', slug: '/privacy-policy', date: '2023-11-05', status: 'Published' },
-                  { id: 4, title: 'Terms of Service', slug: '/terms', date: '2023-11-05', status: 'Draft' },
-                ].map((page) => (
+                {pages.map((page) => (
                   <tr key={page.id} className="hover:bg-hover-bg">
                     <td className="px-4 py-3 font-medium text-text-main">{page.title}</td>
-                    <td className="px-4 py-3 text-text-muted">{page.slug}</td>
+                    <td className="px-4 py-3 text-text-muted">{page.slug.startsWith('/') ? page.slug : `/${page.slug}`}</td>
                     <td className="px-4 py-3 text-text-muted">{page.date}</td>
                     <td className="px-4 py-3">
                       {page.status === 'Published' ? (
@@ -54,13 +66,18 @@ export default function PagesManagementPage() {
                     </td>
                     <td className="px-4 py-3 text-right">
                       <Link href={`/admin/pages/${page.id}/edit`} className="text-secondary hover:underline mr-3">Edit</Link>
-                      <button className="text-red-600 hover:underline">Delete</button>
+                      <button onClick={() => handleDelete(page.id)} className="text-red-600 hover:underline">Delete</button>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
+          {pages.length === 0 && (
+            <div className="p-8 text-center text-gray-500">
+              No pages found. Create one.
+            </div>
+          )}
         </div>
       </div>
     </AdminWrapper>

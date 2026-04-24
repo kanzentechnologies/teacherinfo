@@ -4,22 +4,25 @@ import React, { useState, useEffect } from 'react';
 import { AdminWrapper } from '@/components/admin/AdminWrapper';
 import { PlusCircle, GripVertical, Edit, Trash2 } from 'lucide-react';
 import { getMenu, saveMenu, MenuItem } from '@/lib/menuStore';
+import { getPages, Page } from '@/lib/pageStore';
 import { Reorder } from 'motion/react';
 
 export default function NavbarManagementPage() {
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+  const [pages, setPages] = useState<Page[]>([]);
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   
   // Form state
   const [title, setTitle] = useState('');
-  const [type, setType] = useState<'internal' | 'external' | 'dropdown'>('internal');
+  const [type, setType] = useState<'internal' | 'external' | 'dropdown' | 'page'>('internal');
   const [link, setLink] = useState('');
   const [parentId, setParentId] = useState<string>('');
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setMenuItems(getMenu());
+    setPages(getPages());
   }, []);
 
   const handleSaveMenu = (newMenu: MenuItem[]) => {
@@ -168,12 +171,31 @@ export default function NavbarManagementPage() {
                   value={type}
                   onChange={(e) => setType(e.target.value as any)}
                 >
-                  <option value="internal">Internal Page / Category</option>
+                  <option value="internal">Custom Internal Path</option>
+                  <option value="page">Existing Page</option>
                   <option value="external">External URL</option>
                   <option value="dropdown">Dropdown (Parent)</option>
                 </select>
               </div>
-              {type !== 'dropdown' && (
+              {type === 'page' && (
+                <div>
+                  <label className="block text-sm font-bold text-primary mb-1">Select Page</label>
+                  <select 
+                    className="w-full border border-border-main p-2 text-sm bg-white"
+                    value={link}
+                    onChange={(e) => setLink(e.target.value)}
+                    required
+                  >
+                    <option value="">-- Choose a page --</option>
+                    {pages.filter(p => p.status === 'Published').map(p => (
+                      <option key={p.id} value={p.slug.startsWith('/') ? p.slug : `/${p.slug}`}>
+                        {p.title} ({p.slug})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+              {type !== 'dropdown' && type !== 'page' && (
                 <div>
                   <label className="block text-sm font-bold text-primary mb-1">URL / Path</label>
                   <input 

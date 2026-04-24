@@ -6,7 +6,29 @@ import { ArrowLeft, Save, Upload } from 'lucide-react';
 
 export default function CreateContent() {
   const [title, setTitle] = useState('');
+  const [slug, setSlug] = useState('');
+  const [autoSlug, setAutoSlug] = useState(true);
   const [category, setCategory] = useState('');
+
+  const generateSlug = (text: string) => {
+    return text
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)+/g, '');
+  };
+
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newTitle = e.target.value;
+    setTitle(newTitle);
+    if (autoSlug) {
+      setSlug(generateSlug(newTitle));
+    }
+  };
+
+  const handleSlugChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSlug(e.target.value);
+    setAutoSlug(false);
+  };
   const [description, setDescription] = useState('');
   const [isPublished, setIsPublished] = useState(true);
 
@@ -26,19 +48,41 @@ export default function CreateContent() {
 
       <div className="bg-white border border-border-main p-6">
         <form onSubmit={handleSubmit} className="space-y-6 max-w-3xl">
-          <div>
-            <label className="block text-sm font-bold text-text-main mb-2" htmlFor="title">
-              Content Title <span className="text-red-500">*</span>
-            </label>
-            <input
-              id="title"
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-3 py-2 border border-border-main focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-sm"
-              placeholder="Enter descriptive title"
-              required
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-bold text-text-main mb-2" htmlFor="title">
+                Content Title <span className="text-red-500">*</span>
+              </label>
+              <input
+                id="title"
+                type="text"
+                value={title}
+                onChange={handleTitleChange}
+                className="w-full px-3 py-2 border border-border-main focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-sm"
+                placeholder="Enter descriptive title"
+                required
+              />
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-sm font-bold text-text-main" htmlFor="slug">
+                  URL Slug <span className="text-red-500">*</span>
+                </label>
+                <span className="text-xs text-gray-500">
+                  {autoSlug ? '(Auto-generated)' : '(Manual modify)'}
+                </span>
+              </div>
+              <input
+                id="slug"
+                type="text"
+                value={slug}
+                onChange={handleSlugChange}
+                className="w-full px-3 py-2 border border-border-main focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-sm bg-gray-50 focus:bg-white"
+                placeholder="e.g. some-slug"
+                required
+              />
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

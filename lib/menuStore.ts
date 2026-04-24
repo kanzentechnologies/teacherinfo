@@ -2,7 +2,7 @@ export type MenuItem = {
   id: number;
   title: string;
   link: string;
-  type: 'internal' | 'external' | 'dropdown';
+  type: 'internal' | 'external' | 'dropdown' | 'page';
   order: number;
   children?: MenuItem[];
 };

@@ -4,16 +4,50 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import RichTextEditor from '@/components/admin/RichTextEditor';
 import { AdminWrapper } from '@/components/admin/AdminWrapper';
+import { getPages, savePages } from '@/lib/pageStore';
 
 export default function CreatePage() {
   const [title, setTitle] = useState('');
   const [slug, setSlug] = useState('');
+  const [autoSlug, setAutoSlug] = useState(true);
+
+  const generateSlug = (text: string) => {
+    return text
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)+/g, '');
+  };
+
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newTitle = e.target.value;
+    setTitle(newTitle);
+    if (autoSlug) {
+      setSlug(generateSlug(newTitle));
+    }
+  };
+
+  const handleSlugChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSlug(e.target.value);
+    setAutoSlug(false);
+  };
   const [content, setContent] = useState('');
+
+  const [status, setStatus] = useState<'Published' | 'Draft'>('Published');
 
   const handlePublish = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log({ title, slug, content });
-    alert('Page published successfully!');
+    const newPage = {
+      id: Date.now().toString(),
+      title,
+      slug,
+      content,
+      status,
+      date: new Date().toISOString().split('T')[0],
+    };
+    const pages = getPages();
+    savePages([...pages, newPage]);
+    alert('Page saved successfully!');
+    window.location.href = '/admin/pages';
   };
 
   return (
@@ -36,7 +70,7 @@ export default function CreatePage() {
                 type="text"
                 id="title"
                 value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                onChange={handleTitleChange}
                 className="w-full border border-border-main p-2 text-sm focus:outline-none focus:border-secondary"
                 placeholder="e.g. About Us"
                 required
@@ -44,14 +78,19 @@ export default function CreatePage() {
             </div>
             
             <div>
-              <label htmlFor="slug" className="block text-sm font-bold text-primary mb-2">
-                URL Slug
-              </label>
+              <div className="flex items-center justify-between pointer-events-none mb-2">
+                <label htmlFor="slug" className="block text-sm font-bold text-primary">
+                  URL Slug
+                </label>
+                <span className="text-xs text-gray-500 font-normal">
+                  {autoSlug ? '(Auto-generated)' : '(Manual edit)'}
+                </span>
+              </div>
               <input
                 type="text"
                 id="slug"
                 value={slug}
-                onChange={(e) => setSlug(e.target.value)}
+                onChange={handleSlugChange}
                 className="w-full border border-border-main p-2 text-sm focus:outline-none focus:border-secondary"
                 placeholder="e.g. about-us"
                 required

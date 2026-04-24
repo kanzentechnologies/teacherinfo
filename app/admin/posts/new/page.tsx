@@ -7,7 +7,29 @@ import { AdminWrapper } from '@/components/admin/AdminWrapper';
 
 export default function CreatePostPage() {
   const [title, setTitle] = useState('');
+  const [slug, setSlug] = useState('');
+  const [autoSlug, setAutoSlug] = useState(true);
   const [category, setCategory] = useState('');
+
+  const generateSlug = (text: string) => {
+    return text
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)+/g, '');
+  };
+
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newTitle = e.target.value;
+    setTitle(newTitle);
+    if (autoSlug) {
+      setSlug(generateSlug(newTitle));
+    }
+  };
+
+  const handleSlugChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSlug(e.target.value);
+    setAutoSlug(false);
+  };
   const [content, setContent] = useState('');
 
   const handlePublish = (e: React.FormEvent) => {
@@ -15,6 +37,7 @@ export default function CreatePostPage() {
     // Here you would typically send the data to your backend
     console.log({
       title,
+      slug,
       category,
       content
     });
@@ -32,8 +55,8 @@ export default function CreatePostPage() {
         </div>
 
         <form onSubmit={handlePublish} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="md:col-span-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
               <label htmlFor="title" className="block text-sm font-bold text-primary mb-2">
                 Post Title
               </label>
@@ -41,14 +64,34 @@ export default function CreatePostPage() {
                 type="text"
                 id="title"
                 value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                onChange={handleTitleChange}
                 className="w-full border border-border-main p-2 text-sm focus:outline-none focus:border-secondary"
                 placeholder="Enter post title"
                 required
               />
             </div>
-            
+
             <div>
+              <div className="flex items-center justify-between mb-2">
+                <label htmlFor="slug" className="block text-sm font-bold text-primary">
+                  URL Slug
+                </label>
+                <span className="text-xs text-gray-500">
+                  {autoSlug ? '(Auto-generated)' : '(Manual edit)'}
+                </span>
+              </div>
+              <input
+                type="text"
+                id="slug"
+                value={slug}
+                onChange={handleSlugChange}
+                className="w-full border border-border-main p-2 text-sm focus:outline-none focus:border-secondary bg-gray-50 focus:bg-white"
+                placeholder="e.g. post-title"
+                required
+              />
+            </div>
+            
+            <div className="md:col-span-2">
               <label htmlFor="category" className="block text-sm font-bold text-primary mb-2">
                 Category
               </label>
