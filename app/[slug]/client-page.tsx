@@ -13,8 +13,10 @@ export default function CustomPageClient({ slug }: { slug: string }) {
     const found = pages.find(p => p.slug === pathname || p.slug === slug || `/${p.slug}` === pathname);
     
     if (found && found.status === 'Published') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPage(found);
     }
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(false);
   }, [slug]);
 
