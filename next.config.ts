@@ -1,6 +1,8 @@
 import type {NextConfig} from 'next';
 
 const isGithubActions = process.env.GITHUB_ACTIONS === 'true';
+const isCloudflarePages = process.env.CF_PAGES === '1' || process.env.CF_PAGES === 'true' || process.env.CLOUDFLARE_PAGES === '1';
+const isStaticExport = isGithubActions || isCloudflarePages;
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
@@ -12,7 +14,7 @@ const nextConfig: NextConfig = {
   },
   // Allow access to remote image placeholder.
   images: {
-    unoptimized: isGithubActions, // GitHub Pages requires unoptimized images
+    unoptimized: isStaticExport, // Static export requires unoptimized images
     remotePatterns: [
       {
         protocol: 'https',
@@ -40,7 +42,7 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  output: isGithubActions ? 'export' : 'standalone',
+  output: isStaticExport ? 'export' : 'standalone',
   trailingSlash: true,
   transpilePackages: ['motion'],
   webpack: (config, {dev}) => {

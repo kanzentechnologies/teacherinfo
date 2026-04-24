@@ -2,6 +2,7 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import { FileText, Download, Calendar, Link as LinkIcon } from 'lucide-react';
 import { getPostsByCategory } from '@/lib/postStore';
+import { getCategories } from '@/lib/categoryStore';
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
@@ -19,12 +20,18 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 }
 
 export async function generateStaticParams() {
-  const categories = [
+  const categories = await getCategories();
+  
+  // ensure we have at least these default slugs just in case
+  const defaultSlugs = [
     'useful-links', 'income-tax', 'gos-and-proceedings', 
     'softwares', 'forms', 'academics', 'services',
     'updates', 'study-materials', 'previous-papers', 'jobs', 'results', 'downloads'
   ];
-  return categories.map((slug) => ({
+  
+  const allSlugs = new Set([...categories.map(c => c.slug), ...defaultSlugs]);
+  
+  return Array.from(allSlugs).map((slug) => ({
     slug: slug,
   }));
 }

@@ -77,6 +77,7 @@ export function FileUpload({ onUploadSuccess, label = 'Upload File', accept = 'i
       {previewUrl && !isUploading && (
         <div className="relative border border-border-main p-2">
           {accept.includes('image') ? (
+            /* eslint-disable-next-line @next/next/no-img-element */
             <img src={previewUrl} alt="Preview" className="max-h-48 mx-auto object-contain" referrerPolicy="no-referrer" />
           ) : (
             <div className="p-4 bg-gray-50 text-center text-sm font-medium text-primary">
