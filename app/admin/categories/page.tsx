@@ -103,7 +103,7 @@ export default function CategoriesManagementPage() {
         <div className="bg-white border border-border-main p-4 sm:p-6 flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-bold text-primary">Content Categories</h1>
-            <p className="text-sm text-text-muted mt-1">Categories (or Folders) are used to group together related posts and updates. For example, "Study Materials" or "Job Updates". Once you create a Category, you can add it to the Navigation Menu and assign Posts to it.</p>
+            <p className="text-sm text-text-muted mt-1">Categories (or Folders) are used to group together related posts and updates. For example, &quot;Study Materials&quot; or &quot;Job Updates&quot;. Once you create a Category, you can add it to the Navigation Menu and assign Posts to it.</p>
           </div>
           <button 
             onClick={() => {
