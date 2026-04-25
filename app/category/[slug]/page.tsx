@@ -15,6 +15,14 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       title: `${title} Resources | Teacher Info Portal`,
       description: `Browse the latest ${title.toLowerCase()} resources, study materials, and updates for teachers and aspirants.`,
       url: `/category/${slug}`,
+      images: [
+        {
+          url: 'https://firebasestorage.googleapis.com/v0/b/studio-6624311534-29f23.firebasestorage.app/o/logo.png?alt=media&token=79cb88ef-c95b-4959-a8f3-79da6a33f3c4',
+          width: 1200,
+          height: 630,
+          alt: 'Teacher Info Portal',
+        }
+      ],
     },
   };
 }
