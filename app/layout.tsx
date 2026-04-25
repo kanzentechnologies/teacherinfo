@@ -13,20 +13,23 @@ const notoSans = Noto_Sans({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.APP_URL || 'https://teacherinfo.net'),
+  metadataBase: new URL(process.env.APP_URL || 'https://www.teacherinfo.net'),
   title: {
     default: 'Teacher Info Portal - Educational Resources & Updates',
     template: '%s | Teacher Info Portal',
   },
   description: 'Comprehensive educational resources, study materials, previous papers, job notifications, and latest updates for teaching professionals and aspirants.',
-  keywords: ['teacher info', 'study materials', 'previous papers', 'AP DSC', 'TET', 'SSC', 'teaching jobs', 'education portal', 'teacher resources'],
+  keywords: ['teacher info', 'teacher portal', 'education', 'study materials', 'previous papers', 'AP DSC', 'TET', 'SSC', 'teaching jobs', 'education portal', 'teacher resources', 'AP Teachers', 'Telangana Teachers'],
   authors: [{ name: 'Teacher Info Portal Admin' }],
-  creator: 'Teacher Info Portal',
+  creator: 'Teacher Info Portal Admin',
   publisher: 'Teacher Info Portal',
   formatDetection: {
     email: false,
     address: false,
     telephone: false,
+  },
+  alternates: {
+    canonical: '/',
   },
   openGraph: {
     title: 'Teacher Info Portal - Educational Resources & Updates',
@@ -35,11 +38,20 @@ export const metadata: Metadata = {
     siteName: 'Teacher Info Portal',
     locale: 'en_IN',
     type: 'website',
+    images: [
+      {
+        url: 'https://firebasestorage.googleapis.com/v0/b/studio-6624311534-29f23.firebasestorage.app/o/logo.png?alt=media&token=79cb88ef-c95b-4959-a8f3-79da6a33f3c4',
+        width: 1200,
+        height: 630,
+        alt: 'Teacher Info Portal',
+      }
+    ]
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Teacher Info Portal - Educational Resources & Updates',
     description: 'Comprehensive educational resources, study materials, previous papers, job notifications, and latest updates for teaching professionals and aspirants.',
+    images: ['https://firebasestorage.googleapis.com/v0/b/studio-6624311534-29f23.firebasestorage.app/o/logo.png?alt=media&token=79cb88ef-c95b-4959-a8f3-79da6a33f3c4'],
   },
   icons: {
     icon: 'https://firebasestorage.googleapis.com/v0/b/studio-6624311534-29f23.firebasestorage.app/o/logo.png?alt=media&token=79cb88ef-c95b-4959-a8f3-79da6a33f3c4',

@@ -101,15 +101,25 @@ export default async function ContentPage({ params }: { params: Promise<{ id: st
             </div>
           )}
 
-          <div className="mt-8 pt-4 border-t border-border-main flex justify-between items-center">
-            <div className="flex gap-2">
-              <button className="flex items-center gap-1 text-sm text-text-muted hover:text-primary transition-colors">
-                <Share2 size={16} /> Share
-              </button>
-              <button className="flex items-center gap-1 text-sm text-text-muted hover:text-primary transition-colors ml-4">
-                <Printer size={16} /> Print
-              </button>
+          <div className="mt-8 pt-4 border-t border-border-main flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div className="flex flex-wrap gap-2 items-center">
+              <span className="text-sm font-bold text-text-muted mr-2 flex items-center gap-1"><Share2 size={16} /> Share:</span>
+              <a href={`https://api.whatsapp.com/send?text=${encodeURIComponent(post.title)} - ${encodeURIComponent(process.env.APP_URL || 'https://www.teacherinfo.net')}/content/${id}`} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 bg-[#25D366] text-white text-xs font-bold rounded hover:opacity-90 transition-opacity">
+                WhatsApp
+              </a>
+              <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(process.env.APP_URL || 'https://www.teacherinfo.net')}/content/${id}`} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 bg-[#1877F2] text-white text-xs font-bold rounded hover:opacity-90 transition-opacity">
+                Facebook
+              </a>
+              <a href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(process.env.APP_URL || 'https://www.teacherinfo.net')}/content/${id}&text=${encodeURIComponent(post.title)}`} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 bg-[#1DA1F2] text-white text-xs font-bold rounded hover:opacity-90 transition-opacity">
+                Twitter
+              </a>
+              <a href={`https://t.me/share/url?url=${encodeURIComponent(process.env.APP_URL || 'https://www.teacherinfo.net')}/content/${id}&text=${encodeURIComponent(post.title)}`} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 bg-[#0088cc] text-white text-xs font-bold rounded hover:opacity-90 transition-opacity">
+                Telegram
+              </a>
             </div>
+            <a href={`javascript:window.print()`} className="flex items-center gap-1 text-sm bg-gray-100 px-3 py-1.5 rounded text-text-main hover:bg-gray-200 transition-colors">
+              <Printer size={16} /> Print
+            </a>
           </div>
         </div>
         <AdPlaceholder format="fluid" className="w-full h-[90px]" />

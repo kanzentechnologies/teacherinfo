@@ -29,8 +29,8 @@ export default function PagesManagementPage() {
       <div className="flex flex-col gap-6">
         <div className="bg-white border border-border-main p-4 sm:p-6 flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold text-primary">Manage Pages</h1>
-            <p className="text-sm text-text-muted">Manage static pages like About, Contact, etc.</p>
+            <h1 className="text-2xl font-bold text-primary">Manage Single Pages</h1>
+            <p className="text-sm text-text-muted mt-1">Create standalone static pages like "About Us", "Contact", or "Privacy Policy". After creating a page, you can add it to your Navigation Menu.</p>
           </div>
           <Link 
             href="/admin/pages/new" 

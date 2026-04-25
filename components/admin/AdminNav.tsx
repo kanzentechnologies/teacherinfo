@@ -6,11 +6,11 @@ import { supabase } from '@/lib/supabase';
 
 const adminLinks = [
   { name: 'Dashboard', href: '/admin/dashboard' },
-  { name: 'Pages', href: '/admin/pages' },
-  { name: 'Categories', href: '/admin/categories' },
-  { name: 'Posts', href: '/admin/posts' },
+  { name: 'Single Pages', href: '/admin/pages' },
+  { name: 'Content Categories', href: '/admin/categories' },
+  { name: 'Posts & Updates', href: '/admin/posts' },
   { name: 'Announcements', href: '/admin/announcements' },
-  { name: 'Navbar Menu', href: '/admin/navbar' },
+  { name: 'Navigation Menu', href: '/admin/navbar' },
   { name: 'Contact Management', href: '/admin/contact' },
   { name: 'Useful Links', href: '/admin/quick-links' },
   { name: 'Homepage Icons', href: '/admin/homepage-quick-links' },

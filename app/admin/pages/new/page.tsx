@@ -84,14 +84,15 @@ export default function CreatePage() {
             </div>
             
             <div>
-              <div className="flex items-center justify-between pointer-events-none mb-2">
+              <div className="flex items-center justify-between mb-1">
                 <label htmlFor="slug" className="block text-sm font-bold text-primary">
-                  URL Slug
+                  URL Path (Link)
                 </label>
                 <span className="text-xs text-gray-500 font-normal">
                   {autoSlug ? '(Auto-generated)' : '(Manual edit)'}
                 </span>
               </div>
+              <p className="text-xs text-text-muted mb-2">This page will be accessible at: <strong>/{slug || 'your-path'}</strong></p>
               <input
                 type="text"
                 id="slug"

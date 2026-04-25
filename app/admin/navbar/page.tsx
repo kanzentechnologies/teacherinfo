@@ -185,12 +185,13 @@ export default function NavbarManagementPage() {
                   value={type}
                   onChange={(e) => setType(e.target.value as any)}
                 >
-                  <option value="internal">Custom Internal Path</option>
-                  <option value="page">Existing Page</option>
-                  <option value="category">Existing Category</option>
-                  <option value="external">External URL</option>
-                  <option value="dropdown">Dropdown (Parent)</option>
+                  <option value="internal">Custom Path (Advanced)</option>
+                  <option value="page">Single Page (e.g. About, Contact)</option>
+                  <option value="category">List of Posts (e.g. Updates, Study Materials)</option>
+                  <option value="external">External Website Link</option>
+                  <option value="dropdown">Dropdown Folder (Groups Links)</option>
                 </select>
+                <p className="text-xs text-text-muted mt-1">Select what type of content this menu item should open.</p>
               </div>
               {type === 'page' && (
                 <div>
