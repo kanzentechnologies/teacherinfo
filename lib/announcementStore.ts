@@ -21,9 +21,7 @@ let cachedAnnouncements = [...defaultAnnouncements];
 export const getAnnouncements = async (): Promise<Announcement[]> => {
   const { data, error } = await supabase.from('announcements').select('*').order('id', { ascending: false });
   if (error) {
-    if (!error.message?.includes('schema cache') && !error.message?.includes('find the table')) {
-      console.error('Error fetching announcements:', error.message || error);
-    }
+    console.error('Error fetching data:', error.message || error);
     return cachedAnnouncements;
   }
   
@@ -36,9 +34,7 @@ export const getAnnouncements = async (): Promise<Announcement[]> => {
 export const saveAnnouncement = async (announcement: Partial<Announcement>): Promise<void> => {
   const { error } = await supabase.from('announcements').upsert([announcement], { onConflict: 'id' });
   if (error) {
-    if (!error.message?.includes('schema cache') && !error.message?.includes('find the table')) {
-      console.error('Error saving announcement:', error.message || error);
-    }
+    console.error('Error fetching data:', error.message || error);
     
     // Fallback to local cache
     const existingIndex = cachedAnnouncements.findIndex(a => a.id === announcement.id);
@@ -60,9 +56,7 @@ export const saveAnnouncement = async (announcement: Partial<Announcement>): Pro
 export const deleteAnnouncement = async (id: number): Promise<void> => {
   const { error } = await supabase.from('announcements').delete().eq('id', id);
   if (error) {
-    if (!error.message?.includes('schema cache') && !error.message?.includes('find the table')) {
-      console.error('Error deleting announcement:', error.message || error);
-    }
+    console.error('Error fetching data:', error.message || error);
     
     // Fallback to local cache
   }

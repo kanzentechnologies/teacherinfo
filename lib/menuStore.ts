@@ -35,9 +35,7 @@ let cachedMenu = [...defaultMenu];
 export const getMenu = async (): Promise<MenuItem[]> => {
   const { data, error } = await supabase.from('menu_items').select('*').order('order');
   if (error) {
-    if (!error.message?.includes('schema cache') && !error.message?.includes('find the table')) {
-      console.error('Error fetching menu:', error.message || error);
-    }
+    console.error('Error fetching data:', error.message || error);
     return cachedMenu;
   }
   
@@ -101,9 +99,8 @@ export const saveMenu = async (menu: MenuItem[]): Promise<void> => {
 
   const { error } = await supabase.from('menu_items').insert(flatData);
   if (error) {
-    if (!error.message?.includes('schema cache') && !error.message?.includes('find the table')) {
-      console.error('Error saving menu:', error.message || error);
-    }
+    console.error('Error in write:', error.message || error);
+    throw new Error(error.message || 'Write error');
   }
   cachedMenu = [...menu];
 };

@@ -20,9 +20,7 @@ let cachedImportantLinks = [...defaultImportantLinks];
 export const getImportantLinks = async (): Promise<ImportantLink[]> => {
   const { data, error } = await supabase.from('important_links').select('*').order('order');
   if (error) {
-    if (!error.message?.includes('schema cache') && !error.message?.includes('find the table')) {
-      console.error('Error fetching important links:', error.message || error);
-    }
+    console.error('Error fetching data:', error.message || error);
     return cachedImportantLinks;
   }
   
@@ -35,9 +33,7 @@ export const getImportantLinks = async (): Promise<ImportantLink[]> => {
 export const saveImportantLinks = async (links: ImportantLink[]): Promise<void> => {
   const { error } = await supabase.from('important_links').upsert(links, { onConflict: 'id' });
   if (error) {
-    if (!error.message?.includes('schema cache') && !error.message?.includes('find the table')) {
-      console.error('Error saving important links:', error.message || error);
-    }
+    console.error('Error fetching data:', error.message || error);
     
     // Fallback to local cache
   }
@@ -47,9 +43,7 @@ export const saveImportantLinks = async (links: ImportantLink[]): Promise<void> 
 export const deleteImportantLink = async (id: number): Promise<void> => {
   const { error } = await supabase.from('important_links').delete().eq('id', id);
   if (error) {
-    if (!error.message?.includes('schema cache') && !error.message?.includes('find the table')) {
-      console.error('Error deleting important link:', error.message || error);
-    }
+    console.error('Error fetching data:', error.message || error);
     
     // Fallback to local cache
   }

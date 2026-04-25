@@ -32,9 +32,7 @@ let cachedPosts = [...defaultPosts];
 export const getPosts = async (): Promise<Post[]> => {
   const { data, error } = await supabase.from('posts').select('*').order('date', { ascending: false });
   if (error) {
-    if (!error.message?.includes('schema cache') && !error.message?.includes('find the table')) {
-      console.error('Error fetching posts:', error.message || error);
-    }
+    console.error('Error fetching data:', error.message || error);
     return cachedPosts;
   }
   
@@ -52,9 +50,8 @@ export const getPostsByCategory = async (categorySlug: string): Promise<Post[]> 
 export const savePosts = async (posts: Post[]): Promise<void> => {
   const { error } = await supabase.from('posts').upsert(posts, { onConflict: 'id' });
   if (error) {
-    if (!error.message?.includes('schema cache') && !error.message?.includes('find the table')) {
-      console.error('Error saving posts:', error.message || error);
-    }
+    console.error('Error in write:', error.message || error);
+    throw new Error(error.message || 'Write error');
   }
   cachedPosts = [...posts];
 };
@@ -62,9 +59,8 @@ export const savePosts = async (posts: Post[]): Promise<void> => {
 export const deletePost = async (id: string): Promise<void> => {
   const { error } = await supabase.from('posts').delete().eq('id', id);
   if (error) {
-    if (!error.message?.includes('schema cache') && !error.message?.includes('find the table')) {
-      console.error('Error deleting post:', error.message || error);
-    }
+    console.error('Error in write:', error.message || error);
+    throw new Error(error.message || 'Write error');
   }
   cachedPosts = cachedPosts.filter(p => p.id !== id);
 };

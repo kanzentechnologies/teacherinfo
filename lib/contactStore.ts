@@ -36,9 +36,7 @@ let cachedContacts = [...defaultContacts];
 export const getContacts = async (): Promise<Contact[]> => {
   const { data, error } = await supabase.from('contacts').select('*').order('order');
   if (error) {
-    if (!error.message?.includes('schema cache') && !error.message?.includes('find the table')) {
-      console.error('Error fetching contacts:', error.message || error);
-    }
+    console.error('Error fetching data:', error.message || error);
     return cachedContacts;
   }
   
@@ -68,9 +66,8 @@ export const saveContacts = async (contacts: Contact[]): Promise<void> => {
   }));
   const { error } = await supabase.from('contacts').upsert(mapped, { onConflict: 'id' });
   if (error) {
-    if (!error.message?.includes('schema cache') && !error.message?.includes('find the table')) {
-      console.error('Error saving contacts:', error.message || error);
-    }
+    console.error('Error in write:', error.message || error);
+    throw new Error(error.message || 'Write error');
   }
   cachedContacts = [...contacts];
 };
@@ -78,9 +75,8 @@ export const saveContacts = async (contacts: Contact[]): Promise<void> => {
 export const deleteContact = async (id: number): Promise<void> => {
   const { error } = await supabase.from('contacts').delete().eq('id', id);
   if (error) {
-    if (!error.message?.includes('schema cache') && !error.message?.includes('find the table')) {
-      console.error('Error deleting contact:', error.message || error);
-    }
+    console.error('Error in write:', error.message || error);
+    throw new Error(error.message || 'Write error');
   }
   cachedContacts = cachedContacts.filter(c => c.id !== id);
 };

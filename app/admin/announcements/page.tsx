@@ -69,15 +69,18 @@ export default function AnnouncementsManagementPage() {
       payload.id = Math.floor(Math.random() * 100000000);
     }
 
-    await saveAnnouncement(payload);
-    
-    setIsAdding(false);
-    setEditingId(null);
-    setTitle('');
-    setPriority('Normal');
-    setStatus('Active');
-    setLink('');
-    loadAnnouncements();
+    try {
+      await saveAnnouncement(payload);
+      setIsAdding(false);
+      setEditingId(null);
+      setTitle('');
+      setPriority('Normal');
+      setStatus('Active');
+      setLink('');
+      loadAnnouncements();
+    } catch (err: any) {
+      alert('Error saving announcement: ' + (err.message || 'Unknown error'));
+    }
   };
 
   const handleCancel = () => {

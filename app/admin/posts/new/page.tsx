@@ -92,20 +92,24 @@ function PostForm() {
       date: originalDate || new Date().toISOString().split('T')[0],
     };
 
-    let updatedPosts;
-    if (editId) {
-      updatedPosts = posts.map(p => p.id === editId ? newPost : p);
-    } else {
-      updatedPosts = [newPost, ...posts];
-    }
+    try {
+      let updatedPosts;
+      if (editId) {
+        updatedPosts = posts.map(p => p.id === editId ? newPost : p);
+      } else {
+        updatedPosts = [newPost, ...posts];
+      }
 
-    await savePosts(updatedPosts);
-    if (defaultCategory === 'useful-links') {
-      router.push('/admin/quick-links');
-    } else if (defaultCategory) {
-      router.push(`/admin/posts?category=${defaultCategory}`);
-    } else {
-      router.push('/admin/posts');
+      await savePosts(updatedPosts);
+      if (defaultCategory === 'useful-links') {
+        router.push('/admin/quick-links');
+      } else if (defaultCategory) {
+        router.push(`/admin/posts?category=${defaultCategory}`);
+      } else {
+        router.push('/admin/posts');
+      }
+    } catch (err: any) {
+      alert('Error saving post: ' + err.message);
     }
   };
 

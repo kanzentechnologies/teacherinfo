@@ -23,9 +23,7 @@ let cachedLinks = [...defaultQuickLinks];
 export const getQuickLinks = async (): Promise<QuickLinkType[]> => {
   const { data, error } = await supabase.from('quick_links').select('*').order('order');
   if (error) {
-    if (!error.message?.includes('schema cache') && !error.message?.includes('find the table')) {
-      console.error('Error fetching quick links:', error.message || error);
-    }
+    console.error('Error fetching data:', error.message || error);
     return cachedLinks;
   }
   
@@ -38,9 +36,8 @@ export const getQuickLinks = async (): Promise<QuickLinkType[]> => {
 export const saveQuickLinks = async (links: QuickLinkType[]): Promise<void> => {
   const { error } = await supabase.from('quick_links').upsert(links, { onConflict: 'id' });
   if (error) {
-    if (!error.message?.includes('schema cache') && !error.message?.includes('find the table')) {
-      console.error('Error saving quick links:', error.message || error);
-    }
+    console.error('Error in write:', error.message || error);
+    throw new Error(error.message || 'Write error');
   }
   cachedLinks = [...links];
 };
@@ -48,9 +45,8 @@ export const saveQuickLinks = async (links: QuickLinkType[]): Promise<void> => {
 export const deleteQuickLink = async (id: number): Promise<void> => {
   const { error } = await supabase.from('quick_links').delete().eq('id', id);
   if (error) {
-    if (!error.message?.includes('schema cache') && !error.message?.includes('find the table')) {
-      console.error('Error deleting quick link:', error.message || error);
-    }
+    console.error('Error in write:', error.message || error);
+    throw new Error(error.message || 'Write error');
   }
   cachedLinks = cachedLinks.filter(l => l.id !== id);
 };

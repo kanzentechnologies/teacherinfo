@@ -44,9 +44,7 @@ let cachedServices = [...defaultServices];
 export const getServices = async (): Promise<Service[]> => {
   const { data, error } = await supabase.from('services').select('*').order('order');
   if (error) {
-    if (!error.message?.includes('schema cache') && !error.message?.includes('find the table')) {
-      console.error('Error fetching services:', error.message || error);
-    }
+    console.error('Error fetching data:', error.message || error);
     return cachedServices;
   }
   
@@ -59,9 +57,8 @@ export const getServices = async (): Promise<Service[]> => {
 export const saveServices = async (services: Service[]): Promise<void> => {
   const { error } = await supabase.from('services').upsert(services, { onConflict: 'id' });
   if (error) {
-    if (!error.message?.includes('schema cache') && !error.message?.includes('find the table')) {
-      console.error('Error saving services:', error.message || error);
-    }
+    console.error('Error in write:', error.message || error);
+    throw new Error(error.message || 'Write error');
   }
   cachedServices = [...services];
 };
@@ -69,9 +66,8 @@ export const saveServices = async (services: Service[]): Promise<void> => {
 export const deleteService = async (id: number): Promise<void> => {
   const { error } = await supabase.from('services').delete().eq('id', id);
   if (error) {
-    if (!error.message?.includes('schema cache') && !error.message?.includes('find the table')) {
-      console.error('Error deleting service:', error.message || error);
-    }
+    console.error('Error in write:', error.message || error);
+    throw new Error(error.message || 'Write error');
   }
   cachedServices = cachedServices.filter(s => s.id !== id);
 };

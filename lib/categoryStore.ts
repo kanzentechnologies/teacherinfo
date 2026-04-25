@@ -24,9 +24,7 @@ let cachedCategories = [...defaultCategories];
 export const getCategories = async (): Promise<Category[]> => {
   const { data, error } = await supabase.from('categories').select('*');
   if (error) {
-    if (!error.message?.includes('schema cache') && !error.message?.includes('find the table')) {
-      console.error('Error fetching categories:', error.message || error);
-    }
+    console.error('Error fetching data:', error.message || error);
     return cachedCategories;
   }
   
@@ -54,9 +52,8 @@ export const saveCategories = async (categories: Category[]): Promise<void> => {
   }));
   const { error } = await supabase.from('categories').upsert(mapped, { onConflict: 'id' });
   if (error) {
-    if (!error.message?.includes('schema cache') && !error.message?.includes('find the table')) {
-      console.error('Error saving categories:', error.message || error);
-    }
+    console.error('Error in write:', error.message || error);
+    throw new Error(error.message || 'Write error');
   }
   cachedCategories = [...categories];
 };
@@ -64,9 +61,8 @@ export const saveCategories = async (categories: Category[]): Promise<void> => {
 export const deleteCategory = async (id: string): Promise<void> => {
   const { error } = await supabase.from('categories').delete().eq('id', id);
   if (error) {
-    if (!error.message?.includes('schema cache') && !error.message?.includes('find the table')) {
-      console.error('Error deleting category:', error.message || error);
-    }
+    console.error('Error in write:', error.message || error);
+    throw new Error(error.message || 'Write error');
   }
   cachedCategories = cachedCategories.filter(c => c.id !== id);
 };

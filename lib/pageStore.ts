@@ -19,13 +19,11 @@ let cachedPages = [...defaultPages];
 export const getPages = async (): Promise<Page[]> => {
   const { data, error } = await supabase.from('pages').select('*');
   if (error) {
-    if (!error.message?.includes('schema cache') && !error.message?.includes('find the table')) {
-      console.error('Error fetching pages:', error.message || error);
-    }
+    console.error('Error fetching pages:', error.message || error);
     return cachedPages;
   }
   
-  if (data && data.length > 0) {
+  if (data) {
     cachedPages = data as Page[];
   }
   return cachedPages;
@@ -34,9 +32,8 @@ export const getPages = async (): Promise<Page[]> => {
 export const savePages = async (pages: Page[]): Promise<void> => {
   const { error } = await supabase.from('pages').upsert(pages, { onConflict: 'id' });
   if (error) {
-    if (!error.message?.includes('schema cache') && !error.message?.includes('find the table')) {
-      console.error('Error saving pages:', error.message || error);
-    }
+    console.error('Error saving pages:', error.message || error);
+    throw new Error(error.message || 'Error saving pages');
   }
   cachedPages = [...pages];
 };
@@ -44,9 +41,8 @@ export const savePages = async (pages: Page[]): Promise<void> => {
 export const deletePage = async (id: string): Promise<void> => {
   const { error } = await supabase.from('pages').delete().eq('id', id);
   if (error) {
-    if (!error.message?.includes('schema cache') && !error.message?.includes('find the table')) {
-      console.error('Error deleting page:', error.message || error);
-    }
+    console.error('Error deleting page:', error.message || error);
+    throw new Error(error.message || 'Error deleting page');
   }
   cachedPages = cachedPages.filter(p => p.id !== id);
 };

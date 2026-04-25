@@ -48,12 +48,16 @@ export default function CreatePage() {
       date: new Date().toISOString().split('T')[0],
     };
     
-    const allPages = await getPages();
-    const newPages = [newPage, ...allPages];
-    
-    await savePages(newPages);
-    alert('Page saved successfully!');
-    router.push('/admin/pages');
+    try {
+      const allPages = await getPages();
+      const newPages = [newPage, ...allPages];
+      
+      await savePages(newPages);
+      alert('Page saved successfully!');
+      router.push('/admin/pages');
+    } catch (err: any) {
+      alert('Error saving page: ' + (err.message || 'Unknown error'));
+    }
   };
 
   return (
