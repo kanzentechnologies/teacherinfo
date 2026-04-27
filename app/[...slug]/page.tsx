@@ -11,7 +11,7 @@ export async function generateStaticParams() {
     const items = await getNavItems();
     if (!items || items.length === 0) {
       console.warn('No items found for slug generation in [...slug]');
-      return [];
+      return [{ slug: ['_fallback'] }];
     }
     
     // Create a map to build full paths
@@ -46,7 +46,7 @@ export async function generateStaticParams() {
     return params;
   } catch (e) {
     console.error('Error generating static params in [...slug]:', e);
-    return [];
+    return [{ slug: ['_fallback'] }];
   }
 }
 
