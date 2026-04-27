@@ -67,7 +67,11 @@ export const getNavItemBySlug = async (slugPath: string): Promise<NavItem | null
 };
 
 export const saveNavItems = async (items: NavItem[]): Promise<void> => {
-  const { error } = await supabase.from('nav_items').upsert(items, { onConflict: 'id' });
+  const cleanItems = items.map(item => {
+    const { children, ...rest } = item;
+    return rest;
+  });
+  const { error } = await supabase.from('nav_items').upsert(cleanItems, { onConflict: 'id' });
   if (error) {
     console.error('Error saving nav items:', error.message || error);
     throw new Error(error.message || 'Error occurred');
@@ -75,7 +79,8 @@ export const saveNavItems = async (items: NavItem[]): Promise<void> => {
 };
 
 export const saveNavItem = async (item: NavItem): Promise<void> => {
-  const { error } = await supabase.from('nav_items').upsert([item], { onConflict: 'id' });
+  const { children, ...cleanItem } = item;
+  const { error } = await supabase.from('nav_items').upsert([cleanItem], { onConflict: 'id' });
   if (error) {
     console.error('Error saving nav item:', error.message || error);
     throw new Error(error.message || 'Error occurred');
