@@ -2,15 +2,20 @@ import React from 'react';
 import EditContentClient from './EditContentClient';
 import { getNavItems } from '@/lib/navStore';
 
+export const dynamicParams = false;
+
 export async function generateStaticParams() {
   try {
     const items = await getNavItems();
+    if (!items || items.length === 0) {
+      return [{ id: 'fallback-id' }];
+    }
     return items.map((item) => ({
       id: item.id,
     }));
   } catch (e) {
     console.error('Error generating static params for admin content:', e);
-    return [];
+    return [{ id: 'error-id' }];
   }
 }
 

@@ -1,25 +1,38 @@
-import { getNavItemBySlug, NavItem } from '@/lib/navStore';
+import { getNavItemBySlug, NavItem, getNavItems } from '@/lib/navStore';
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { Link as LinkIcon, Share2, Printer, Calendar } from 'lucide-react';
 import Link from 'next/link';
 
+export const dynamicParams = false;
+
 export async function generateStaticParams() {
-  const { getNavItems } = await import('@/lib/navStore');
   try {
     const items = await getNavItems();
-    if (!items || items.length === 0) return [];
+    if (!items || items.length === 0) {
+      console.warn('No items found for slug generation in [...slug]');
+      return [];
+    }
     
     // Create a map to build full paths
     const map = new Map<string, any>();
     items.forEach(item => map.set(item.id, item));
     
     const params: { slug: string[] }[] = [];
+    
+    // Add a fallback dummy param to ensure generateStaticParams returns at least one item during build
+    // if the fetch failed or database is empty.
+    if (items.length === 0) {
+      params.push({ slug: ['fallback-page'] });
+    }
+
     for (const item of items) {
-      if (item.status === 'Published') {
+      if (item.status === 'Published' && item.slug) {
         const pathSlugs = [];
         let current = item;
-        while (current) {
+        let visited = new Set();
+        while (current && !visited.has(current.id)) {
+          visited.add(current.id);
           pathSlugs.unshift(current.slug);
           if (current.parent_id && map.has(current.parent_id)) {
             current = map.get(current.parent_id);
@@ -32,7 +45,7 @@ export async function generateStaticParams() {
     }
     return params;
   } catch (e) {
-    console.error('Error generating static params:', e);
+    console.error('Error generating static params in [...slug]:', e);
     return [];
   }
 }
