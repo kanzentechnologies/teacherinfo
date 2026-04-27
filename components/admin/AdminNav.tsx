@@ -31,7 +31,7 @@ export function AdminNav() {
       </div>
       <ul className="flex flex-col">
         {adminLinks.map((link) => {
-          const isActive = pathname === link.href || pathname.startsWith(`${link.href}/`);
+          const isActive = pathname === link.href || (pathname && pathname.startsWith(`${link.href}/`));
           return (
             <li key={link.name}>
               <Link

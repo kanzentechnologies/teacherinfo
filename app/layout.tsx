@@ -67,17 +67,11 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
-  other: {
-    'google-adsense-account': 'ca-pub-5843738252123218',
-  },
 };
 
 export default function RootLayout({children}: {children: React.ReactNode}) {
   return (
     <html lang="en" className={notoSans.variable}>
-      <head>
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5843738252123218" crossOrigin="anonymous"></script>
-      </head>
       <body suppressHydrationWarning className="flex flex-col min-h-screen">
         <Header />
         <Navigation />

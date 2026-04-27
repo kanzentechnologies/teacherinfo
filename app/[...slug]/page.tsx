@@ -4,6 +4,39 @@ import { notFound } from 'next/navigation';
 import { Link as LinkIcon, Share2, Printer, Calendar } from 'lucide-react';
 import Link from 'next/link';
 
+export async function generateStaticParams() {
+  const { getNavItems } = await import('@/lib/navStore');
+  try {
+    const items = await getNavItems();
+    if (!items || items.length === 0) return [];
+    
+    // Create a map to build full paths
+    const map = new Map<string, any>();
+    items.forEach(item => map.set(item.id, item));
+    
+    const params: { slug: string[] }[] = [];
+    for (const item of items) {
+      if (item.status === 'Published') {
+        const pathSlugs = [];
+        let current = item;
+        while (current) {
+          pathSlugs.unshift(current.slug);
+          if (current.parent_id && map.has(current.parent_id)) {
+            current = map.get(current.parent_id);
+          } else {
+            break;
+          }
+        }
+        params.push({ slug: pathSlugs });
+      }
+    }
+    return params;
+  } catch (e) {
+    console.error('Error generating static params:', e);
+    return [];
+  }
+}
+
 export async function generateMetadata({ params }: { params: Promise<{ slug: string[] }> }): Promise<Metadata> {
   const { slug } = await params;
   const slugPath = slug.join('/');
