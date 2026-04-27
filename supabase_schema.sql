@@ -97,7 +97,25 @@ CREATE TABLE IF NOT EXISTS public.services (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- 10. Nav Items Table
+CREATE TABLE IF NOT EXISTS public.nav_items (
+    id TEXT PRIMARY KEY,
+    title TEXT NOT NULL,
+    slug TEXT NOT NULL UNIQUE,
+    parent_id TEXT,
+    is_page BOOLEAN NOT NULL DEFAULT true,
+    content TEXT,
+    order_index INTEGER NOT NULL DEFAULT 0,
+    status TEXT NOT NULL DEFAULT 'Published',
+    "externalUrl" TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- Disable Row Level Security (RLS) temporarily to resolve permission denied errors
+ALTER TABLE public.nav_items DISABLE ROW LEVEL SECURITY;
+
+GRANT ALL ON public.nav_items TO anon, authenticated;
+
 ALTER TABLE public.pages DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.posts DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.categories DISABLE ROW LEVEL SECURITY;

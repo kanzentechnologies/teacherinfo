@@ -4,7 +4,6 @@ import './globals.css';
 import { Header } from '@/components/layout/Header';
 import { Navigation } from '@/components/layout/Navigation';
 import { Footer } from '@/components/layout/Footer';
-import { ClientSideAd } from '@/components/ads/ClientSideAd';
 
 const notoSans = Noto_Sans({
   subsets: ['latin'],
@@ -68,18 +67,22 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
+  other: {
+    'google-adsense-account': 'ca-pub-5843738252123218',
+  },
 };
 
 export default function RootLayout({children}: {children: React.ReactNode}) {
   return (
     <html lang="en" className={notoSans.variable}>
+      <head>
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5843738252123218" crossOrigin="anonymous"></script>
+      </head>
       <body suppressHydrationWarning className="flex flex-col min-h-screen">
         <Header />
         <Navigation />
         <main id="main-content" className="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-8 py-6">
-          <ClientSideAd format="leaderboard" wrapperClassName="mb-6" />
           {children}
-          <ClientSideAd format="leaderboard" wrapperClassName="mt-8" />
         </main>
         <Footer />
       </body>

@@ -3,16 +3,16 @@
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { Menu, X, ChevronDown } from 'lucide-react';
-import { getMenu, MenuItem } from '@/lib/menuStore';
+import { getNavTree, NavItem } from '@/lib/navStore';
 
 export function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
-  const [activeDropdown, setActiveDropdown] = useState<number | null>(null);
-  const [navItems, setNavItems] = useState<MenuItem[]>([]);
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [navItems, setNavItems] = useState<NavItem[]>([]);
 
   useEffect(() => {
     const fetchNav = async () => {
-      setNavItems(await getMenu());
+      setNavItems(await getNavTree());
     };
     fetchNav();
     
@@ -35,6 +35,10 @@ export function Navigation() {
     };
   }, []);
 
+  const getUrl = (item: NavItem) => {
+    return item.is_page ? `/${item.slug}` : (item.externalUrl || '#');
+  };
+
   return (
     <nav className="bg-secondary text-white relative z-50">
       <div className="px-4 sm:px-8 flex justify-between items-center md:hidden py-3">
@@ -53,8 +57,9 @@ export function Navigation() {
             onMouseLeave={() => setActiveDropdown(null)}
           >
             <Link 
-              href={item.link}
+              href={getUrl(item)}
               className="block px-4 py-3 hover:bg-primary transition-colors flex items-center justify-between md:justify-start gap-1 font-medium text-sm"
+              target={!item.is_page && item.externalUrl?.startsWith('http') ? '_blank' : '_self'}
             >
               {item.title}
               {item.children && item.children.length > 0 && <ChevronDown size={16} className="opacity-70" />}
@@ -72,8 +77,9 @@ export function Navigation() {
                   {item.children.map((subItem) => (
                     <li key={subItem.id}>
                       <Link 
-                        href={subItem.link}
+                        href={getUrl(subItem)}
                         className="block px-4 py-2 text-sm hover:bg-hover-bg hover:text-primary transition-colors"
+                        target={!subItem.is_page && subItem.externalUrl?.startsWith('http') ? '_blank' : '_self'}
                       >
                         {subItem.title}
                       </Link>

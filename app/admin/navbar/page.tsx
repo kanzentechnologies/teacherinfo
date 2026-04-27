@@ -4,42 +4,60 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { AdminWrapper } from '@/components/admin/AdminWrapper';
 import { PlusCircle, GripVertical, Edit, Trash2, FileEdit } from 'lucide-react';
-import { getMenu, saveMenu, MenuItem } from '@/lib/menuStore';
-import { getPages, Page } from '@/lib/pageStore';
-import { getCategories, Category } from '@/lib/categoryStore';
+import { getNavTree, saveNavItems, deleteNavItem, NavItem, saveNavItem } from '@/lib/navStore';
 import { Reorder } from 'motion/react';
+import { supabase } from '@/lib/supabase';
 
 export default function NavbarManagementPage() {
-  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
-  const [pages, setPages] = useState<Page[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [menuItems, setMenuItems] = useState<NavItem[]>([]);
   const [isAdding, setIsAdding] = useState(false);
-  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
   
   // Form state
   const [title, setTitle] = useState('');
-  const [type, setType] = useState<'internal' | 'external' | 'dropdown' | 'page' | 'category'>('internal');
+  const [customSlug, setCustomSlug] = useState('');
+  const [isPage, setIsPage] = useState(true);
   const [link, setLink] = useState('');
   const [parentId, setParentId] = useState<string>('');
 
   useEffect(() => {
     const fetchAll = async () => {
-      setMenuItems(await getMenu());
-      setPages(await getPages());
-      setCategories(await getCategories());
+      setMenuItems(await getNavTree());
     };
     fetchAll();
   }, []);
 
-  const handleSaveMenu = async (newMenu: MenuItem[]) => {
+  const handleSaveMenu = async (newMenu: NavItem[]) => {
     setMenuItems(newMenu);
-    await saveMenu(newMenu);
-    window.dispatchEvent(new Event('menuUpdated'));
+    
+    // Update order recursively
+    const flatItems: NavItem[] = [];
+    const flatten = (items: NavItem[], currentParentId: string | null) => {
+      items.forEach((item, index) => {
+        flatItems.push({
+          ...item,
+          parent_id: currentParentId,
+          order_index: index,
+          children: undefined // clear nested to save
+        });
+        if (item.children && item.children.length > 0) {
+          flatten(item.children, item.id);
+        }
+      });
+    };
+    flatten(newMenu, null);
+    
+    try {
+      await saveNavItems(flatItems);
+      window.dispatchEvent(new Event('menuUpdated'));
+    } catch (e: any) {
+      alert("Error saving order: " + e.message);
+    }
   };
 
-  const handleReorderChildren = async (parentId: number, newChildren: MenuItem[]) => {
+  const handleReorderChildren = async (parentIdStr: string, newChildren: NavItem[]) => {
     const newMenu = menuItems.map(item => {
-      if (item.id === parentId) {
+      if (item.id === parentIdStr) {
         return { ...item, children: newChildren };
       }
       return item;
@@ -49,30 +67,40 @@ export default function NavbarManagementPage() {
 
   const resetForm = () => {
     setTitle('');
-    setType('internal');
+    setCustomSlug('');
+    setIsPage(true);
     setLink('');
     setParentId('');
     setIsAdding(false);
     setEditingId(null);
   };
 
+  const generateSlug = (t: string) => {
+    return t.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title) return;
 
-    const newItem: MenuItem = {
-      id: editingId || Math.floor(Math.random() * 100000000),
+    const slug = customSlug || generateSlug(title);
+
+    const newItem: NavItem = {
+      id: editingId || (Math.floor(Math.random() * 100000000) + ""),
       title,
-      link: type === 'dropdown' ? '#' : link,
-      type,
-      order: 0,
-      children: type === 'dropdown' ? [] : undefined,
+      slug,
+      parent_id: parentId || null,
+      is_page: isPage,
+      content: editingId ? (menuItems.flatMap(m => [m, ...(m.children || [])]).find(m => m.id === editingId)?.content || '') : '',
+      order_index: 0,
+      status: 'Published',
+      externalUrl: !isPage ? link : undefined,
     };
 
     let newMenu = [...menuItems];
 
     if (editingId) {
-      // Edit existing
+      // Edit existing locally
       let found = false;
       newMenu = newMenu.map(item => {
         if (item.id === editingId) {
@@ -90,58 +118,46 @@ export default function NavbarManagementPage() {
         }
         return item;
       });
+      // also if parent changed, it breaks local tree, so just save and refetch
+      try {
+        await saveNavItem(newItem);
+        setMenuItems(await getNavTree());
+        window.dispatchEvent(new Event('menuUpdated'));
+      } catch (err: any) {
+        alert(err.message);
+      }
     } else {
-      // Add new
-      if (parentId) {
-        const parentIndex = newMenu.findIndex(item => item.id.toString() === parentId);
-        if (parentIndex !== -1) {
-          newItem.order = (newMenu[parentIndex].children?.length || 0) + 1;
-          newMenu[parentIndex].children = [...(newMenu[parentIndex].children || []), newItem];
-        }
-      } else {
-        newItem.order = newMenu.length + 1;
-        newMenu.push(newItem);
+      try {
+        await saveNavItem(newItem);
+        setMenuItems(await getNavTree());
+        window.dispatchEvent(new Event('menuUpdated'));
+      } catch (err: any) {
+        alert(err.message);
       }
     }
 
-    await handleSaveMenu(newMenu);
     resetForm();
   };
 
-  const handleDelete = async (id: number, isChild: boolean, parentId?: number) => {
+  const handleDelete = async (id: string, isChild: boolean, parentIdStr?: string) => {
     if (!confirm('Are you sure you want to delete this item?')) return;
-
-    let newMenu = [...menuItems];
-    if (isChild && parentId) {
-      const parentIndex = newMenu.findIndex(item => item.id === parentId);
-      if (parentIndex !== -1 && newMenu[parentIndex].children) {
-        newMenu[parentIndex].children = newMenu[parentIndex].children!.filter(child => child.id !== id);
-      }
-    } else {
-      newMenu = newMenu.filter(item => item.id !== id);
+    try {
+      await deleteNavItem(id);
+      setMenuItems(await getNavTree());
+      window.dispatchEvent(new Event('menuUpdated'));
+    } catch (e: any) {
+      alert("Error: " + e.message);
     }
-    await handleSaveMenu(newMenu);
   };
 
-  const handleEdit = (item: MenuItem, parentIdStr?: string) => {
+  const handleEdit = (item: NavItem, parentIdStr?: string) => {
     setTitle(item.title);
-    setType(item.type);
-    setLink(item.link);
+    setCustomSlug(item.slug);
+    setIsPage(item.is_page);
+    setLink(item.externalUrl || '');
     setParentId(parentIdStr || '');
     setEditingId(item.id);
     setIsAdding(true);
-  };
-
-  const getEditContentUrl = (item: MenuItem): string | null => {
-    if (item.type === 'page') {
-      const slug = item.link.startsWith('/') ? item.link.slice(1) : item.link;
-      const page = pages.find(p => p.slug === slug || p.slug === `/${slug}`);
-      if (page) return `/admin/pages/${page.id}/edit`;
-    } else if (item.type === 'category') {
-      const slug = item.link.startsWith('/category/') ? item.link.replace('/category/', '') : item.link;
-      return `/admin/posts?category=${slug}`;
-    }
-    return null;
   };
 
   return (
@@ -149,26 +165,26 @@ export default function NavbarManagementPage() {
       <div className="flex flex-col gap-6">
         <div className="bg-white border border-border-main p-4 sm:p-6 flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold text-primary">Navbar Management</h1>
-            <p className="text-sm text-text-muted">Manage main menu and dropdown items</p>
+            <h1 className="text-2xl font-bold text-primary">Content Management</h1>
+            <p className="text-sm text-text-muted">Manage site navigation and automatically generated pages</p>
           </div>
           <button 
             onClick={() => setIsAdding(true)}
             className="bg-accent text-primary font-bold py-2 px-4 rounded-sm hover:bg-yellow-400 transition-colors flex items-center gap-2 text-sm"
           >
             <PlusCircle size={18} />
-            Add Menu Item
+            Add Menu Item / Page
           </button>
         </div>
 
         {isAdding && (
           <div className="bg-white border border-border-main p-6">
             <h2 className="text-lg font-bold text-primary mb-4 border-b border-border-main pb-2">
-              {editingId ? 'Edit Menu Item' : 'Add New Menu Item'}
+              {editingId ? 'Edit Item' : 'Add New Item'}
             </h2>
             <form className="grid grid-cols-1 md:grid-cols-2 gap-4" onSubmit={handleSubmit}>
               <div>
-                <label className="block text-sm font-bold text-primary mb-1">Menu Title</label>
+                <label className="block text-sm font-bold text-primary mb-1">Title</label>
                 <input 
                   type="text" 
                   className="w-full border border-border-main p-2 text-sm" 
@@ -178,80 +194,54 @@ export default function NavbarManagementPage() {
                   required
                 />
               </div>
+              
               <div>
-                <label className="block text-sm font-bold text-primary mb-1">Link Type</label>
+                <label className="block text-sm font-bold text-primary mb-1">Custom Slug (optional)</label>
+                <input 
+                  type="text" 
+                  className="w-full border border-border-main p-2 text-sm" 
+                  placeholder="Auto-generated if left blank" 
+                  value={customSlug}
+                  onChange={(e) => setCustomSlug(e.target.value)}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-primary mb-1">Type</label>
                 <select 
                   className="w-full border border-border-main p-2 text-sm bg-white"
-                  value={type}
-                  onChange={(e) => setType(e.target.value as any)}
+                  value={isPage ? 'page' : 'link'}
+                  onChange={(e) => setIsPage(e.target.value === 'page')}
                 >
-                  <option value="internal">Custom Path (Advanced)</option>
-                  <option value="page">Single Page (e.g. About, Contact)</option>
-                  <option value="category">List of Posts (e.g. Updates, Study Materials)</option>
-                  <option value="external">External Website Link</option>
-                  <option value="dropdown">Dropdown Folder (Groups Links)</option>
+                  <option value="page">Internally Hosted Page (has content)</option>
+                  <option value="link">External / Header Only Link</option>
                 </select>
-                <p className="text-xs text-text-muted mt-1">Select what type of content this menu item should open.</p>
+                <p className="text-xs text-text-muted mt-1">Select whether this is an editable page or just a link to somewhere else.</p>
               </div>
-              {type === 'page' && (
-                <div>
-                  <label className="block text-sm font-bold text-primary mb-1">Select Page</label>
-                  <select 
-                    className="w-full border border-border-main p-2 text-sm bg-white"
-                    value={link}
-                    onChange={(e) => setLink(e.target.value)}
-                    required
-                  >
-                    <option value="">-- Choose a page --</option>
-                    {pages.filter(p => p.status === 'Published').map(p => (
-                      <option key={p.id} value={p.slug.startsWith('/') ? p.slug : `/${p.slug}`}>
-                        {p.title} ({p.slug})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
-              {type === 'category' && (
-                <div>
-                  <label className="block text-sm font-bold text-primary mb-1">Select Category</label>
-                  <select 
-                    className="w-full border border-border-main p-2 text-sm bg-white"
-                    value={link}
-                    onChange={(e) => setLink(e.target.value)}
-                    required
-                  >
-                    <option value="">-- Choose a category --</option>
-                    {categories.map(c => (
-                      <option key={c.id} value={`/category/${c.slug}`}>
-                        {c.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
-              {type !== 'dropdown' && type !== 'page' && type !== 'category' && (
+
+              {!isPage && (
                 <div>
                   <label className="block text-sm font-bold text-primary mb-1">URL / Path</label>
                   <input 
                     type="text" 
                     className="w-full border border-border-main p-2 text-sm" 
-                    placeholder="/about" 
+                    placeholder="https://..." 
                     value={link}
                     onChange={(e) => setLink(e.target.value)}
-                    required
+                    required={!isPage}
                   />
                 </div>
               )}
+
               <div>
                 <label className="block text-sm font-bold text-primary mb-1">Parent Menu (Optional)</label>
                 <select 
                   className="w-full border border-border-main p-2 text-sm bg-white"
                   value={parentId}
                   onChange={(e) => setParentId(e.target.value)}
-                  disabled={type === 'dropdown'}
                 >
                   <option value="">None (Top Level)</option>
-                  {menuItems.filter(item => item.type === 'dropdown').map(item => (
+                  {menuItems.map(item => (
                     <option key={item.id} value={item.id}>{item.title}</option>
                   ))}
                 </select>
@@ -266,7 +256,7 @@ export default function NavbarManagementPage() {
 
         <div className="bg-white border border-border-main">
           <div className="bg-gray-100 border-b border-border-main px-4 py-3">
-            <h3 className="font-bold text-primary">Current Menu Structure</h3>
+            <h3 className="font-bold text-primary">Current Navigation Structure</h3>
             <p className="text-xs text-text-muted">Drag items using the handle to reorder</p>
           </div>
           <div className="p-4">
@@ -281,14 +271,14 @@ export default function NavbarManagementPage() {
                       <div>
                         <span className="font-bold text-text-main">{item.title}</span>
                         <span className="ml-2 text-xs text-text-muted bg-gray-100 px-2 py-0.5 rounded-sm border border-gray-200">
-                          {item.type}
+                          {item.is_page ? 'Internal Page' : 'External Link'}
                         </span>
-                        <div className="text-xs text-secondary mt-0.5">{item.link}</div>
+                        <div className="text-xs text-secondary mt-0.5">/{item.slug}</div>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
-                      {(item.type === 'page' || item.type === 'category') && getEditContentUrl(item) && (
-                        <Link href={getEditContentUrl(item)!} className="text-secondary hover:underline text-sm flex items-center gap-1 font-bold">
+                      {item.is_page && (
+                        <Link href={`/admin/content/${item.id}`} className="text-secondary hover:underline text-sm flex items-center gap-1 font-bold">
                           <FileEdit size={14}/> Edit Content
                         </Link>
                       )}
@@ -313,16 +303,16 @@ export default function NavbarManagementPage() {
                               </div>
                               <div>
                                 <span className="font-bold text-text-main text-sm">{child.title}</span>
-                                <div className="text-xs text-secondary">{child.link}</div>
+                                <div className="text-xs text-secondary">/{child.slug}</div>
                               </div>
                             </div>
                             <div className="flex items-center gap-3">
-                              {(child.type === 'page' || child.type === 'category') && getEditContentUrl(child) && (
-                                <Link href={getEditContentUrl(child)!} className="text-secondary hover:underline text-xs flex items-center gap-1 font-bold">
+                              {child.is_page && (
+                                <Link href={`/admin/content/${child.id}`} className="text-secondary hover:underline text-xs flex items-center gap-1 font-bold">
                                   <FileEdit size={12}/> Edit Content
                                 </Link>
                               )}
-                              <button onClick={() => handleEdit(child, item.id.toString())} className="text-secondary hover:underline text-xs">Edit</button>
+                              <button onClick={() => handleEdit(child, item.id)} className="text-secondary hover:underline text-xs">Edit</button>
                               <button onClick={() => handleDelete(child.id, true, item.id)} className="text-red-600 hover:underline text-xs">Delete</button>
                             </div>
                           </Reorder.Item>
@@ -339,3 +329,4 @@ export default function NavbarManagementPage() {
     </AdminWrapper>
   );
 }
+
