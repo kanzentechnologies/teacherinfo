@@ -3,10 +3,10 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { AdminWrapper } from '@/components/admin/AdminWrapper';
-import { PlusCircle, GripVertical, Edit, Trash2, FileEdit } from 'lucide-react';
+import { PlusCircle, GripVertical, Edit, Trash2 } from 'lucide-react';
 import { getNavTree, saveNavItems, deleteNavItem, NavItem, saveNavItem } from '@/lib/navStore';
 import { Reorder } from 'motion/react';
-import { supabase } from '@/lib/supabase';
+import { PageLinkSelector } from '@/components/admin/PageLinkSelector';
 
 export default function NavbarManagementPage() {
   const [menuItems, setMenuItems] = useState<NavItem[]>([]);
@@ -15,8 +15,6 @@ export default function NavbarManagementPage() {
   
   // Form state
   const [title, setTitle] = useState('');
-  const [customSlug, setCustomSlug] = useState('');
-  const [isPage, setIsPage] = useState(true);
   const [link, setLink] = useState('');
   const [parentId, setParentId] = useState<string>('');
 
@@ -67,8 +65,6 @@ export default function NavbarManagementPage() {
 
   const resetForm = () => {
     setTitle('');
-    setCustomSlug('');
-    setIsPage(true);
     setLink('');
     setParentId('');
     setIsAdding(false);
@@ -83,18 +79,18 @@ export default function NavbarManagementPage() {
     e.preventDefault();
     if (!title) return;
 
-    const slug = customSlug || generateSlug(title);
+    let finalLink = link;
 
     const newItem: NavItem = {
       id: editingId || (Math.floor(Math.random() * 100000000) + ""),
       title,
-      slug,
+      slug: generateSlug(title), // we keep a dummy slug to not break schema constraints
       parent_id: parentId || null,
-      is_page: isPage,
-      content: editingId ? (menuItems.flatMap(m => [m, ...(m.children || [])]).find(m => m.id === editingId)?.content || '') : '',
+      is_page: false,
+      content: '',
       order_index: 0,
       status: 'Published',
-      externalUrl: !isPage ? link : undefined,
+      externalUrl: finalLink,
     };
 
     let newMenu = [...menuItems];
@@ -152,8 +148,6 @@ export default function NavbarManagementPage() {
 
   const handleEdit = (item: NavItem, parentIdStr?: string) => {
     setTitle(item.title);
-    setCustomSlug(item.slug);
-    setIsPage(item.is_page);
     setLink(item.externalUrl || '');
     setParentId(parentIdStr || '');
     setEditingId(item.id);
@@ -165,22 +159,22 @@ export default function NavbarManagementPage() {
       <div className="flex flex-col gap-6">
         <div className="bg-white border border-border-main p-4 sm:p-6 flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold text-primary">Pages & Menu Management</h1>
-            <p className="text-sm text-text-muted">Create internal pages and organize them in the site navigation</p>
+            <h1 className="text-2xl font-bold text-primary">Navigation Menu</h1>
+            <p className="text-sm text-text-muted">Organize links in the site navigation bar.</p>
           </div>
           <button 
             onClick={() => setIsAdding(true)}
             className="bg-accent text-primary font-bold py-2 px-4 rounded-sm hover:bg-yellow-400 transition-colors flex items-center gap-2 text-sm"
           >
             <PlusCircle size={18} />
-            Create Page / Menu Link
+            Create Menu Link
           </button>
         </div>
 
         {isAdding && (
           <div className="bg-white border border-border-main p-6">
             <h2 className="text-lg font-bold text-primary mb-4 border-b border-border-main pb-2">
-              {editingId ? 'Edit Item' : 'Add New Item'}
+              {editingId ? 'Edit Link' : 'Add New Link'}
             </h2>
             <form className="grid grid-cols-1 md:grid-cols-2 gap-4" onSubmit={handleSubmit}>
               <div>
@@ -196,42 +190,12 @@ export default function NavbarManagementPage() {
               </div>
               
               <div>
-                <label className="block text-sm font-bold text-primary mb-1">Custom Slug (optional)</label>
-                <input 
-                  type="text" 
-                  className="w-full border border-border-main p-2 text-sm" 
-                  placeholder="Auto-generated if left blank" 
-                  value={customSlug}
-                  onChange={(e) => setCustomSlug(e.target.value)}
+                <label className="block text-sm font-bold text-primary mb-1">Destination</label>
+                <PageLinkSelector 
+                  value={link}
+                  onChange={setLink}
                 />
               </div>
-
-              <div>
-                <label className="block text-sm font-bold text-primary mb-1">Type</label>
-                <select 
-                  className="w-full border border-border-main p-2 text-sm bg-white"
-                  value={isPage ? 'page' : 'link'}
-                  onChange={(e) => setIsPage(e.target.value === 'page')}
-                >
-                  <option value="page">Internally Hosted Page (has content)</option>
-                  <option value="link">External / Header Only Link</option>
-                </select>
-                <p className="text-xs text-text-muted mt-1">Select whether this is an editable page or just a link to somewhere else.</p>
-              </div>
-
-              {!isPage && (
-                <div>
-                  <label className="block text-sm font-bold text-primary mb-1">URL / Path</label>
-                  <input 
-                    type="text" 
-                    className="w-full border border-border-main p-2 text-sm" 
-                    placeholder="https://..." 
-                    value={link}
-                    onChange={(e) => setLink(e.target.value)}
-                    required={!isPage}
-                  />
-                </div>
-              )}
 
               <div>
                 <label className="block text-sm font-bold text-primary mb-1">Parent Menu (Optional)</label>
@@ -248,7 +212,7 @@ export default function NavbarManagementPage() {
               </div>
               <div className="md:col-span-2 flex justify-end gap-2 mt-2">
                 <button type="button" onClick={resetForm} className="px-4 py-2 border border-border-main text-sm font-bold">Cancel</button>
-                <button type="submit" className="px-4 py-2 bg-primary text-white text-sm font-bold">Save Item</button>
+                <button type="submit" className="px-4 py-2 bg-primary text-white text-sm font-bold">Save Link</button>
               </div>
             </form>
           </div>
@@ -270,18 +234,10 @@ export default function NavbarManagementPage() {
                       </div>
                       <div>
                         <span className="font-bold text-text-main">{item.title}</span>
-                        <span className="ml-2 text-xs text-text-muted bg-gray-100 px-2 py-0.5 rounded-sm border border-gray-200">
-                          {item.is_page ? 'Internal Page' : 'External Link'}
-                        </span>
-                        <div className="text-xs text-secondary mt-0.5">/{item.slug}</div>
+                        <div className="text-xs text-secondary mt-0.5">{item.externalUrl || `/${item.slug}`}</div>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
-                      {item.is_page && (
-                        <Link href={`/admin/content/${item.id}`} className="text-secondary hover:underline text-sm flex items-center gap-1 font-bold">
-                          <FileEdit size={14}/> Edit Content
-                        </Link>
-                      )}
                       <button onClick={() => handleEdit(item)} className="text-secondary hover:underline text-sm flex items-center gap-1"><Edit size={14}/> Edit</button>
                       <button onClick={() => handleDelete(item.id, false)} className="text-red-600 hover:underline text-sm flex items-center gap-1"><Trash2 size={14}/> Delete</button>
                     </div>
@@ -303,15 +259,10 @@ export default function NavbarManagementPage() {
                               </div>
                               <div>
                                 <span className="font-bold text-text-main text-sm">{child.title}</span>
-                                <div className="text-xs text-secondary">/{child.slug}</div>
+                                <div className="text-xs text-secondary">{child.externalUrl || `/${child.slug}`}</div>
                               </div>
                             </div>
                             <div className="flex items-center gap-3">
-                              {child.is_page && (
-                                <Link href={`/admin/content/${child.id}`} className="text-secondary hover:underline text-xs flex items-center gap-1 font-bold">
-                                  <FileEdit size={12}/> Edit Content
-                                </Link>
-                              )}
                               <button onClick={() => handleEdit(child, item.id)} className="text-secondary hover:underline text-xs">Edit</button>
                               <button onClick={() => handleDelete(child.id, true, item.id)} className="text-red-600 hover:underline text-xs">Delete</button>
                             </div>

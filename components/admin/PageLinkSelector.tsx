@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { getNavItems, NavItem } from '@/lib/navStore';
+import { getPages, PageItem } from '@/lib/pageStore';
 import { Link as LinkIcon, ExternalLink } from 'lucide-react';
 
 interface PageLinkSelectorProps {
@@ -11,27 +11,29 @@ interface PageLinkSelectorProps {
 }
 
 export function PageLinkSelector({ value, onChange, label = "Destination" }: PageLinkSelectorProps) {
-  const [pages, setPages] = useState<NavItem[]>([]);
+  const [pages, setPages] = useState<PageItem[]>([]);
   const [mode, setMode] = useState<'internal' | 'external'>(
     value.startsWith('http') || value.startsWith('www') || value === '' ? 'external' : 'internal'
   );
 
   useEffect(() => {
     const fetchPages = async () => {
-      const allItems = await getNavItems();
-      setPages(allItems.filter(item => item.is_page));
+      const allItems = await getPages();
+      setPages(allItems);
     };
     fetchPages();
   }, []);
 
   // Update mode if value changes externally (e.g. when editing)
-  useEffect(() => {
+  const [prevValue, setPrevValue] = useState(value);
+  if (value !== prevValue) {
+    setPrevValue(value);
     if (value && !value.startsWith('http') && !value.startsWith('www') && value.startsWith('/')) {
       setMode('internal');
     } else if (value.startsWith('http') || value.startsWith('www')) {
       setMode('external');
     }
-  }, [value]);
+  }
 
   const handleInternalChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     onChange(e.target.value);

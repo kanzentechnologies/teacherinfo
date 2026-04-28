@@ -1,12 +1,12 @@
 import React from 'react';
 import EditContentClient from './EditContentClient';
-import { getNavItems } from '@/lib/navStore';
+import { getPages } from '@/lib/pageStore';
 
 export const dynamicParams = false;
 
 export async function generateStaticParams() {
   try {
-    const items = await getNavItems();
+    const items = await getPages();
     if (!items || items.length === 0) {
       return [{ id: 'fallback-id' }];
     }

@@ -4,19 +4,18 @@ import React, { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 import { AdminWrapper } from '@/components/admin/AdminWrapper';
 import RichTextEditor from '@/components/admin/RichTextEditor';
-import { getNavItems, saveNavItem, NavItem } from '@/lib/navStore';
+import { getPageById, savePage, PageItem } from '@/lib/pageStore';
 
 export default function EditContentClient({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
   const { id } = use(params);
-  const [item, setItem] = useState<NavItem | null>(null);
+  const [item, setItem] = useState<PageItem | null>(null);
   const [content, setContent] = useState('');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchItem = async () => {
-      const items = await getNavItems();
-      const found = items.find(i => i.id === id);
+      const found = await getPageById(id);
       if (found) {
         setItem(found);
         setContent(found.content || '');
@@ -29,9 +28,9 @@ export default function EditContentClient({ params }: { params: Promise<{ id: st
   const handleSave = async () => {
     if (!item) return;
     try {
-      await saveNavItem({ ...item, content });
+      await savePage({ ...item, content });
       alert('Content saved successfully!');
-      router.push('/admin/navbar');
+      router.push('/admin/pages');
     } catch (err: any) {
       alert('Error saving content: ' + err.message);
     }

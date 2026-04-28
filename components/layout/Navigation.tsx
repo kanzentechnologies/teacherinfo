@@ -36,7 +36,9 @@ export function Navigation() {
   }, []);
 
   const getUrl = (item: NavItem) => {
-    return item.is_page ? `/${item.slug}` : (item.externalUrl || '#');
+    // We moved to just using externalUrl for all links. 
+    // Fallback to slug for any legacy items not yet modified.
+    return item.externalUrl || `/${item.slug}`;
   };
 
   return (
@@ -59,7 +61,7 @@ export function Navigation() {
             <Link 
               href={getUrl(item)}
               className="block px-4 py-3 hover:bg-primary transition-colors flex items-center justify-between md:justify-start gap-1 font-medium text-sm"
-              target={!item.is_page && item.externalUrl?.startsWith('http') ? '_blank' : '_self'}
+              target={getUrl(item).startsWith('http') ? '_blank' : '_self'}
             >
               {item.title}
               {item.children && item.children.length > 0 && <ChevronDown size={16} className="opacity-70" />}
@@ -79,7 +81,7 @@ export function Navigation() {
                       <Link 
                         href={getUrl(subItem)}
                         className="block px-4 py-2 text-sm hover:bg-hover-bg hover:text-primary transition-colors"
-                        target={!subItem.is_page && subItem.externalUrl?.startsWith('http') ? '_blank' : '_self'}
+                        target={getUrl(subItem).startsWith('http') ? '_blank' : '_self'}
                       >
                         {subItem.title}
                       </Link>
