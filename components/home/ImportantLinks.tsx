@@ -10,19 +10,31 @@ export function ImportantLinks({ links }: { links: ImportantLink[] }) {
         <h3 className="font-bold text-primary">Important Links</h3>
       </div>
       <ul className="divide-y divide-border-main">
-        {links.slice(0, 8).map((link) => (
-          <li key={link.id}>
-            <a 
-              href={link.link} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="flex items-center justify-between px-4 py-3 hover:bg-hover-bg transition-colors text-sm text-text-main hover:text-primary"
-            >
-              <span>{link.title}</span>
-              <ExternalLink size={14} className="text-text-muted" />
-            </a>
-          </li>
-        ))}
+        {links.slice(0, 8).map((link) => {
+          const isInternal = link.link.startsWith('/');
+          return (
+            <li key={link.id}>
+              {isInternal ? (
+                <Link 
+                  href={link.link}
+                  className="flex items-center justify-between px-4 py-3 hover:bg-hover-bg transition-colors text-sm text-text-main hover:text-primary font-medium"
+                >
+                  <span>{link.title}</span>
+                </Link>
+              ) : (
+                <a 
+                  href={link.link} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between px-4 py-3 hover:bg-hover-bg transition-colors text-sm text-text-main hover:text-primary"
+                >
+                  <span>{link.title}</span>
+                  <ExternalLink size={14} className="text-text-muted" />
+                </a>
+              )}
+            </li>
+          );
+        })}
       </ul>
     </div>
   );

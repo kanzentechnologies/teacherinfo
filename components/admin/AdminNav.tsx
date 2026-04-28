@@ -6,13 +6,13 @@ import { supabase } from '@/lib/supabase';
 
 const adminLinks = [
   { name: 'Dashboard', href: '/admin/dashboard' },
-  { name: 'Content Management', href: '/admin/navbar' },
+  { name: 'Pages & Menu', href: '/admin/navbar' },
+  { name: 'Services', href: '/admin/services' },
+  { name: 'Icon Links (Home)', href: '/admin/homepage-quick-links' },
+  { name: 'Sidebar Links', href: '/admin/important-links' },
   { name: 'Announcements', href: '/admin/announcements' },
-  { name: 'Contact Management', href: '/admin/contact' },
-  { name: 'Useful Links', href: '/admin/quick-links' },
-  { name: 'Homepage Icons', href: '/admin/homepage-quick-links' },
-  { name: 'Service Management', href: '/admin/services' },
-  { name: 'Important Links', href: '/admin/important-links' },
+  { name: 'Contact Info', href: '/admin/contact' },
+  { name: 'File Manager', href: '/admin/files' },
 ];
 
 export function AdminNav() {

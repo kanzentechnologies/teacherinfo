@@ -6,6 +6,8 @@ import { PlusCircle, Edit, Trash2, GripVertical } from 'lucide-react';
 import { getImportantLinks, saveImportantLinks, deleteImportantLink, ImportantLink } from '@/lib/importantLinkStore';
 import { Reorder } from 'motion/react';
 
+import { PageLinkSelector } from '@/components/admin/PageLinkSelector';
+
 export default function ImportantLinksManagementPage() {
   const [links, setLinks] = useState<ImportantLink[]>([]);
   const [isAdding, setIsAdding] = useState(false);
@@ -105,14 +107,10 @@ export default function ImportantLinksManagementPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-bold text-primary mb-1">URL / Link</label>
-                <input 
-                  type="text" 
-                  className="w-full border border-border-main p-2 text-sm" 
-                  placeholder="https://..." 
+                <PageLinkSelector 
                   value={linkUrl}
-                  onChange={(e) => setLinkUrl(e.target.value)}
-                  required
+                  onChange={setLinkUrl}
+                  label="URL / Link"
                 />
               </div>
               <div className="flex justify-end gap-2 mt-2">

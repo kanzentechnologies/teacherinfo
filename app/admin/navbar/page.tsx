@@ -165,15 +165,15 @@ export default function NavbarManagementPage() {
       <div className="flex flex-col gap-6">
         <div className="bg-white border border-border-main p-4 sm:p-6 flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold text-primary">Content Management</h1>
-            <p className="text-sm text-text-muted">Manage site navigation and automatically generated pages</p>
+            <h1 className="text-2xl font-bold text-primary">Pages & Menu Management</h1>
+            <p className="text-sm text-text-muted">Create internal pages and organize them in the site navigation</p>
           </div>
           <button 
             onClick={() => setIsAdding(true)}
             className="bg-accent text-primary font-bold py-2 px-4 rounded-sm hover:bg-yellow-400 transition-colors flex items-center gap-2 text-sm"
           >
             <PlusCircle size={18} />
-            Add Menu Item / Page
+            Create Page / Menu Link
           </button>
         </div>
 

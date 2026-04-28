@@ -5,27 +5,51 @@ import { AdminWrapper } from '@/components/admin/AdminWrapper';
 import { PlusCircle, Edit, Trash2, GripVertical } from 'lucide-react';
 import { getServices, saveServices, deleteService, Service } from '@/lib/serviceStore';
 import { Reorder } from 'motion/react';
+import { PageLinkSelector } from '@/components/admin/PageLinkSelector';
+import { getNavItemBySlug, saveNavItem, NavItem } from '@/lib/navStore';
+import RichTextEditor from '@/components/admin/RichTextEditor';
 
 export default function ServiceManagementPage() {
   const [services, setServices] = useState<Service[]>([]);
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
 
-  // Form state
+  // Form state for cards
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [link, setLink] = useState('');
 
+  // Page Intro state
+  const [pageItem, setPageItem] = useState<NavItem | null>(null);
+  const [pageContent, setPageContent] = useState('');
+  const [isEditingIntro, setIsEditingIntro] = useState(false);
+
   useEffect(() => {
-    const fetchServices = async () => {
+    const fetchData = async () => {
       setServices(await getServices());
+      const pItem = await getNavItemBySlug('services');
+      if (pItem) {
+        setPageItem(pItem);
+        setPageContent(pItem.content || '');
+      }
     };
-    fetchServices();
+    fetchData();
   }, []);
 
   const handleSaveServices = async (newServices: Service[]) => {
     setServices(newServices);
     await saveServices(newServices);
+  };
+
+  const handleSaveIntro = async () => {
+    if (!pageItem) return;
+    try {
+      await saveNavItem({ ...pageItem, content: pageContent });
+      alert('Services page intro updated!');
+      setIsEditingIntro(false);
+    } catch (err: any) {
+      alert('Error: ' + err.message);
+    }
   };
 
   const resetForm = () => {
@@ -80,15 +104,64 @@ export default function ServiceManagementPage() {
         <div className="bg-white border border-border-main p-4 sm:p-6 flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-bold text-primary">Service Management</h1>
-            <p className="text-sm text-text-muted">Manage the Official Services section</p>
+            <p className="text-sm text-text-muted">Manage the Official Services page and homepage cards</p>
           </div>
           <button 
             onClick={() => setIsAdding(true)}
             className="bg-accent text-primary font-bold py-2 px-4 rounded-sm hover:bg-yellow-400 transition-colors flex items-center gap-2 text-sm"
           >
             <PlusCircle size={18} />
-            Add Service
+            Add Service Card
           </button>
+        </div>
+
+        {/* Services Page Intro Content Section */}
+        <div className="bg-white border border-border-main">
+          <div className="bg-gray-100 border-b border-border-main px-4 py-3 flex justify-between items-center">
+            <div>
+              <h3 className="font-bold text-primary">Services Page: Intro Content</h3>
+              <p className="text-xs text-text-muted">This text appears at the top of the /services page</p>
+            </div>
+            {!isEditingIntro ? (
+              <button 
+                onClick={() => setIsEditingIntro(true)}
+                className="text-secondary hover:underline text-sm font-bold flex items-center gap-1"
+              >
+                <Edit size={14} /> Edit Intro Text
+              </button>
+            ) : (
+              <div className="flex gap-2">
+                <button 
+                  onClick={() => setIsEditingIntro(false)}
+                  className="text-text-muted hover:underline text-sm font-bold"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={handleSaveIntro}
+                  className="text-primary bg-accent px-3 py-1 rounded-sm text-sm font-bold"
+                >
+                  Save Changes
+                </button>
+              </div>
+            )}
+          </div>
+          <div className="p-4">
+            {isEditingIntro ? (
+              <div className="border border-border-main min-h-[300px]">
+                <RichTextEditor 
+                  value={pageContent}
+                  onChange={setPageContent}
+                  placeholder="Enter the introductory text for the services page..."
+                />
+              </div>
+            ) : (
+              <div 
+                className="prose prose-sm max-w-none text-text-main line-clamp-3 bg-gray-50 p-3"
+                dangerouslySetInnerHTML={{ __html: pageContent || '<p className="italic text-text-muted">No intro content set. Click edit to add text.</p>' }}
+              />
+            )}
+          </div>
         </div>
 
         {isAdding && (
@@ -119,14 +192,10 @@ export default function ServiceManagementPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-bold text-primary mb-1">URL / Link</label>
-                <input 
-                  type="text" 
-                  className="w-full border border-border-main p-2 text-sm" 
-                  placeholder="https://..." 
+                <PageLinkSelector 
                   value={link}
-                  onChange={(e) => setLink(e.target.value)}
-                  required
+                  onChange={setLink}
+                  label="URL / Link"
                 />
               </div>
               <div className="flex justify-end gap-2 mt-2">

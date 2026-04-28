@@ -6,6 +6,7 @@ import { PlusCircle, Edit, Trash2, GripVertical } from 'lucide-react';
 import { getQuickLinks, saveQuickLinks, QuickLinkType, defaultQuickLinks, deleteQuickLink } from '@/lib/quickLinkStore';
 import { Reorder } from 'motion/react';
 import * as Icons from 'lucide-react';
+import { PageLinkSelector } from '@/components/admin/PageLinkSelector';
 
 const iconList = ['Calculator', 'FileText', 'Monitor', 'ClipboardList', 'BookOpen', 'Briefcase', 'Link', 'ExternalLink', 'Info', 'File', 'Folder', 'User', 'Settings'];
 const colorList = ['blue', 'green', 'purple', 'orange', 'teal', 'rose', 'gray'];
@@ -116,14 +117,10 @@ export default function HomepageQuickLinksPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-bold text-primary mb-1">URL / Link</label>
-                <input 
-                  type="text" 
-                  className="w-full border border-border-main p-2 text-sm" 
-                  placeholder="https://... or /category/..." 
+                <PageLinkSelector 
                   value={linkUrl}
-                  onChange={(e) => setLinkUrl(e.target.value)}
-                  required
+                  onChange={setLinkUrl}
+                  label="URL / Link"
                 />
               </div>
               <div>
