@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 import { getServices } from '@/lib/serviceStore';
-import { getNavItemBySlug } from '@/lib/navStore';
+import { getPageBySlug } from '@/lib/pageStore';
 import Link from 'next/link';
 import { ExternalLink, Briefcase } from 'lucide-react';
 
@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default async function ServicesPage() {
   const services = await getServices();
-  const pageContent = await getNavItemBySlug('services');
+  const pageContent = await getPageBySlug('services');
 
   return (
     <div className="bg-white border border-border-main p-6 md:p-10">

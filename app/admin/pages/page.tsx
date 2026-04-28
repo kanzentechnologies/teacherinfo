@@ -6,6 +6,8 @@ import { AdminWrapper } from '@/components/admin/AdminWrapper';
 import { PlusCircle, Edit, Trash2, FileEdit } from 'lucide-react';
 import { getPages, savePage, deletePage, PageItem } from '@/lib/pageStore';
 
+const generateId = () => Date.now().toString();
+
 export default function PagesManagement() {
   const [pages, setPages] = useState<PageItem[]>([]);
   const [isAdding, setIsAdding] = useState(false);
@@ -34,7 +36,7 @@ export default function PagesManagement() {
     const slug = customSlug || generateSlug(title);
 
     const newPage: PageItem = {
-      id: editingId || Date.now().toString(),
+      id: editingId || generateId(),
       title,
       slug,
       content: '', // Edited separately

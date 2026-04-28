@@ -8,6 +8,8 @@ import { Reorder } from 'motion/react';
 
 import { PageLinkSelector } from '@/components/admin/PageLinkSelector';
 
+const generateId = () => Date.now();
+
 export default function ImportantLinksManagementPage() {
   const [links, setLinks] = useState<ImportantLink[]>([]);
   const [isAdding, setIsAdding] = useState(false);
@@ -41,7 +43,7 @@ export default function ImportantLinksManagementPage() {
     if (!title || !linkUrl) return;
 
     const newLinkItem: ImportantLink = {
-      id: editingId || Date.now(),
+      id: editingId || generateId(),
       title,
       link: linkUrl,
       order: editingId ? (links.find(l => l.id === editingId)?.order || 0) : links.length + 1,

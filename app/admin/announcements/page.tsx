@@ -5,6 +5,8 @@ import { AdminWrapper } from '@/components/admin/AdminWrapper';
 import { PlusCircle, Edit, Trash2 } from 'lucide-react';
 import { Announcement, getAnnouncements, saveAnnouncement, deleteAnnouncement } from '@/lib/announcementStore';
 
+const generateId = () => Date.now();
+
 export default function AnnouncementsManagementPage() {
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [isAdding, setIsAdding] = useState(false);
@@ -66,7 +68,7 @@ export default function AnnouncementsManagementPage() {
     if (editingId) {
       payload.id = editingId;
     } else {
-      payload.id = Date.now();
+      payload.id = generateId();
     }
 
     try {

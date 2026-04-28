@@ -8,6 +8,8 @@ import { Reorder } from 'motion/react';
 import * as Icons from 'lucide-react';
 import { PageLinkSelector } from '@/components/admin/PageLinkSelector';
 
+const generateId = () => Date.now();
+
 const iconList = ['Calculator', 'FileText', 'Monitor', 'ClipboardList', 'BookOpen', 'Briefcase', 'Link', 'ExternalLink', 'Info', 'File', 'Folder', 'User', 'Settings'];
 const colorList = ['blue', 'green', 'purple', 'orange', 'teal', 'rose', 'gray'];
 
@@ -47,7 +49,7 @@ export default function HomepageQuickLinksPage() {
     if (!title || !linkUrl) return;
 
     const newLinkItem: QuickLinkType = {
-      id: editingId || Date.now(),
+      id: editingId || generateId(),
       title,
       link: linkUrl,
       icon,

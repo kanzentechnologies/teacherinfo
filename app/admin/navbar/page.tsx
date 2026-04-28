@@ -8,6 +8,8 @@ import { getNavTree, saveNavItems, deleteNavItem, NavItem, saveNavItem } from '@
 import { Reorder } from 'motion/react';
 import { PageLinkSelector } from '@/components/admin/PageLinkSelector';
 
+const generateId = () => Date.now().toString();
+
 export default function NavbarManagementPage() {
   const [menuItems, setMenuItems] = useState<NavItem[]>([]);
   const [isAdding, setIsAdding] = useState(false);
@@ -82,7 +84,7 @@ export default function NavbarManagementPage() {
     let finalLink = link;
 
     const newItem: NavItem = {
-      id: editingId || Date.now().toString(),
+      id: editingId || generateId(),
       title,
       slug: generateSlug(title), // we keep a dummy slug to not break schema constraints
       parent_id: parentId || null,
