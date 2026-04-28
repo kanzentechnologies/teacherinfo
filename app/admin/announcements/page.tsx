@@ -66,7 +66,7 @@ export default function AnnouncementsManagementPage() {
     if (editingId) {
       payload.id = editingId;
     } else {
-      payload.id = Math.floor(Math.random() * 100000000);
+      payload.id = Date.now();
     }
 
     try {

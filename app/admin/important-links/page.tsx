@@ -41,7 +41,7 @@ export default function ImportantLinksManagementPage() {
     if (!title || !linkUrl) return;
 
     const newLinkItem: ImportantLink = {
-      id: editingId || Math.floor(Math.random() * 100000000),
+      id: editingId || Date.now(),
       title,
       link: linkUrl,
       order: editingId ? (links.find(l => l.id === editingId)?.order || 0) : links.length + 1,

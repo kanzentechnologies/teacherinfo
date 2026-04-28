@@ -82,7 +82,7 @@ export default function NavbarManagementPage() {
     let finalLink = link;
 
     const newItem: NavItem = {
-      id: editingId || (Math.floor(Math.random() * 100000000) + ""),
+      id: editingId || Date.now().toString(),
       title,
       slug: generateSlug(title), // we keep a dummy slug to not break schema constraints
       parent_id: parentId || null,

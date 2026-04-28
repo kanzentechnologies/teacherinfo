@@ -65,7 +65,7 @@ export default function ServiceManagementPage() {
     if (!title || !link) return;
 
     const newService: Service = {
-      id: editingId || Math.floor(Math.random() * 100000000),
+      id: editingId || Date.now(),
       title,
       description,
       link,

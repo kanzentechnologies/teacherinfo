@@ -47,7 +47,7 @@ export default function HomepageQuickLinksPage() {
     if (!title || !linkUrl) return;
 
     const newLinkItem: QuickLinkType = {
-      id: editingId || Math.floor(Math.random() * 100000000),
+      id: editingId || Date.now(),
       title,
       link: linkUrl,
       icon,

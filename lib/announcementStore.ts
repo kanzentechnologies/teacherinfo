@@ -42,7 +42,7 @@ export const saveAnnouncement = async (announcement: Partial<Announcement>): Pro
       cachedAnnouncements[existingIndex] = { ...cachedAnnouncements[existingIndex], ...announcement } as Announcement;
     } else {
       cachedAnnouncements.unshift({
-        id: announcement.id || Math.floor(Math.random() * 100000),
+        id: announcement.id || Date.now(),
         title: announcement.title || '',
         date: announcement.date || new Date().toISOString().split('T')[0],
         priority: announcement.priority || 'Normal',

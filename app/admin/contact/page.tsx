@@ -47,7 +47,7 @@ export default function ContactManagementPage() {
     if (!name || !email) return;
 
     const newContact: Contact = {
-      id: editingId || Math.floor(Math.random() * 100000000),
+      id: editingId || Date.now(),
       name,
       designation,
       email,

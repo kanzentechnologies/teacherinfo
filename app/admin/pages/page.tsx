@@ -15,13 +15,13 @@ export default function PagesManagement() {
   const [title, setTitle] = useState('');
   const [customSlug, setCustomSlug] = useState('');
 
-  useEffect(() => {
-    fetchPages();
-  }, []);
-
   const fetchPages = async () => {
     setPages(await getPages());
   };
+
+  useEffect(() => {
+    fetchPages();
+  }, []);
 
   const generateSlug = (t: string) => {
     return t.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
@@ -34,7 +34,7 @@ export default function PagesManagement() {
     const slug = customSlug || generateSlug(title);
 
     const newPage: PageItem = {
-      id: editingId || (Math.floor(Math.random() * 100000000) + ""),
+      id: editingId || Date.now().toString(),
       title,
       slug,
       content: '', // Edited separately
