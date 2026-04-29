@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS public.nav_items (
     content TEXT,
     order_index INTEGER NOT NULL DEFAULT 0,
     status TEXT NOT NULL DEFAULT 'Published',
-    "externalUrl" TEXT,
+    "external_url" TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 

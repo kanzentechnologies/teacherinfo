@@ -51,6 +51,14 @@ export function Navigation() {
       </div>
 
       <ul className={`${isOpen ? 'block' : 'hidden'} md:flex flex-col md:flex-row w-full`}>
+        <li className="relative group border-b md:border-b-0 border-primary/20 md:border-r border-primary/30 last:border-r-0">
+          <Link 
+            href="/"
+            className="block px-4 py-3 hover:bg-primary transition-colors flex items-center justify-between md:justify-start gap-1 font-medium text-sm"
+          >
+            Home
+          </Link>
+        </li>
         {navItems.map((item) => (
           <li 
             key={item.id} 
