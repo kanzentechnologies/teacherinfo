@@ -4,9 +4,10 @@ import Link from 'next/link';
 import { Bell, Calendar, ChevronLeft } from 'lucide-react';
 import { notFound } from 'next/navigation';
 
-export default async function AnnouncementDetailPage({ params }: { params: { id: string } }) {
+export default async function AnnouncementDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = await params;
   const announcements = await getAnnouncements();
-  const announcement = announcements.find(a => a.id.toString() === params.id);
+  const announcement = announcements.find(a => a.id.toString() === resolvedParams.id);
 
   if (!announcement || !announcement.content) {
     notFound();
