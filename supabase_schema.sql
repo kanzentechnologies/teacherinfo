@@ -23,6 +23,7 @@ CREATE TABLE IF NOT EXISTS public.announcements (
     priority TEXT NOT NULL DEFAULT 'Normal',
     status TEXT NOT NULL DEFAULT 'Active',
     link TEXT,
+    content TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 

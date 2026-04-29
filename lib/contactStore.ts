@@ -36,11 +36,13 @@ let cachedContacts = [...defaultContacts];
 export const getContacts = async (): Promise<Contact[]> => {
   const { data, error } = await supabase.from('contacts').select('*').order('order');
   if (error) {
-    console.error('Error fetching data:', error.message || error);
+    if (!error.message?.includes('schema cache') && !error.message?.includes('find the table')) {
+      console.error('Error fetching data:', error.message || error);
+    }
     return cachedContacts;
   }
   
-  if (data && data.length > 0) {
+  if (data) {
     cachedContacts = data.map((row: any) => ({
       id: row.id,
       name: row.name,

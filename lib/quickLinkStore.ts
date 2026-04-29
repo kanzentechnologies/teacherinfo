@@ -23,11 +23,13 @@ let cachedLinks = [...defaultQuickLinks];
 export const getQuickLinks = async (): Promise<QuickLinkType[]> => {
   const { data, error } = await supabase.from('quick_links').select('*').order('order');
   if (error) {
-    console.error('Error fetching data:', error.message || error);
+    if (!error.message?.includes('schema cache') && !error.message?.includes('find the table')) {
+      console.error('Error fetching data:', error.message || error);
+    }
     return cachedLinks;
   }
   
-  if (data && data.length > 0) {
+  if (data) {
     cachedLinks = data as QuickLinkType[];
   }
   return cachedLinks;

@@ -22,11 +22,13 @@ let cachedAnnouncements = [...defaultAnnouncements];
 export const getAnnouncements = async (): Promise<Announcement[]> => {
   const { data, error } = await supabase.from('announcements').select('*').order('id', { ascending: false });
   if (error) {
-    console.error('Error fetching data:', error.message || error);
+    if (!error.message?.includes('schema cache') && !error.message?.includes('find the table')) {
+      console.error('Error fetching data:', error.message || error);
+    }
     return cachedAnnouncements;
   }
   
-  if (data && data.length > 0) {
+  if (data) {
     cachedAnnouncements = data as Announcement[];
   }
   return cachedAnnouncements;
@@ -35,32 +37,32 @@ export const getAnnouncements = async (): Promise<Announcement[]> => {
 export const saveAnnouncement = async (announcement: Partial<Announcement>): Promise<void> => {
   const { error } = await supabase.from('announcements').upsert([announcement], { onConflict: 'id' });
   if (error) {
-    console.error('Error fetching data:', error.message || error);
-    
-    // Fallback to local cache
-    const existingIndex = cachedAnnouncements.findIndex(a => a.id === announcement.id);
-    if (existingIndex >= 0) {
-      cachedAnnouncements[existingIndex] = { ...cachedAnnouncements[existingIndex], ...announcement } as Announcement;
-    } else {
-      cachedAnnouncements.unshift({
-        id: announcement.id || Date.now(),
-        title: announcement.title || '',
-        date: announcement.date || new Date().toISOString().split('T')[0],
-        priority: announcement.priority || 'Normal',
-        status: announcement.status || 'Active',
-        link: announcement.link,
-        content: announcement.content
-      });
-    }
+    console.error('Error in write:', error.message || error);
+    throw new Error(error.message || 'Write error');
+  }
+  
+  // Update local cache
+  const existingIndex = cachedAnnouncements.findIndex(a => a.id === announcement.id);
+  if (existingIndex >= 0) {
+    cachedAnnouncements[existingIndex] = { ...cachedAnnouncements[existingIndex], ...announcement } as Announcement;
+  } else {
+    cachedAnnouncements.unshift({
+      id: announcement.id || Date.now(),
+      title: announcement.title || '',
+      date: announcement.date || new Date().toISOString().split('T')[0],
+      priority: announcement.priority || 'Normal',
+      status: announcement.status || 'Active',
+      link: announcement.link,
+      content: announcement.content
+    });
   }
 };
 
 export const deleteAnnouncement = async (id: number): Promise<void> => {
   const { error } = await supabase.from('announcements').delete().eq('id', id);
   if (error) {
-    console.error('Error fetching data:', error.message || error);
-    
-    // Fallback to local cache
+    console.error('Error in delete:', error.message || error);
+    throw new Error(error.message || 'Delete error');
   }
   cachedAnnouncements = cachedAnnouncements.filter(a => a.id !== id);
 };

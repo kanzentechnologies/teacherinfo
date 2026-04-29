@@ -44,11 +44,13 @@ let cachedServices = [...defaultServices];
 export const getServices = async (): Promise<Service[]> => {
   const { data, error } = await supabase.from('services').select('*').order('order');
   if (error) {
-    console.error('Error fetching data:', error.message || error);
+    if (!error.message?.includes('schema cache') && !error.message?.includes('find the table')) {
+      console.error('Error fetching data:', error.message || error);
+    }
     return cachedServices;
   }
   
-  if (data && data.length > 0) {
+  if (data) {
     cachedServices = data as Service[];
   }
   return cachedServices;
