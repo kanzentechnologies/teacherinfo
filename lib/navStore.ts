@@ -23,7 +23,13 @@ export const getNavItems = async (): Promise<NavItem[]> => {
     }
     return [];
   }
-  return data as NavItem[];
+  if (data && data.length > 0) {
+    return data.map((item: any) => ({
+      ...item,
+      externalUrl: item.external_url
+    })) as NavItem[];
+  }
+  return [];
 };
 
 export const getNavTree = async (): Promise<NavItem[]> => {
@@ -63,13 +69,22 @@ export const getNavItemBySlug = async (slugPath: string): Promise<NavItem | null
     }
     return null;
   }
-  return data as NavItem;
+  if (data) {
+    return {
+      ...data,
+      externalUrl: data.external_url
+    } as NavItem;
+  }
+  return null;
 };
 
 export const saveNavItems = async (items: NavItem[]): Promise<void> => {
   const cleanItems = items.map(item => {
-    const { children, ...rest } = item;
-    return rest;
+    const { children, externalUrl, ...rest } = item;
+    return {
+      ...rest,
+      external_url: externalUrl
+    };
   });
   const { error } = await supabase.from('nav_items').upsert(cleanItems, { onConflict: 'id' });
   if (error) {
@@ -79,8 +94,12 @@ export const saveNavItems = async (items: NavItem[]): Promise<void> => {
 };
 
 export const saveNavItem = async (item: NavItem): Promise<void> => {
-  const { children, ...cleanItem } = item;
-  const { error } = await supabase.from('nav_items').upsert([cleanItem], { onConflict: 'id' });
+  const { children, externalUrl, ...cleanItem } = item;
+  const dbItem = {
+    ...cleanItem,
+    external_url: externalUrl
+  };
+  const { error } = await supabase.from('nav_items').upsert([dbItem], { onConflict: 'id' });
   if (error) {
     console.error('Error saving nav item:', error.message || error);
     throw new Error(error.message || 'Error occurred');

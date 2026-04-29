@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { AdminWrapper } from '@/components/admin/AdminWrapper';
 import { PlusCircle, Edit, Trash2 } from 'lucide-react';
 import { Announcement, getAnnouncements, saveAnnouncement, deleteAnnouncement } from '@/lib/announcementStore';
+import RichTextEditor from '@/components/admin/RichTextEditor';
 
 const generateId = () => Date.now();
 
@@ -16,6 +17,7 @@ export default function AnnouncementsManagementPage() {
   const [priority, setPriority] = useState<'High' | 'Normal'>('Normal');
   const [status, setStatus] = useState<'Active' | 'Inactive'>('Active');
   const [link, setLink] = useState('');
+  const [content, setContent] = useState('');
 
   const loadAnnouncements = async () => {
     const data = await getAnnouncements();
@@ -40,6 +42,7 @@ export default function AnnouncementsManagementPage() {
     setPriority(announcement.priority);
     setStatus(announcement.status);
     setLink(announcement.link || '');
+    setContent(announcement.content || '');
     setIsAdding(true);
   };
 
@@ -62,6 +65,7 @@ export default function AnnouncementsManagementPage() {
       priority,
       status,
       link,
+      content,
       date: new Date().toISOString().split('T')[0]
     };
 
@@ -79,6 +83,7 @@ export default function AnnouncementsManagementPage() {
       setPriority('Normal');
       setStatus('Active');
       setLink('');
+      setContent('');
       loadAnnouncements();
     } catch (err: any) {
       alert('Error saving announcement: ' + (err.message || 'Unknown error'));
@@ -92,6 +97,7 @@ export default function AnnouncementsManagementPage() {
     setPriority('Normal');
     setStatus('Active');
     setLink('');
+    setContent('');
   };
 
   return (
@@ -156,6 +162,17 @@ export default function AnnouncementsManagementPage() {
                   className="w-full border border-border-main p-2 text-sm" 
                   placeholder="URL to link to" 
                 />
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-sm font-bold text-primary mb-1">Announcement Content (Optional)</label>
+                <p className="text-xs text-text-muted mb-2">If provided, this announcement will have its own detailed page.</p>
+                <div className="border border-border-main min-h-[300px]">
+                  <RichTextEditor 
+                    value={content}
+                    onChange={setContent}
+                    placeholder="Enter detailed information for this announcement..."
+                  />
+                </div>
               </div>
               <div className="md:col-span-2 flex justify-end gap-2 mt-2">
                 <button type="button" onClick={handleCancel} className="px-4 py-2 border border-border-main text-sm font-bold">Cancel</button>

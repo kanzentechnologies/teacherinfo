@@ -35,7 +35,11 @@ export default async function AnnouncementsPage() {
                 <div className="flex-1">
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
                     <div className="flex-1">
-                      {item.link ? (
+                      {item.content ? (
+                        <Link href={`/announcements/${item.id}`} className="text-lg text-primary hover:text-secondary hover:underline font-bold">
+                          {item.title}
+                        </Link>
+                      ) : item.link ? (
                         <a href={item.link} className="text-lg text-primary hover:text-secondary hover:underline font-bold">
                           {item.title}
                         </a>

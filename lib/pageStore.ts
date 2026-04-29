@@ -61,7 +61,7 @@ export const savePage = async (page: PageItem): Promise<void> => {
     id: page.id,
     title: page.title,
     slug: page.slug,
-    categorySlug: 'pages',
+    category_slug: 'pages',
     content: page.content,
     status: page.status,
     date: new Date().toISOString(),
