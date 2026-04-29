@@ -4,6 +4,13 @@ import Link from 'next/link';
 import { Bell, Calendar, ChevronLeft } from 'lucide-react';
 import { notFound } from 'next/navigation';
 
+export async function generateStaticParams() {
+  const announcements = await getAnnouncements();
+  return announcements.map((announcement) => ({
+    id: announcement.id.toString(),
+  }));
+}
+
 export default async function AnnouncementDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params;
   const announcements = await getAnnouncements();
