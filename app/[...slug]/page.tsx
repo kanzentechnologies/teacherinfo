@@ -23,6 +23,10 @@ export async function generateStaticParams() {
         params.push({ slug: page.slug.split('/').filter(Boolean) });
       }
     }
+    
+    if (params.length === 0) {
+      params.push({ slug: ['_fallback'] });
+    }
     return params;
   } catch (e) {
     console.error('Error generating static params in [...slug]:', e);

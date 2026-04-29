@@ -18,11 +18,20 @@ export default function PagesManagement() {
   const [customSlug, setCustomSlug] = useState('');
 
   const fetchPages = async () => {
-    setPages(await getPages());
+    const data = await getPages();
+    setPages(data);
   };
 
   useEffect(() => {
-    fetchPages();
+    let mounted = true;
+    const loadPages = async () => {
+      const data = await getPages();
+      if (mounted) {
+        setPages(data);
+      }
+    };
+    loadPages();
+    return () => { mounted = false; };
   }, []);
 
   const generateSlug = (t: string) => {

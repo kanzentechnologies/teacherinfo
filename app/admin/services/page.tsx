@@ -6,6 +6,8 @@ import { PlusCircle, Edit, Trash2, GripVertical } from 'lucide-react';
 import { getServices, saveServices, deleteService, Service } from '@/lib/serviceStore';
 import { Reorder } from 'motion/react';
 import { PageLinkSelector } from '@/components/admin/PageLinkSelector';
+import { getPageBySlug, savePage, PageItem } from '@/lib/pageStore';
+import RichTextEditor from '@/components/admin/RichTextEditor';
 
 const generateId = () => Date.now();
 
@@ -19,9 +21,28 @@ export default function ServiceManagementPage() {
   const [description, setDescription] = useState('');
   const [link, setLink] = useState('');
 
+  // Page Intro state
+  const [pageItem, setPageItem] = useState<PageItem | null>(null);
+  const [pageContent, setPageContent] = useState('');
+  const [isEditingIntro, setIsEditingIntro] = useState(false);
+
   useEffect(() => {
     const fetchData = async () => {
       setServices(await getServices());
+      const pItem = await getPageBySlug('services');
+      if (pItem) {
+        setPageItem(pItem);
+        setPageContent(pItem.content || '');
+      } else {
+        // Prepare a new page item if it doesn't exist
+        setPageItem({
+          id: generateId().toString(),
+          title: 'Services Intro',
+          slug: 'services',
+          content: '',
+          status: 'Published'
+        });
+      }
     };
     fetchData();
   }, []);
@@ -29,6 +50,17 @@ export default function ServiceManagementPage() {
   const handleSaveServices = async (newServices: Service[]) => {
     setServices(newServices);
     await saveServices(newServices);
+  };
+
+  const handleSaveIntro = async () => {
+    if (!pageItem) return;
+    try {
+      await savePage({ ...pageItem, content: pageContent });
+      alert('Services page intro updated!');
+      setIsEditingIntro(false);
+    } catch (err: any) {
+      alert('Error: ' + err.message);
+    }
   };
 
   const resetForm = () => {
@@ -92,6 +124,55 @@ export default function ServiceManagementPage() {
             <PlusCircle size={18} />
             Add Service Card
           </button>
+        </div>
+
+        {/* Services Page Intro Content Section */}
+        <div className="bg-white border border-border-main">
+          <div className="bg-gray-100 border-b border-border-main px-4 py-3 flex justify-between items-center">
+            <div>
+              <h3 className="font-bold text-primary">Services Page: Intro Content</h3>
+              <p className="text-xs text-text-muted">This text appears at the top of the /services page (can also be managed in Pages section)</p>
+            </div>
+            {!isEditingIntro ? (
+              <button 
+                onClick={() => setIsEditingIntro(true)}
+                className="text-secondary hover:underline text-sm font-bold flex items-center gap-1"
+              >
+                <Edit size={14} /> Edit Intro Text
+              </button>
+            ) : (
+              <div className="flex gap-2">
+                <button 
+                  onClick={() => setIsEditingIntro(false)}
+                  className="text-text-muted hover:underline text-sm font-bold"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={handleSaveIntro}
+                  className="text-primary bg-accent px-3 py-1 rounded-sm text-sm font-bold"
+                >
+                  Save Changes
+                </button>
+              </div>
+            )}
+          </div>
+          <div className="p-4">
+            {isEditingIntro ? (
+              <div className="border border-border-main min-h-[300px]">
+                <RichTextEditor 
+                  value={pageContent}
+                  onChange={setPageContent}
+                  placeholder="Enter the introductory text for the services page..."
+                />
+              </div>
+            ) : (
+              <div 
+                className="prose prose-sm max-w-none text-text-main line-clamp-3 bg-gray-50 p-3"
+                dangerouslySetInnerHTML={{ __html: pageContent || '<p className="italic text-text-muted">No intro content set. Click edit to add text.</p>' }}
+              />
+            )}
+          </div>
         </div>
 
         {isAdding && (

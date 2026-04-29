@@ -5,6 +5,7 @@ import { PlusCircle, FileText, Users, Settings, Bell, BarChart } from 'lucide-re
 import { AdminWrapper } from '@/components/admin/AdminWrapper';
 import { useEffect, useState } from 'react';
 import { getNavItems } from '@/lib/navStore';
+import { getPages } from '@/lib/pageStore';
 import { getContacts } from '@/lib/contactStore';
 import { getServices } from '@/lib/serviceStore';
 
@@ -14,18 +15,19 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     const fetchStats = async () => {
-      const [navItems, contacts, services] = await Promise.all([
+      const [navItems, pages, contacts, services] = await Promise.all([
         getNavItems(),
+        getPages(),
         getContacts(),
         getServices()
       ]);
       setStats({
-        pages: navItems.filter(i => i.is_page).length,
+        pages: pages.length,
         items: navItems.length,
         contacts: contacts.length,
         services: services.length,
       });
-      setRecentItems(navItems.slice(0, 5));
+      setRecentItems(pages.slice(0, 5));
     };
     fetchStats();
   }, []);
@@ -71,8 +73,8 @@ export default function AdminDashboard() {
 
         <div className="bg-white border border-border-main">
           <div className="bg-gray-100 border-b border-border-main px-4 py-3 flex justify-between items-center">
-            <h3 className="font-bold text-primary">Recent Navigation Items</h3>
-            <Link href="/admin/navbar" className="text-sm text-secondary hover:underline">View All</Link>
+            <h3 className="font-bold text-primary">Recent Pages</h3>
+            <Link href="/admin/pages" className="text-sm text-secondary hover:underline">View All</Link>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
@@ -97,9 +99,7 @@ export default function AdminDashboard() {
                       )}
                     </td>
                     <td className="px-4 py-3 text-right">
-                      {item.is_page && (
-                        <Link href={`/admin/content/${item.id}`} className="text-secondary hover:underline mr-3">Edit Content</Link>
-                      )}
+                      <Link href={`/admin/content/${item.id}`} className="text-secondary hover:underline mr-3">Edit Content</Link>
                     </td>
                   </tr>
                 ))}
