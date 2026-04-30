@@ -2,6 +2,7 @@ import React from "react";
 import { getAnnouncements } from "@/lib/announcementStore";
 import Link from "next/link";
 import { Bell, Calendar, ChevronLeft, Share2, Printer } from "lucide-react";
+import { EmbedIframe } from "@/components/ui/EmbedIframe";
 import { notFound } from "next/navigation";
 
 export const dynamicParams = false;
@@ -80,16 +81,7 @@ export default async function AnnouncementDetailPage({
       )}
 
       {announcement.embed_link && (
-        <div className="mt-8 border border-border-main p-2 bg-gray-50 rounded-sm">
-          <div className="aspect-video w-full rounded overflow-hidden shadow-inner bg-white min-h-[400px]">
-            <iframe
-              src={announcement.embed_link}
-              title={announcement.title}
-              className="w-full h-full min-h-[400px] border-0"
-              allowFullScreen
-            />
-          </div>
-        </div>
+        <EmbedIframe url={announcement.embed_link} title={announcement.title} />
       )}
 
       {announcement.link && (

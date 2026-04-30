@@ -69,7 +69,8 @@ export default function AnnouncementsManagementPage() {
       link,
       embed_link,
       content,
-      date: new Date().toISOString().split('T')[0]
+      date: new Date().toISOString().split('T')[0],
+      updated_at: new Date().toISOString()
     };
 
     if (editingId) {

@@ -25,7 +25,8 @@ CREATE TABLE IF NOT EXISTS public.announcements (
     link TEXT,
     embed_link TEXT,
     content TEXT,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- 3. Contacts Table
@@ -78,6 +79,7 @@ ALTER TABLE public.announcements ADD COLUMN IF NOT EXISTS link TEXT;
 ALTER TABLE public.announcements ADD COLUMN IF NOT EXISTS embed_link TEXT;
 ALTER TABLE public.announcements ADD COLUMN IF NOT EXISTS priority TEXT DEFAULT 'Normal';
 ALTER TABLE public.announcements ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'Active';
+ALTER TABLE public.announcements ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
 ALTER TABLE public.posts ADD COLUMN IF NOT EXISTS category_slug TEXT;
 ALTER TABLE public.nav_items ADD COLUMN IF NOT EXISTS external_url TEXT;
 

@@ -9,6 +9,8 @@ export type Announcement = {
   link?: string;
   embed_link?: string;
   content?: string;
+  updated_at?: string;
+  created_at?: string;
 };
 
 export const defaultAnnouncements: Announcement[] = [
@@ -21,7 +23,12 @@ export const defaultAnnouncements: Announcement[] = [
 let cachedAnnouncements = [...defaultAnnouncements];
 
 export const getAnnouncements = async (): Promise<Announcement[]> => {
-  const { data, error } = await supabase.from('announcements').select('*').order('id', { ascending: false });
+  const { data, error } = await supabase.from('announcements')
+    .select('*')
+    .order('updated_at', { ascending: false, nullsFirst: false })
+    .order('created_at', { ascending: false })
+    .order('date', { ascending: false })
+    .order('id', { ascending: false });
   if (error) {
     if (!error.message?.includes('schema cache') && !error.message?.includes('find the table')) {
       console.error('Error fetching data:', error.message || error);
@@ -34,6 +41,19 @@ export const getAnnouncements = async (): Promise<Announcement[]> => {
       ...item,
       title: item.title || item.text || '', // fallback to legacy text column if title is empty
     })) as Announcement[];
+  } else {
+    cachedAnnouncements.sort((a, b) => {
+      if (a.updated_at && b.updated_at) {
+        return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
+      }
+      if (a.created_at && b.created_at) {
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      }
+      if (a.date !== b.date) {
+        return new Date(b.date).getTime() - new Date(a.date).getTime();
+      }
+      return b.id - a.id;
+    });
   }
   return cachedAnnouncements;
 };
@@ -58,7 +78,9 @@ export const saveAnnouncement = async (announcement: Partial<Announcement>): Pro
       status: announcement.status || 'Active',
       link: announcement.link,
       embed_link: announcement.embed_link,
-      content: announcement.content
+      content: announcement.content,
+      updated_at: announcement.updated_at,
+      created_at: announcement.created_at || new Date().toISOString()
     });
   }
 };
