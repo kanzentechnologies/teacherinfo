@@ -6,11 +6,11 @@ export function ImportantLinks({ links }: { links: ImportantLink[] }) {
   if (!links || links.length === 0) return null;
   return (
     <div className="bg-white border border-border-main">
-      <div className="bg-gray-100 border-b border-border-main px-4 py-3">
-        <h3 className="font-bold text-primary">Important Links</h3>
+      <div className="bg-gray-100 border-b border-border-main px-4 py-3 flex justify-between items-center">
+        <h3 className="font-bold text-primary">Useful Links</h3>
       </div>
       <ul className="divide-y divide-border-main">
-        {links.slice(0, 8).map((link) => {
+        {links.slice(0, 5).map((link) => {
           const isInternal = link.link.startsWith('/');
           return (
             <li key={link.id}>
