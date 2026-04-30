@@ -69,12 +69,21 @@ CREATE TABLE IF NOT EXISTS public.services (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Ensure columns exist (for existing tables)
+ALTER TABLE public.announcements ADD COLUMN IF NOT EXISTS date TEXT;
+ALTER TABLE public.announcements ADD COLUMN IF NOT EXISTS content TEXT;
+ALTER TABLE public.announcements ADD COLUMN IF NOT EXISTS link TEXT;
+ALTER TABLE public.announcements ADD COLUMN IF NOT EXISTS priority TEXT DEFAULT 'Normal';
+ALTER TABLE public.announcements ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'Active';
+ALTER TABLE public.posts ADD COLUMN IF NOT EXISTS category_slug TEXT;
+ALTER TABLE public.nav_items ADD COLUMN IF NOT EXISTS external_url TEXT;
+
 -- Legacy/Post Tables (Optional but kept for compatibility)
 CREATE TABLE IF NOT EXISTS public.posts (
     id TEXT PRIMARY KEY,
     title TEXT NOT NULL,
     slug TEXT NOT NULL,
-    "categorySlug" TEXT NOT NULL,
+    "category_slug" TEXT NOT NULL,
     content TEXT,
     status TEXT NOT NULL,
     date TEXT NOT NULL,
