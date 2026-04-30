@@ -1,15 +1,21 @@
 'use client';
 
-import React, { useRef, useState } from 'react';
-import { RefreshCw, ArrowLeft, ArrowRight, ExternalLink } from 'lucide-react';
+import React, { useRef, useState, useEffect } from 'react';
+import { RefreshCw, ArrowLeft, ArrowRight, ExternalLink, Loader2 } from 'lucide-react';
 
 export function EmbedIframe({ url, title }: { url: string, title?: string }) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [frameKey, setFrameKey] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    setIsLoading(true);
+  }, [url, frameKey]);
 
   const handleReload = () => {
     setFrameKey(prev => prev + 1);
   };
+
 
   const handleBack = () => {
     try {
@@ -64,13 +70,20 @@ export function EmbedIframe({ url, title }: { url: string, title?: string }) {
       </div>
       {/* Frame Container */}
       <div className="flex-1 w-full bg-white relative">
+        {isLoading && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-white z-0 text-text-muted">
+            <Loader2 className="h-8 w-8 animate-spin text-primary mb-2" />
+            <span className="text-sm font-medium">Loading content...</span>
+          </div>
+        )}
         <iframe
           key={frameKey}
           ref={iframeRef}
           src={url}
           title={title || "Embedded Content"}
-          className="w-full h-full border-0 absolute inset-0"
+          className={`w-full h-full border-0 absolute inset-0 z-10 transition-opacity duration-300 ${isLoading ? 'opacity-0' : 'opacity-100'}`}
           allowFullScreen
+          onLoad={() => setIsLoading(false)}
         />
       </div>
     </div>
