@@ -7,14 +7,15 @@ export type Announcement = {
   priority: 'High' | 'Normal';
   status: 'Active' | 'Inactive';
   link?: string;
+  embed_link?: string;
   content?: string;
 };
 
 export const defaultAnnouncements: Announcement[] = [
-  { id: 1, title: 'AP DSC 2024 Notification Released', date: '2024-04-12', priority: 'High', status: 'Active', link: '', content: '' },
-  { id: 2, title: 'TET 2024 Results Declared', date: '2024-04-10', priority: 'High', status: 'Active', link: '', content: '' },
-  { id: 3, title: 'New Study Materials for Mathematics Uploaded', date: '2024-04-08', priority: 'Normal', status: 'Active', link: '', content: '' },
-  { id: 4, title: 'SSC CGL 2024 Exam Dates Announced', date: '2024-04-05', priority: 'Normal', status: 'Inactive', link: '', content: '' },
+  { id: 1, title: 'AP DSC 2024 Notification Released', date: '2024-04-12', priority: 'High', status: 'Active', link: '', embed_link: '', content: '' },
+  { id: 2, title: 'TET 2024 Results Declared', date: '2024-04-10', priority: 'High', status: 'Active', link: '', embed_link: '', content: '' },
+  { id: 3, title: 'New Study Materials for Mathematics Uploaded', date: '2024-04-08', priority: 'Normal', status: 'Active', link: '', embed_link: '', content: '' },
+  { id: 4, title: 'SSC CGL 2024 Exam Dates Announced', date: '2024-04-05', priority: 'Normal', status: 'Inactive', link: '', embed_link: '', content: '' },
 ];
 
 let cachedAnnouncements = [...defaultAnnouncements];
@@ -56,6 +57,7 @@ export const saveAnnouncement = async (announcement: Partial<Announcement>): Pro
       priority: announcement.priority || 'Normal',
       status: announcement.status || 'Active',
       link: announcement.link,
+      embed_link: announcement.embed_link,
       content: announcement.content
     });
   }

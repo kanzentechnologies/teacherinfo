@@ -23,6 +23,7 @@ CREATE TABLE IF NOT EXISTS public.announcements (
     priority TEXT NOT NULL DEFAULT 'Normal',
     status TEXT NOT NULL DEFAULT 'Active',
     link TEXT,
+    embed_link TEXT,
     content TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -74,6 +75,7 @@ ALTER TABLE public.announcements ADD COLUMN IF NOT EXISTS title TEXT;
 ALTER TABLE public.announcements ADD COLUMN IF NOT EXISTS date TEXT;
 ALTER TABLE public.announcements ADD COLUMN IF NOT EXISTS content TEXT;
 ALTER TABLE public.announcements ADD COLUMN IF NOT EXISTS link TEXT;
+ALTER TABLE public.announcements ADD COLUMN IF NOT EXISTS embed_link TEXT;
 ALTER TABLE public.announcements ADD COLUMN IF NOT EXISTS priority TEXT DEFAULT 'Normal';
 ALTER TABLE public.announcements ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'Active';
 ALTER TABLE public.posts ADD COLUMN IF NOT EXISTS category_slug TEXT;
@@ -86,6 +88,13 @@ DO $$ BEGIN
         WHERE table_schema='public' AND table_name='announcements' AND column_name='text'
     ) THEN
         ALTER TABLE public.announcements ALTER COLUMN "text" DROP NOT NULL;
+    END IF;
+    
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_schema='public' AND table_name='announcements' AND column_name='type'
+    ) THEN
+        ALTER TABLE public.announcements ALTER COLUMN "type" DROP NOT NULL;
     END IF;
 END $$;
 

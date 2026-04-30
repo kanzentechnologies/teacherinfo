@@ -25,9 +25,9 @@ export function AnnouncementsPanel({ announcements }: { announcements: Announcem
                       {item.title}
                     </a>
                   ) : (
-                    <span className="text-sm text-text-main font-medium">
+                    <Link href={`/announcements/${item.id}`} className="text-sm text-text-main hover:text-primary hover:underline font-medium">
                       {item.title}
-                    </span>
+                    </Link>
                   )}
                   {(isRecent || isHighPriority) && (
                     <span className="ml-2 inline-block bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-sm font-bold animate-pulse">

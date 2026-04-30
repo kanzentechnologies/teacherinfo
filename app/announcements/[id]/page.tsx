@@ -1,7 +1,7 @@
 import React from "react";
 import { getAnnouncements } from "@/lib/announcementStore";
 import Link from "next/link";
-import { Bell, Calendar, ChevronLeft } from "lucide-react";
+import { Bell, Calendar, ChevronLeft, Share2, Printer } from "lucide-react";
 import { notFound } from "next/navigation";
 
 export const dynamicParams = false;
@@ -32,7 +32,7 @@ export default async function AnnouncementDetailPage({
     (a) => a.id.toString() === resolvedParams.id,
   );
 
-  if (!announcement || !announcement.content) {
+  if (!announcement || (!announcement.content && !announcement.embed_link)) {
     notFound();
   }
 
@@ -72,10 +72,25 @@ export default async function AnnouncementDetailPage({
         </div>
       </header>
 
-      <div
-        className="prose prose-blue max-w-none text-text-main"
-        dangerouslySetInnerHTML={{ __html: announcement.content }}
-      />
+      {announcement.content && (
+        <div
+          className="prose prose-blue max-w-none text-text-main"
+          dangerouslySetInnerHTML={{ __html: announcement.content }}
+        />
+      )}
+
+      {announcement.embed_link && (
+        <div className="mt-8 border border-border-main p-2 bg-gray-50 rounded-sm">
+          <div className="aspect-video w-full rounded overflow-hidden shadow-inner bg-white min-h-[400px]">
+            <iframe
+              src={announcement.embed_link}
+              title={announcement.title}
+              className="w-full h-full min-h-[400px] border-0"
+              allowFullScreen
+            />
+          </div>
+        </div>
+      )}
 
       {announcement.link && (
         <div className="mt-10 p-6 bg-gray-50 border border-border-main rounded-sm">
@@ -90,6 +105,27 @@ export default async function AnnouncementDetailPage({
           </a>
         </div>
       )}
+
+      <div className="mt-8 pt-4 border-t border-border-main flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="flex flex-wrap gap-2 items-center">
+          <span className="text-sm font-bold text-text-muted mr-2 flex items-center gap-1"><Share2 size={16} /> Share:</span>
+          <a href={`https://api.whatsapp.com/send?text=${encodeURIComponent(announcement.title)} - https://www.teacherinfo.net/announcements/${announcement.id}`} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 bg-[#25D366] text-white text-xs font-bold rounded hover:opacity-90 transition-opacity">
+            WhatsApp
+          </a>
+          <a href={`https://www.facebook.com/sharer/sharer.php?u=https://www.teacherinfo.net/announcements/${announcement.id}`} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 bg-[#1877F2] text-white text-xs font-bold rounded hover:opacity-90 transition-opacity">
+            Facebook
+          </a>
+          <a href={`https://twitter.com/intent/tweet?url=https://www.teacherinfo.net/announcements/${announcement.id}&text=${encodeURIComponent(announcement.title)}`} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 bg-[#1DA1F2] text-white text-xs font-bold rounded hover:opacity-90 transition-opacity">
+            Twitter
+          </a>
+          <a href={`https://t.me/share/url?url=https://www.teacherinfo.net/announcements/${announcement.id}&text=${encodeURIComponent(announcement.title)}`} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 bg-[#0088cc] text-white text-xs font-bold rounded hover:opacity-90 transition-opacity">
+            Telegram
+          </a>
+        </div>
+        <a href={`javascript:window.print()`} className="flex items-center gap-1 text-sm bg-gray-100 px-3 py-1.5 rounded text-text-main hover:bg-gray-200 transition-colors">
+          <Printer size={16} /> Print
+        </a>
+      </div>
 
       <div className="mt-12 pt-8 border-t border-border-main">
         <Link

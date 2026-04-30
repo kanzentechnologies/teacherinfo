@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { Announcement } from '@/lib/announcementStore';
 
 export function UpdatesTicker({ announcements }: { announcements: Announcement[] }) {
@@ -12,13 +13,13 @@ export function UpdatesTicker({ announcements }: { announcements: Announcement[]
         <div className="animate-marquee whitespace-nowrap px-4 text-sm font-medium text-primary">
           {announcements.map((ann, i) => (
             <span key={i} className="mx-4">
-              • {ann.link ? <a href={ann.link} className="hover:underline">{ann.title}</a> : ann.title}
+              • {ann.link ? <a href={ann.link} className="hover:underline">{ann.title}</a> : <Link href={`/announcements/${ann.id}`} className="hover:underline">{ann.title}</Link>}
               {ann.priority === 'High' && <span className="ml-2 text-[10px] bg-red-500 text-white px-1.5 py-0.5 rounded-sm animate-pulse">NEW</span>}
             </span>
           ))}
           {announcements.map((ann, i) => (
             <span key={`dup-${i}`} className="mx-4">
-              • {ann.link ? <a href={ann.link} className="hover:underline">{ann.title}</a> : ann.title}
+              • {ann.link ? <a href={ann.link} className="hover:underline">{ann.title}</a> : <Link href={`/announcements/${ann.id}`} className="hover:underline">{ann.title}</Link>}
               {ann.priority === 'High' && <span className="ml-2 text-[10px] bg-red-500 text-white px-1.5 py-0.5 rounded-sm animate-pulse">NEW</span>}
             </span>
           ))}

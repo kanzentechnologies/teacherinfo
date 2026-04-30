@@ -35,18 +35,14 @@ export default async function AnnouncementsPage() {
                 <div className="flex-1">
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
                     <div className="flex-1">
-                      {item.content ? (
-                        <Link href={`/announcements/${item.id}`} className="text-lg text-primary hover:text-secondary hover:underline font-bold">
-                          {item.title}
-                        </Link>
-                      ) : item.link ? (
+                      {item.link ? (
                         <a href={item.link} className="text-lg text-primary hover:text-secondary hover:underline font-bold">
                           {item.title}
                         </a>
                       ) : (
-                        <span className="text-lg text-primary font-bold">
+                        <Link href={`/announcements/${item.id}`} className="text-lg text-primary hover:text-secondary hover:underline font-bold">
                           {item.title}
-                        </span>
+                        </Link>
                       )}
                       {(isRecent || isHighPriority) && (
                         <span className="ml-2 inline-block bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-sm font-bold animate-pulse align-middle">

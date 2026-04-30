@@ -17,6 +17,7 @@ export default function AnnouncementsManagementPage() {
   const [priority, setPriority] = useState<'High' | 'Normal'>('Normal');
   const [status, setStatus] = useState<'Active' | 'Inactive'>('Active');
   const [link, setLink] = useState('');
+  const [embed_link, setEmbedLink] = useState('');
   const [content, setContent] = useState('');
 
   const loadAnnouncements = async () => {
@@ -42,6 +43,7 @@ export default function AnnouncementsManagementPage() {
     setPriority(announcement.priority);
     setStatus(announcement.status);
     setLink(announcement.link || '');
+    setEmbedLink(announcement.embed_link || '');
     setContent(announcement.content || '');
     setIsAdding(true);
   };
@@ -65,6 +67,7 @@ export default function AnnouncementsManagementPage() {
       priority,
       status,
       link,
+      embed_link,
       content,
       date: new Date().toISOString().split('T')[0]
     };
@@ -83,6 +86,7 @@ export default function AnnouncementsManagementPage() {
       setPriority('Normal');
       setStatus('Active');
       setLink('');
+      setEmbedLink('');
       setContent('');
       loadAnnouncements();
     } catch (err: any) {
@@ -97,6 +101,7 @@ export default function AnnouncementsManagementPage() {
     setPriority('Normal');
     setStatus('Active');
     setLink('');
+    setEmbedLink('');
     setContent('');
   };
 
@@ -161,6 +166,17 @@ export default function AnnouncementsManagementPage() {
                   onChange={(e) => setLink(e.target.value)}
                   className="w-full border border-border-main p-2 text-sm" 
                   placeholder="URL to link to" 
+                />
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-sm font-bold text-primary mb-1">Embed Link (Optional)</label>
+                <p className="text-xs text-text-muted mb-1">Provide an embed URL (e.g., YouTube embed, PDF, maps, etc.) to show directly in the announcement details page.</p>
+                <input 
+                  type="text" 
+                  value={embed_link}
+                  onChange={(e) => setEmbedLink(e.target.value)}
+                  className="w-full border border-border-main p-2 text-sm" 
+                  placeholder="https://..." 
                 />
               </div>
               <div className="md:col-span-2">
