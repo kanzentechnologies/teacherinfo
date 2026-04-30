@@ -19,18 +19,18 @@ export function AnnouncementsPanel({ announcements }: { announcements: Announcem
             return (
               <li key={item.id || index} className="flex gap-2 items-start border-b border-border-main pb-3 last:border-0 last:pb-0">
                 <div className="mt-1 w-2 h-2 rounded-full bg-accent flex-shrink-0"></div>
-                <div>
+                <div className="flex-1 min-w-0">
                   {item.link ? (
-                    <a href={item.link} className="text-sm text-text-main hover:text-primary hover:underline font-medium">
+                    <a href={item.link} className="text-sm text-text-main hover:text-primary hover:underline font-medium break-words block">
                       {item.title}
                     </a>
                   ) : (
-                    <Link href={`/announcements/${item.id}`} className="text-sm text-text-main hover:text-primary hover:underline font-medium">
+                    <Link href={`/announcements/${item.id}`} className="text-sm text-text-main hover:text-primary hover:underline font-medium break-words block">
                       {item.title}
                     </Link>
                   )}
                   {(isRecent || isHighPriority) && (
-                    <span className="ml-2 inline-block bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-sm font-bold animate-pulse">
+                    <span className="mt-1 inline-block bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-sm font-bold animate-pulse">
                       NEW
                     </span>
                   )}

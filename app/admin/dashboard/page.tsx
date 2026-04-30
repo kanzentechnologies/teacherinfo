@@ -87,6 +87,16 @@ export default function AdminDashboard() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border-main">
+                <tr className="hover:bg-hover-bg bg-gray-50/50">
+                  <td className="px-4 py-3 font-medium text-text-main flex items-center gap-2">Contact Us <span className="bg-gray-200 text-gray-600 text-[10px] px-1.5 py-0.5 rounded uppercase tracking-wider">System</span></td>
+                  <td className="px-4 py-3 text-text-muted">/contact</td>
+                  <td className="px-4 py-3">
+                    <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-sm border border-green-200">Published</span>
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <Link href="/admin/contact" className="text-secondary hover:underline mr-3">Edit Team Info</Link>
+                  </td>
+                </tr>
                 {recentItems.map((item) => (
                   <tr key={item.id} className="hover:bg-hover-bg">
                     <td className="px-4 py-3 font-medium text-text-main">{item.title}</td>

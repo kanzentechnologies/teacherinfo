@@ -157,8 +157,28 @@ export default function PagesManagement() {
               </tr>
             </thead>
             <tbody>
+              <tr className="border-b border-border-main hover:bg-gray-50 transition-colors bg-gray-50/50">
+                <td className="p-4 font-bold text-text-main flex items-center gap-2">
+                  Contact Us <span className="bg-gray-200 text-gray-600 text-[10px] px-1.5 py-0.5 rounded uppercase tracking-wider">System</span>
+                </td>
+                <td className="p-4 font-mono text-xs text-secondary">/contact</td>
+                <td className="p-4">
+                  <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-bold">Published</span>
+                </td>
+                <td className="p-4 flex gap-3 justify-end items-center">
+                  <Link href={`/admin/contact`} className="text-secondary hover:underline flex items-center gap-1 font-bold">
+                    <FileEdit size={14} /> Edit Team Info
+                  </Link>
+                  <button disabled className="text-gray-300 flex items-center gap-1 cursor-not-allowed" title="System pages cannot be renamed">
+                    <Edit size={14} /> Edit Details
+                  </button>
+                  <button disabled className="text-gray-300 flex items-center gap-1 cursor-not-allowed" title="System pages cannot be deleted">
+                    <Trash2 size={14} /> Delete
+                  </button>
+                </td>
+              </tr>
               {pages.length === 0 ? (
-                <tr><td colSpan={4} className="p-8 text-center text-text-muted">No pages found. Create one.</td></tr>
+                <tr><td colSpan={4} className="p-8 text-center text-text-muted">No custom pages found. Create one.</td></tr>
               ) : pages.map(page => (
                 <tr key={page.id} className="border-b border-border-main hover:bg-gray-50 transition-colors">
                   <td className="p-4 font-bold text-text-main">{page.title}</td>

@@ -15,7 +15,7 @@ export default function AboutPage() {
     <div className="bg-white border border-border-main p-6 md:p-10">
       <h1 className="text-2xl md:text-3xl font-bold text-primary mb-6 border-b border-border-main pb-4">About Teacher Info Portal</h1>
       
-      <div className="prose max-w-none text-text-main text-sm md:text-base leading-relaxed space-y-6">
+      <div className="prose max-w-none text-text-main text-sm md:text-base leading-relaxed space-y-6 break-words overflow-hidden">
         <p>
           Welcome to the <strong>Teacher Info Portal</strong>, your comprehensive and reliable source for educational resources, job notifications, and the latest updates tailored specifically for teaching professionals and aspirants.
         </p>

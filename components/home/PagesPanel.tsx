@@ -19,7 +19,7 @@ export function PagesPanel({ pages }: { pages: PageItem[] }) {
               href={`/${page.slug}`}
               className="flex items-center justify-between px-4 py-3 hover:bg-hover-bg transition-colors text-sm text-text-main hover:text-primary font-medium"
             >
-              <span>{page.title}</span>
+              <span className="break-words min-w-0 flex-1">{page.title}</span>
             </Link>
           </li>
         ))}

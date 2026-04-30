@@ -32,25 +32,25 @@ export default async function AnnouncementsPage() {
             return (
               <div key={item.id || index} className="flex gap-4 items-start border border-border-main p-4 hover:bg-gray-50 transition-colors">
                 <div className="mt-1 w-3 h-3 rounded-full bg-accent flex-shrink-0"></div>
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
-                    <div className="flex-1">
+                    <div className="flex-1 min-w-0">
                       {item.link ? (
-                        <a href={item.link} className="text-lg text-primary hover:text-secondary hover:underline font-bold">
+                        <a href={item.link} className="text-lg text-primary hover:text-secondary hover:underline font-bold break-words block">
                           {item.title}
                         </a>
                       ) : (
-                        <Link href={`/announcements/${item.id}`} className="text-lg text-primary hover:text-secondary hover:underline font-bold">
+                        <Link href={`/announcements/${item.id}`} className="text-lg text-primary hover:text-secondary hover:underline font-bold break-words block">
                           {item.title}
                         </Link>
                       )}
                       {(isRecent || isHighPriority) && (
-                        <span className="ml-2 inline-block bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-sm font-bold animate-pulse align-middle">
+                        <span className="mt-2 inline-block bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-sm font-bold animate-pulse align-middle">
                           NEW
                         </span>
                       )}
                     </div>
-                    <div className="text-sm text-text-muted whitespace-nowrap">
+                    <div className="text-sm text-text-muted whitespace-nowrap flex-shrink-0">
                       {item.date}
                     </div>
                   </div>

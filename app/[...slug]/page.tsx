@@ -1,8 +1,9 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { Share2, Printer, Calendar } from 'lucide-react';
+import { Share2, Calendar } from 'lucide-react';
 import { getPages, getPageBySlug } from '@/lib/pageStore';
 import Link from 'next/link';
+import { PrintButton } from '@/components/ui/PrintButton';
 
 export const dynamicParams = false;
 
@@ -70,7 +71,7 @@ export default async function Page({ params }: { params: Promise<{ slug: string[
       <div className="w-full flex flex-col gap-6">
         <div className="bg-white border border-border-main p-4 sm:p-6">
           <div className="flex flex-col md:flex-row justify-between md:items-center gap-4 mb-4">
-            <h1 className="text-2xl md:text-3xl font-bold text-primary leading-tight">{item.title}</h1>
+            <h1 className="text-2xl md:text-3xl font-bold text-primary leading-tight break-words">{item.title}</h1>
           </div>
 
           <div className="flex flex-wrap items-center gap-4 text-sm text-text-muted border-b border-border-main pb-4 mb-6">
@@ -81,7 +82,7 @@ export default async function Page({ params }: { params: Promise<{ slug: string[
           </div>
           
           <div 
-            className="prose max-w-none mt-6 text-text-main text-sm md:text-base leading-relaxed"
+            className="prose max-w-none mt-6 text-text-main text-sm md:text-base leading-relaxed break-words overflow-hidden"
             dangerouslySetInnerHTML={{ __html: item.content || '<p>No content provided for this page.</p>' }} 
           />
 
@@ -101,9 +102,7 @@ export default async function Page({ params }: { params: Promise<{ slug: string[
                 Telegram
               </a>
             </div>
-            <a href={`javascript:window.print()`} className="flex items-center gap-1 text-sm bg-gray-100 px-3 py-1.5 rounded text-text-main hover:bg-gray-200 transition-colors">
-              <Printer size={16} /> Print
-            </a>
+            <PrintButton />
           </div>
         </div>
       </div>

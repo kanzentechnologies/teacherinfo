@@ -19,7 +19,7 @@ export function ImportantLinks({ links }: { links: ImportantLink[] }) {
                   href={link.link}
                   className="flex items-center justify-between px-4 py-3 hover:bg-hover-bg transition-colors text-sm text-text-main hover:text-primary font-medium"
                 >
-                  <span>{link.title}</span>
+                  <span className="break-words max-w-[95%] min-w-0 flex-1">{link.title}</span>
                 </Link>
               ) : (
                 <a 
@@ -28,8 +28,8 @@ export function ImportantLinks({ links }: { links: ImportantLink[] }) {
                   rel="noopener noreferrer"
                   className="flex items-center justify-between px-4 py-3 hover:bg-hover-bg transition-colors text-sm text-text-main hover:text-primary"
                 >
-                  <span>{link.title}</span>
-                  <ExternalLink size={14} className="text-text-muted" />
+                  <span className="break-words max-w-[90%] min-w-0 flex-1">{link.title}</span>
+                  <ExternalLink size={14} className="text-text-muted flex-shrink-0 ml-2" />
                 </a>
               )}
             </li>

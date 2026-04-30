@@ -214,8 +214,8 @@ export default function AnnouncementsManagementPage() {
               <tbody className="divide-y divide-border-main">
                 {announcements.map((item) => (
                   <tr key={item.id} className="hover:bg-hover-bg">
-                    <td className="px-4 py-3 font-medium text-text-main">{item.title}</td>
-                    <td className="px-4 py-3 text-text-muted">{item.date}</td>
+                    <td className="px-4 py-3 font-medium text-text-main max-w-xs break-words">{item.title}</td>
+                    <td className="px-4 py-3 text-text-muted whitespace-nowrap">{item.date}</td>
                     <td className="px-4 py-3">
                       {item.priority === 'High' ? (
                         <span className="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-sm border border-red-200 font-bold">HIGH</span>

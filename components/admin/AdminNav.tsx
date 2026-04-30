@@ -12,7 +12,6 @@ const adminLinks = [
   { name: 'Icon Links (Home)', href: '/admin/homepage-quick-links' },
   { name: 'Sidebar Links', href: '/admin/important-links' },
   { name: 'Announcements', href: '/admin/announcements' },
-  { name: 'Contact Info', href: '/admin/contact' },
   { name: 'File Manager', href: '/admin/files' },
 ];
 

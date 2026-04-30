@@ -56,9 +56,20 @@ export function EmbedIframe({ url, title }: { url: string, title?: string }) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [frameKey, setFrameKey] = useState(0);
+  const [refreshTimestamp, setRefreshTimestamp] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [prevProcessedUrl, setPrevProcessedUrl] = useState(processedUrl);
+  const [prevFrameKey, setPrevFrameKey] = useState(frameKey);
+
   const [showHint, setShowHint] = useState(false);
   const [containerWidth, setContainerWidth] = useState(0);
+
+  if (processedUrl !== prevProcessedUrl || frameKey !== prevFrameKey) {
+    setPrevProcessedUrl(processedUrl);
+    setPrevFrameKey(frameKey);
+    setIsLoading(true);
+    setShowHint(false);
+  }
 
   useEffect(() => {
     const observer = new ResizeObserver((entries) => {
@@ -73,9 +84,6 @@ export function EmbedIframe({ url, title }: { url: string, title?: string }) {
   }, []);
 
   useEffect(() => {
-    setIsLoading(true);
-    setShowHint(false);
-
     // Some sites might block loading and not trigger onLoad quickly, or at all
     const fallbackTimer = setTimeout(() => {
       setIsLoading(false);
@@ -87,6 +95,7 @@ export function EmbedIframe({ url, title }: { url: string, title?: string }) {
 
   const handleReload = () => {
     setFrameKey(prev => prev + 1);
+    setRefreshTimestamp(Date.now());
   };
 
 
@@ -116,7 +125,7 @@ export function EmbedIframe({ url, title }: { url: string, title?: string }) {
   const scale = containerWidth && containerWidth < DESKTOP_WIDTH ? containerWidth / DESKTOP_WIDTH : 1;
 
   const getDisplayUrl = () => {
-    if (frameKey === 0) return processedUrl;
+    if (frameKey === 0 || !refreshTimestamp) return processedUrl;
     try {
       const u = new URL(processedUrl);
       // Avoid adding cache busters to known platforms that might break
@@ -124,7 +133,7 @@ export function EmbedIframe({ url, title }: { url: string, title?: string }) {
           !u.hostname.includes('vimeo.com') && 
           !u.hostname.includes('drive.google.com') && 
           !u.hostname.includes('docs.google.com')) {
-         u.searchParams.set('_refresh_cb', `${Date.now()}_${frameKey}`);
+         u.searchParams.set('_refresh_cb', `${refreshTimestamp}_${frameKey}`);
       }
       return u.toString();
     } catch (e) {

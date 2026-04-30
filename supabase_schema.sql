@@ -80,7 +80,7 @@ ALTER TABLE public.announcements ADD COLUMN IF NOT EXISTS embed_link TEXT;
 ALTER TABLE public.announcements ADD COLUMN IF NOT EXISTS priority TEXT DEFAULT 'Normal';
 ALTER TABLE public.announcements ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'Active';
 ALTER TABLE public.announcements ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
-ALTER TABLE public.posts ADD COLUMN IF NOT EXISTS category_slug TEXT;
+ALTER TABLE public.posts ADD COLUMN IF NOT EXISTS "categorySlug" TEXT;
 ALTER TABLE public.nav_items ADD COLUMN IF NOT EXISTS external_url TEXT;
 
 -- Handle legacy columns that might throw constraints
@@ -109,7 +109,7 @@ CREATE TABLE IF NOT EXISTS public.posts (
     id TEXT PRIMARY KEY,
     title TEXT NOT NULL,
     slug TEXT NOT NULL,
-    "category_slug" TEXT NOT NULL,
+    "categorySlug" TEXT NOT NULL,
     content TEXT,
     status TEXT NOT NULL,
     date TEXT NOT NULL,

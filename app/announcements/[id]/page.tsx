@@ -1,9 +1,10 @@
 import React from "react";
 import { getAnnouncements } from "@/lib/announcementStore";
 import Link from "next/link";
-import { Bell, Calendar, ChevronLeft, Share2, Printer } from "lucide-react";
+import { Bell, Calendar, ChevronLeft, Share2 } from "lucide-react";
 import { EmbedIframe } from "@/components/ui/EmbedIframe";
 import { notFound } from "next/navigation";
+import { PrintButton } from "@/components/ui/PrintButton";
 
 export const dynamicParams = false;
 
@@ -56,7 +57,7 @@ export default async function AnnouncementDetailPage({
           </span>
         </div>
 
-        <h1 className="text-3xl md:text-4xl font-bold text-primary mb-4 leading-tight">
+        <h1 className="text-3xl md:text-4xl font-bold text-primary mb-4 leading-tight break-words">
           {announcement.title}
         </h1>
 
@@ -75,7 +76,7 @@ export default async function AnnouncementDetailPage({
 
       {announcement.content && (
         <div
-          className="prose prose-blue max-w-none text-text-main"
+          className="prose prose-blue max-w-none text-text-main break-words overflow-hidden"
           dangerouslySetInnerHTML={{ __html: announcement.content }}
         />
       )}
@@ -114,9 +115,7 @@ export default async function AnnouncementDetailPage({
             Telegram
           </a>
         </div>
-        <a href={`javascript:window.print()`} className="flex items-center gap-1 text-sm bg-gray-100 px-3 py-1.5 rounded text-text-main hover:bg-gray-200 transition-colors">
-          <Printer size={16} /> Print
-        </a>
+        <PrintButton />
       </div>
 
       <div className="mt-12 pt-8 border-t border-border-main">
