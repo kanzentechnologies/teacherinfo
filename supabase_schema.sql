@@ -70,6 +70,7 @@ CREATE TABLE IF NOT EXISTS public.services (
 );
 
 -- Ensure columns exist (for existing tables)
+ALTER TABLE public.announcements ADD COLUMN IF NOT EXISTS title TEXT;
 ALTER TABLE public.announcements ADD COLUMN IF NOT EXISTS date TEXT;
 ALTER TABLE public.announcements ADD COLUMN IF NOT EXISTS content TEXT;
 ALTER TABLE public.announcements ADD COLUMN IF NOT EXISTS link TEXT;
@@ -77,6 +78,20 @@ ALTER TABLE public.announcements ADD COLUMN IF NOT EXISTS priority TEXT DEFAULT 
 ALTER TABLE public.announcements ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'Active';
 ALTER TABLE public.posts ADD COLUMN IF NOT EXISTS category_slug TEXT;
 ALTER TABLE public.nav_items ADD COLUMN IF NOT EXISTS external_url TEXT;
+
+-- Handle legacy columns that might throw constraints
+DO $$ BEGIN
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_schema='public' AND table_name='announcements' AND column_name='text'
+    ) THEN
+        ALTER TABLE public.announcements ALTER COLUMN "text" DROP NOT NULL;
+    END IF;
+END $$;
+
+-- Reload Supabase Schema Cache
+NOTIFY pgrst, 'reload schema';
+
 
 -- Legacy/Post Tables (Optional but kept for compatibility)
 CREATE TABLE IF NOT EXISTS public.posts (

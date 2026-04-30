@@ -29,7 +29,10 @@ export const getAnnouncements = async (): Promise<Announcement[]> => {
   }
   
   if (data) {
-    cachedAnnouncements = data as Announcement[];
+    cachedAnnouncements = (data as any[]).map(item => ({
+      ...item,
+      title: item.title || item.text || '', // fallback to legacy text column if title is empty
+    })) as Announcement[];
   }
   return cachedAnnouncements;
 };
