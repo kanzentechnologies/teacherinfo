@@ -1,8 +1,7 @@
 import type {NextConfig} from 'next';
 
 const isGithubActions = process.env.GITHUB_ACTIONS === 'true';
-const isCloudflarePages = process.env.CF_PAGES === '1' || process.env.CF_PAGES === 'true' || process.env.CLOUDFLARE_PAGES === '1';
-const isStaticExport = isGithubActions || isCloudflarePages;
+const isStaticExport = isGithubActions;
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,

@@ -6,7 +6,6 @@ import Link from 'next/link';
 import { PrintButton } from '@/components/ui/PrintButton';
 
 export const revalidate = 60;
-export const dynamicParams = true;
 
 export async function generateStaticParams() {
   const pages = await getPages();

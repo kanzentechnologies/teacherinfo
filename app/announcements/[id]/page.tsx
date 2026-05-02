@@ -7,7 +7,6 @@ import { notFound } from "next/navigation";
 import { PrintButton } from "@/components/ui/PrintButton";
 
 export const revalidate = 60;
-export const dynamicParams = true;
 
 export async function generateStaticParams() {
   const announcements = await getAnnouncements();
