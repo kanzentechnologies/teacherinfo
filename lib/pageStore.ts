@@ -28,7 +28,16 @@ export const getPages = async (): Promise<PageItem[]> => {
 };
 
 export const getPageBySlug = async (slug: string): Promise<PageItem | null> => {
-  const { data, error } = await supabase.from('posts').select('*').eq('type', 'page').eq('slug', slug).single();
+  // Try exact match first
+  let { data, error } = await supabase.from('posts').select('*').eq('type', 'page').eq('slug', slug).single();
+  
+  if (error && error.message?.includes('0 rows')) {
+    // Try with a leading slash just in case it was saved improperly before the fix
+    const res = await supabase.from('posts').select('*').eq('type', 'page').eq('slug', '/' + slug).single();
+    data = res.data;
+    error = res.error;
+  }
+
   if (error) {
     if (!error.message?.includes('0 rows')) {
       console.error('Error fetching page:', error);

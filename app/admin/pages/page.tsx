@@ -45,7 +45,9 @@ export default function PagesManagement() {
     e.preventDefault();
     if (!title) return;
 
-    const slug = customSlug || generateSlug(title);
+    let slug = customSlug || generateSlug(title);
+    // Remove leading and trailing slashes to ensure it matches properly
+    slug = slug.replace(/^\/+/, '').replace(/\/+$/, '');
 
     const newPage: PageItem = {
       id: editingId || generateId(),
