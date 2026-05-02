@@ -7,6 +7,7 @@ export interface PageItem {
   content: string;
   status: 'Published' | 'Draft';
   created_at?: string;
+  layout?: 'content' | 'links';
 }
 
 export const getPages = async (): Promise<PageItem[]> => {
@@ -21,7 +22,8 @@ export const getPages = async (): Promise<PageItem[]> => {
     slug: d.slug,
     content: d.content,
     status: d.status,
-    created_at: d.created_at
+    created_at: d.created_at,
+    layout: d.categorySlug === 'links' ? 'links' : 'content'
   })) || [];
 };
 
@@ -39,7 +41,8 @@ export const getPageBySlug = async (slug: string): Promise<PageItem | null> => {
     slug: data.slug,
     content: data.content,
     status: data.status,
-    created_at: data.created_at
+    created_at: data.created_at,
+    layout: data.categorySlug === 'links' ? 'links' : 'content'
   } : null;
 };
 
@@ -52,7 +55,8 @@ export const getPageById = async (id: string): Promise<PageItem | null> => {
     slug: data.slug,
     content: data.content,
     status: data.status,
-    created_at: data.created_at
+    created_at: data.created_at,
+    layout: data.categorySlug === 'links' ? 'links' : 'content'
   };
 };
 
@@ -61,7 +65,7 @@ export const savePage = async (page: PageItem): Promise<void> => {
     id: page.id,
     title: page.title,
     slug: page.slug,
-    categorySlug: 'pages',
+    categorySlug: page.layout || 'content',
     content: page.content,
     status: page.status,
     date: new Date().toISOString(),

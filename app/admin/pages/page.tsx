@@ -18,6 +18,7 @@ export default function PagesManagement() {
   // Form state
   const [title, setTitle] = useState('');
   const [customSlug, setCustomSlug] = useState('');
+  const [layout, setLayout] = useState<'content' | 'links'>('content');
 
   const fetchPages = async () => {
     const data = await getPages();
@@ -50,8 +51,9 @@ export default function PagesManagement() {
       id: editingId || generateId(),
       title,
       slug,
-      content: '', // Edited separately
-      status: 'Published'
+      content: layout === 'links' ? '[]' : '', // default content
+      status: 'Published',
+      layout
     };
 
     if (editingId) {
@@ -89,6 +91,7 @@ export default function PagesManagement() {
   const handleEdit = (page: PageItem) => {
     setTitle(page.title);
     setCustomSlug(page.slug);
+    setLayout(page.layout || 'content');
     setEditingId(page.id);
     setIsAdding(true);
   };
@@ -96,6 +99,7 @@ export default function PagesManagement() {
   const resetForm = () => {
     setTitle('');
     setCustomSlug('');
+    setLayout('content');
     setEditingId(null);
     setIsAdding(false);
   };
@@ -146,7 +150,37 @@ export default function PagesManagement() {
                 />
               </div>
 
-              <div className="md:col-span-2 flex justify-end gap-2 mt-2">
+              {!editingId && (
+                <div className="md:col-span-2 mt-2">
+                  <label className="block text-sm font-bold text-primary mb-2">Page Layout / Type</label>
+                  <div className="flex gap-4">
+                    <label className="flex items-center gap-2 cursor-pointer bg-gray-50 p-3 rounded border border-border-main flex-1">
+                      <input 
+                        type="radio" 
+                        name="layout" 
+                        value="content"
+                        checked={layout === 'content'}
+                        onChange={() => setLayout('content')}
+                        className="text-primary focus:ring-primary h-4 w-4"
+                      />
+                      <span className="text-sm font-medium">Rich Content Page</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer bg-gray-50 p-3 rounded border border-border-main flex-1">
+                      <input 
+                        type="radio" 
+                        name="layout" 
+                        value="links"
+                        checked={layout === 'links'}
+                        onChange={() => setLayout('links')}
+                        className="text-primary focus:ring-primary h-4 w-4"
+                      />
+                      <span className="text-sm font-medium">List View of Links</span>
+                    </label>
+                  </div>
+                </div>
+              )}
+
+              <div className="md:col-span-2 flex justify-end gap-2 mt-4">
                 <button type="button" onClick={resetForm} className="px-4 py-2 border border-border-main text-sm font-bold text-text-muted">Cancel</button>
                 <button type="submit" className="px-4 py-2 bg-primary text-white text-sm font-bold">Save Page</button>
               </div>
@@ -160,6 +194,7 @@ export default function PagesManagement() {
               <tr>
                 <th className="p-4 font-bold">Title</th>
                 <th className="p-4 font-bold">Path / Slug</th>
+                <th className="p-4 font-bold">Layout</th>
                 <th className="p-4 font-bold">Status</th>
                 <th className="p-4 font-bold text-right">Actions</th>
               </tr>
@@ -170,6 +205,9 @@ export default function PagesManagement() {
                   Contact Us <span className="bg-gray-200 text-gray-600 text-[10px] px-1.5 py-0.5 rounded uppercase tracking-wider">System</span>
                 </td>
                 <td className="p-4 font-mono text-xs text-secondary">/contact</td>
+                <td className="p-4">
+                  <span className="text-xs font-bold text-gray-600 bg-gray-100 py-1 px-2 rounded">System</span>
+                </td>
                 <td className="p-4">
                   <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-bold">Published</span>
                 </td>
@@ -186,17 +224,22 @@ export default function PagesManagement() {
                 </td>
               </tr>
               {pages.length === 0 ? (
-                <tr><td colSpan={4} className="p-8 text-center text-text-muted">No custom pages found. Create one.</td></tr>
+                <tr><td colSpan={5} className="p-8 text-center text-text-muted">No custom pages found. Create one.</td></tr>
               ) : pages.map(page => (
                 <tr key={page.id} className="border-b border-border-main hover:bg-gray-50 transition-colors">
                   <td className="p-4 font-bold text-text-main">{page.title}</td>
                   <td className="p-4 font-mono text-xs text-secondary">/{page.slug}</td>
                   <td className="p-4">
+                    <span className="text-xs font-bold text-primary bg-blue-50 py-1 px-2 rounded">
+                      {page.layout === 'links' ? 'Links' : 'Content'}
+                    </span>
+                  </td>
+                  <td className="p-4">
                     <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-bold">{page.status}</span>
                   </td>
                   <td className="p-4 flex gap-3 justify-end items-center">
-                    <Link href={`/admin/content/${page.id}`} className="text-secondary hover:underline flex items-center gap-1 font-bold">
-                      <FileEdit size={14} /> Edit Content
+                    <Link href={`/admin/content-edit?id=${page.id}`} className="text-secondary hover:underline flex items-center gap-1 font-bold">
+                      <FileEdit size={14} /> Edit {page.layout === 'links' ? 'Links' : 'Content'}
                     </Link>
                     <button onClick={() => handleEdit(page)} className="text-text-muted hover:text-primary flex items-center gap-1">
                       <Edit size={14} /> Edit Details
