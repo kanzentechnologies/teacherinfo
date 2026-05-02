@@ -107,7 +107,7 @@ export default function AdminDashboard() {
                       )}
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <Link href={`/admin/content/${item.id}`} className="text-secondary hover:underline mr-3">Edit Content</Link>
+                      <Link href={`/admin/content-edit?id=${item.id}`} className="text-secondary hover:underline mr-3">Edit Content</Link>
                     </td>
                   </tr>
                 ))}
