@@ -1,9 +1,16 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { Share2 } from 'lucide-react';
-import { getPageBySlug } from '@/lib/pageStore';
+import { getPageBySlug, getPages } from '@/lib/pageStore';
 import Link from 'next/link';
 import { PrintButton } from '@/components/ui/PrintButton';
+
+export async function generateStaticParams() {
+  const pages = await getPages();
+  return pages.map((page) => ({
+    slug: page.slug.split('/'),
+  }));
+}
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string[] }> }): Promise<Metadata> {
   const { slug } = await params;

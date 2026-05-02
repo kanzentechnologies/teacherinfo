@@ -8,6 +8,13 @@ import { PrintButton } from "@/components/ui/PrintButton";
 
 export const revalidate = 60;
 
+export async function generateStaticParams() {
+  const announcements = await getAnnouncements();
+  return announcements.map((a) => ({
+    id: a.id.toString(),
+  }));
+}
+
 export default async function AnnouncementDetailPage({
   params,
 }: {
