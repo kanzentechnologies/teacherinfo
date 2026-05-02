@@ -6,22 +6,7 @@ import { EmbedIframe } from "@/components/ui/EmbedIframe";
 import { notFound } from "next/navigation";
 import { PrintButton } from "@/components/ui/PrintButton";
 
-export const dynamicParams = false;
-
-export async function generateStaticParams() {
-  try {
-    const announcements = await getAnnouncements();
-    if (!announcements || announcements.length === 0) {
-      return [{ id: "1" }]; // fallback
-    }
-    return announcements.map((announcement) => ({
-      id: announcement.id.toString(),
-    }));
-  } catch (e) {
-    console.error("Error generating static params for announcements:", e);
-    return [{ id: "1" }];
-  }
-}
+export const revalidate = 60;
 
 export default async function AnnouncementDetailPage({
   params,

@@ -15,7 +15,7 @@ export const defaultQuickLinks: QuickLinkType[] = [
   { id: 3, title: 'Softwares', link: '/category/softwares', icon: 'Monitor', color: 'purple', order: 3 },
   { id: 4, title: 'Forms', link: '/category/forms', icon: 'ClipboardList', color: 'orange', order: 4 },
   { id: 5, title: 'Academics', link: '/category/academics', icon: 'BookOpen', color: 'teal', order: 5 },
-  { id: 6, title: 'Services', link: '/category/services', icon: 'Briefcase', color: 'rose', order: 6 },
+  { id: 6, title: 'Services', link: '/services', icon: 'Briefcase', color: 'rose', order: 6 },
 ];
 
 let cachedLinks = [...defaultQuickLinks];

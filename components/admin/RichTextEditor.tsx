@@ -15,6 +15,7 @@ import { Color } from '@tiptap/extension-color';
 import { TextStyle } from '@tiptap/extension-text-style';
 import { Highlight } from '@tiptap/extension-highlight';
 import FontFamily from '@tiptap/extension-font-family';
+import TiptapImage from '@tiptap/extension-image';
 import { 
   Bold, 
   Italic, 
@@ -45,7 +46,8 @@ import {
   ChevronDown,
   Baseline,
   Type as TypeIcon,
-  Trash2
+  Trash2,
+  Paperclip
 } from 'lucide-react';
 
 // Custom Font Size Extension
@@ -521,9 +523,51 @@ const Toolbar = ({ editor }: ToolbarProps) => {
         <EditorButton onClick={() => editor.chain().focus().setTextAlign('right').run()} isActive={editor.isActive({ textAlign: 'right' })} title="Align Right"><AlignRight size={16} /></EditorButton>
       </div>
 
-      {/* Links & Tables */}
+      {/* Links & Tables & Uploads */}
       <div className="flex items-center gap-0.5 px-2">
         <EditorButton onClick={setLink} isActive={editor.isActive('link')} title="Insert Link"><LinkIcon size={16} /></EditorButton>
+        
+        <label className={`p-2 rounded-md transition-all flex items-center justify-center relative text-text-muted hover:bg-gray-100 hover:text-primary cursor-pointer`} title="Upload Image or File">
+          <Paperclip size={16} />
+          <input 
+            type="file" 
+            className="hidden" 
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+
+              const formData = new FormData();
+              formData.append('file', file);
+              
+              const isImage = file.type.startsWith('image/');
+
+              try {
+                const res = await fetch('/api/upload', {
+                  method: 'POST',
+                  body: formData,
+                });
+                
+                if (!res.ok) throw new Error('Upload failed');
+                
+                const data = await res.json();
+                
+                if (data.url) {
+                  if (isImage) {
+                    editor.chain().focus().setImage({ src: data.url }).run();
+                  } else {
+                    editor.chain().focus().insertContent(`<a href="${data.url}" class="text-secondary underline" target="_blank">${file.name}</a>`).run();
+                  }
+                }
+              } catch (error) {
+                console.error("Failed to upload", error);
+                alert("Failed to upload file");
+              }
+              
+              e.target.value = '';
+            }}
+          />
+        </label>
+
         <EditorButton onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()} title="Insert Table"><TableIcon size={16} /></EditorButton>
       </div>
 
@@ -597,6 +641,13 @@ export default function RichTextEditor({ value, onChange, placeholder = 'Start w
       Color,
       Highlight.configure({ multicolor: true }),
       FontSize,
+      TiptapImage.configure({
+        inline: true,
+        allowBase64: true,
+        HTMLAttributes: {
+          class: 'max-w-full rounded-md border border-border-main my-4 shadow-sm',
+        },
+      }),
     ],
     content: value,
     onUpdate: ({ editor }) => {

@@ -8,7 +8,6 @@ const adminLinks = [
   { name: 'Dashboard', href: '/admin/dashboard' },
   { name: 'Pages', href: '/admin/pages' },
   { name: 'Navigation Menu', href: '/admin/navbar' },
-  { name: 'Services', href: '/admin/services' },
   { name: 'Icon Links (Home)', href: '/admin/homepage-quick-links' },
   { name: 'Sidebar Links', href: '/admin/important-links' },
   { name: 'Announcements', href: '/admin/announcements' },

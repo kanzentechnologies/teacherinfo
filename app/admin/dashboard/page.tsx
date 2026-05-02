@@ -7,25 +7,23 @@ import { useEffect, useState } from 'react';
 import { getNavItems } from '@/lib/navStore';
 import { getPages } from '@/lib/pageStore';
 import { getContacts } from '@/lib/contactStore';
-import { getServices } from '@/lib/serviceStore';
+
 
 export default function AdminDashboard() {
-  const [stats, setStats] = useState({ pages: 0, items: 0, contacts: 0, services: 0 });
+  const [stats, setStats] = useState({ pages: 0, items: 0, contacts: 0 });
   const [recentItems, setRecentItems] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchStats = async () => {
-      const [navItems, pages, contacts, services] = await Promise.all([
+      const [navItems, pages, contacts] = await Promise.all([
         getNavItems(),
         getPages(),
-        getContacts(),
-        getServices()
+        getContacts()
       ]);
       setStats({
         pages: pages.length,
         items: navItems.length,
         contacts: contacts.length,
-        services: services.length,
       });
       setRecentItems(pages.slice(0, 5));
     };
@@ -54,7 +52,7 @@ export default function AdminDashboard() {
             { label: 'Total Pages', value: stats.pages, icon: FileText, color: 'text-blue-600' },
             { label: 'Total Nav Items', value: stats.items, icon: Users, color: 'text-green-600' },
             { label: 'Total Direct Contacts', value: stats.contacts, icon: Bell, color: 'text-orange-600' },
-            { label: 'Total Services', value: stats.services, icon: BarChart, color: 'text-purple-600' },
+
           ].map((stat, index) => {
             const Icon = stat.icon;
             return (

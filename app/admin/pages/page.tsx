@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { AdminWrapper } from '@/components/admin/AdminWrapper';
 import { PlusCircle, Edit, Trash2, FileEdit } from 'lucide-react';
 import { getPages, savePage, deletePage, PageItem } from '@/lib/pageStore';
+import { ConfirmModal } from '@/components/ui/ConfirmModal';
 
 const generateId = () => Date.now().toString();
 
@@ -12,6 +13,7 @@ export default function PagesManagement() {
   const [pages, setPages] = useState<PageItem[]>([]);
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [itemToDelete, setItemToDelete] = useState<string | null>(null);
 
   // Form state
   const [title, setTitle] = useState('');
@@ -68,13 +70,19 @@ export default function PagesManagement() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this page?')) return;
+  const handleDeleteClick = (id: string) => {
+    setItemToDelete(id);
+  };
+
+  const confirmDelete = async () => {
+    if (!itemToDelete) return;
     try {
-      await deletePage(id);
+      await deletePage(itemToDelete);
       await fetchPages();
     } catch (e: any) {
       alert("Error deleting page: " + e.message);
+    } finally {
+      setItemToDelete(null);
     }
   };
 
@@ -193,7 +201,7 @@ export default function PagesManagement() {
                     <button onClick={() => handleEdit(page)} className="text-text-muted hover:text-primary flex items-center gap-1">
                       <Edit size={14} /> Edit Details
                     </button>
-                    <button onClick={() => handleDelete(page.id)} className="text-red-500 hover:underline flex items-center gap-1">
+                    <button onClick={() => handleDeleteClick(page.id)} className="text-red-500 hover:underline flex items-center gap-1">
                       <Trash2 size={14} /> Delete
                     </button>
                   </td>
@@ -203,6 +211,14 @@ export default function PagesManagement() {
           </table>
         </div>
       </div>
+      
+      <ConfirmModal
+        isOpen={!!itemToDelete}
+        title="Delete Page"
+        message="Are you sure you want to delete this page? This action cannot be undone."
+        onConfirm={confirmDelete}
+        onCancel={() => setItemToDelete(null)}
+      />
     </AdminWrapper>
   );
 }

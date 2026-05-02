@@ -1,39 +1,9 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { Share2, Calendar } from 'lucide-react';
-import { getPages, getPageBySlug } from '@/lib/pageStore';
+import { Share2 } from 'lucide-react';
+import { getPageBySlug } from '@/lib/pageStore';
 import Link from 'next/link';
 import { PrintButton } from '@/components/ui/PrintButton';
-
-export const dynamicParams = false;
-
-export async function generateStaticParams() {
-  try {
-    const pages = await getPages();
-    if (!pages || pages.length === 0) {
-      console.warn('No items found for slug generation in [...slug]');
-      return [{ slug: ['_fallback'] }];
-    }
-    
-    const params: { slug: string[] }[] = [];
-    
-    for (const page of pages) {
-      if (page.status === 'Published' && page.slug) {
-        // Our new slugs might contain slashes if users entered them, e.g. "about/us".
-        // Split by '/' to form the slug array Next.js expects.
-        params.push({ slug: page.slug.split('/').filter(Boolean) });
-      }
-    }
-    
-    if (params.length === 0) {
-      params.push({ slug: ['_fallback'] });
-    }
-    return params;
-  } catch (e) {
-    console.error('Error generating static params in [...slug]:', e);
-    return [{ slug: ['_fallback'] }];
-  }
-}
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string[] }> }): Promise<Metadata> {
   const { slug } = await params;
@@ -70,15 +40,8 @@ export default async function Page({ params }: { params: Promise<{ slug: string[
     <div className="flex flex-col lg:flex-row gap-6">
       <div className="w-full flex flex-col gap-6">
         <div className="bg-white border border-border-main p-4 sm:p-6">
-          <div className="flex flex-col md:flex-row justify-between md:items-center gap-4 mb-4">
+          <div className="flex flex-col md:flex-row justify-between md:items-center gap-4 mb-4 border-b border-border-main pb-4">
             <h1 className="text-2xl md:text-3xl font-bold text-primary leading-tight break-words">{item.title}</h1>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-4 text-sm text-text-muted border-b border-border-main pb-4 mb-6">
-            <div className="flex items-center gap-1">
-              <Calendar size={16} />
-              <span>Published: {item.created_at ? new Date(item.created_at).toLocaleDateString() : 'Recently'}</span>
-            </div>
           </div>
           
           <div 

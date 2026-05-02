@@ -5,6 +5,7 @@ import { AdminWrapper } from '@/components/admin/AdminWrapper';
 import { PlusCircle, Edit, Trash2 } from 'lucide-react';
 import { Announcement, getAnnouncements, saveAnnouncement, deleteAnnouncement } from '@/lib/announcementStore';
 import RichTextEditor from '@/components/admin/RichTextEditor';
+import { ConfirmModal } from '@/components/ui/ConfirmModal';
 
 const generateId = () => Date.now();
 
@@ -12,6 +13,7 @@ export default function AnnouncementsManagementPage() {
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [itemToDelete, setItemToDelete] = useState<number | null>(null);
 
   const [title, setTitle] = useState('');
   const [priority, setPriority] = useState<'High' | 'Normal'>('Normal');
@@ -48,10 +50,15 @@ export default function AnnouncementsManagementPage() {
     setIsAdding(true);
   };
 
-  const handleDelete = async (id: number) => {
-    if (confirm('Are you sure you want to delete this announcement?')) {
-      await deleteAnnouncement(id);
+  const handleDeleteClick = (id: number) => {
+    setItemToDelete(id);
+  };
+
+  const confirmDelete = async () => {
+    if (itemToDelete !== null) {
+      await deleteAnnouncement(itemToDelete);
       loadAnnouncements();
+      setItemToDelete(null);
     }
   };
 
@@ -232,7 +239,7 @@ export default function AnnouncementsManagementPage() {
                     </td>
                     <td className="px-4 py-3 text-right">
                       <button onClick={() => handleEdit(item)} className="text-secondary hover:underline mr-3 inline-flex items-center gap-1"><Edit size={14}/> Edit</button>
-                      <button onClick={() => handleDelete(item.id)} className="text-red-600 hover:underline inline-flex items-center gap-1"><Trash2 size={14}/> Delete</button>
+                      <button onClick={() => handleDeleteClick(item.id)} className="text-red-600 hover:underline inline-flex items-center gap-1"><Trash2 size={14}/> Delete</button>
                     </td>
                   </tr>
                 ))}
@@ -241,6 +248,13 @@ export default function AnnouncementsManagementPage() {
           </div>
         </div>
       </div>
+      <ConfirmModal
+        isOpen={itemToDelete !== null}
+        title="Delete Announcement"
+        message="Are you sure you want to delete this announcement? This action cannot be undone."
+        onConfirm={confirmDelete}
+        onCancel={() => setItemToDelete(null)}
+      />
     </AdminWrapper>
   );
 }

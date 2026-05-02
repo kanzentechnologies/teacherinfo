@@ -21,7 +21,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   // Dynamic category routes
   const categories = [
     'useful-links', 'income-tax', 'gos-and-proceedings', 
-    'softwares', 'forms', 'academics', 'services',
+    'softwares', 'forms', 'academics',
     'updates', 'study-materials', 'previous-papers', 'jobs', 'results', 'downloads'
   ];
   const categoryRoutes = categories.map((slug) => ({

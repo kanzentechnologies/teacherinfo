@@ -50,10 +50,11 @@ export function Navigation() {
         </button>
       </div>
 
-      <ul className={`${isOpen ? 'block' : 'hidden'} md:flex flex-col md:flex-row w-full`}>
+      <ul className={`${isOpen ? 'max-h-[2000px]' : 'max-h-0 md:max-h-none'} transition-all duration-300 ease-in-out overflow-hidden md:overflow-visible md:flex flex-col md:flex-row w-full`}>
         <li className="relative group border-b md:border-b-0 border-primary/20 md:border-r border-primary/30 last:border-r-0">
           <Link 
             href="/"
+            onClick={() => setIsOpen(false)}
             className="block px-4 py-3 hover:bg-primary transition-colors flex items-center justify-between md:justify-start gap-1 font-medium text-sm"
           >
             Home
@@ -66,29 +67,42 @@ export function Navigation() {
             onMouseEnter={() => setActiveDropdown(item.id)}
             onMouseLeave={() => setActiveDropdown(null)}
           >
-            <Link 
-              href={getUrl(item)}
-              className="block px-4 py-3 hover:bg-primary transition-colors flex items-center justify-between md:justify-start gap-1 font-medium text-sm"
-              target={getUrl(item).startsWith('http') ? '_blank' : '_self'}
-            >
-              {item.title}
-              {item.children && item.children.length > 0 && <ChevronDown size={16} className="opacity-70" />}
-            </Link>
+            <div className="flex md:block">
+              <Link 
+                href={getUrl(item)}
+                onClick={() => setIsOpen(false)}
+                className="w-full block px-4 py-3 hover:bg-primary transition-colors flex items-center justify-between md:justify-start gap-1 font-medium text-sm"
+                target={getUrl(item).startsWith('http') ? '_blank' : '_self'}
+              >
+                {item.title}
+                {item.children && item.children.length > 0 && <ChevronDown size={16} className="opacity-70 hidden md:block" />}
+              </Link>
+              {item.children && item.children.length > 0 && (
+                <button
+                  onClick={() => setActiveDropdown(activeDropdown === item.id ? null : item.id)}
+                  className="px-4 py-3 md:hidden hover:bg-primary border-l border-primary/20 flex items-center justify-center"
+                >
+                  <ChevronDown size={20} className={`transition-transform ${activeDropdown === item.id ? 'rotate-180' : ''}`} />
+                </button>
+              )}
+            </div>
             
             {item.children && item.children.length > 0 && (
               <div 
                 className={`
-                  md:absolute top-full left-0 bg-white text-text-main border border-border-main shadow-md min-w-[200px]
+                  md:absolute top-full left-0 bg-white md:text-text-main md:border border-border-main md:shadow-md min-w-[200px]
                   ${activeDropdown === item.id ? 'block' : 'hidden'}
                   md:group-hover:block
+                  border-t md:border-t-0 border-primary/20 bg-secondary md:bg-white
                 `}
               >
-                <ul className="py-2">
+                <ul className="py-0 md:py-2 flex flex-col">
                   {item.children.map((subItem) => (
-                    <li key={subItem.id}>
+                    <li key={subItem.id} className="border-b border-primary/20 md:border-none last:border-none">
                       <Link 
                         href={getUrl(subItem)}
-                        className="block px-4 py-2 text-sm hover:bg-hover-bg hover:text-primary transition-colors"
+                        onClick={() => setIsOpen(false)}
+                        className="block px-8 md:px-4 py-3 md:py-2 text-sm text-white/80 md:text-text-main hover:bg-primary md:hover:bg-hover-bg hover:text-white md:hover:text-primary transition-colors"
                         target={getUrl(subItem).startsWith('http') ? '_blank' : '_self'}
                       >
                         {subItem.title}

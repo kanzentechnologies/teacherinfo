@@ -3,7 +3,7 @@ import Link from 'next/link';
 export function Footer() {
   return (
     <footer className="bg-primary text-white mt-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-8 py-10 grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-8 py-10 grid grid-cols-1 md:grid-cols-2 gap-8">
         <div>
           <h3 className="text-lg font-bold mb-4 border-b border-white/20 pb-2">About Us</h3>
           <p className="text-sm text-gray-300 leading-relaxed">
@@ -19,16 +19,6 @@ export function Footer() {
             <li><Link href="/category/income-tax" className="hover:text-accent hover:underline">Income Tax</Link></li>
             <li><Link href="/category/gos-and-proceedings" className="hover:text-accent hover:underline">GO’s & Proceedings</Link></li>
             <li><Link href="/about" className="hover:text-accent hover:underline">About Us</Link></li>
-          </ul>
-        </div>
-
-        <div>
-          <h3 className="text-lg font-bold mb-4 border-b border-white/20 pb-2">Resources</h3>
-          <ul className="space-y-2 text-sm text-gray-300">
-            <li><Link href="/category/softwares" className="hover:text-accent hover:underline">Softwares</Link></li>
-            <li><Link href="/category/forms" className="hover:text-accent hover:underline">Forms</Link></li>
-            <li><Link href="/category/academics" className="hover:text-accent hover:underline">Academics</Link></li>
-            <li><Link href="/category/services" className="hover:text-accent hover:underline">Services</Link></li>
           </ul>
         </div>
       </div>

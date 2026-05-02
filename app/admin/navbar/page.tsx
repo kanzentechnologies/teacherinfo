@@ -7,6 +7,7 @@ import { PlusCircle, GripVertical, Edit, Trash2 } from 'lucide-react';
 import { getNavTree, saveNavItems, deleteNavItem, NavItem, saveNavItem } from '@/lib/navStore';
 import { Reorder } from 'motion/react';
 import { PageLinkSelector } from '@/components/admin/PageLinkSelector';
+import { ConfirmModal } from '@/components/ui/ConfirmModal';
 
 const generateId = () => Date.now().toString();
 
@@ -14,6 +15,7 @@ export default function NavbarManagementPage() {
   const [menuItems, setMenuItems] = useState<NavItem[]>([]);
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [itemToDelete, setItemToDelete] = useState<{ id: string, isChild: boolean, parentIdStr?: string } | null>(null);
   
   // Form state
   const [title, setTitle] = useState('');
@@ -137,14 +139,20 @@ export default function NavbarManagementPage() {
     resetForm();
   };
 
-  const handleDelete = async (id: string, isChild: boolean, parentIdStr?: string) => {
-    if (!confirm('Are you sure you want to delete this item?')) return;
+  const handleDeleteClick = (id: string, isChild: boolean, parentIdStr?: string) => {
+    setItemToDelete({ id, isChild, parentIdStr });
+  };
+
+  const confirmDelete = async () => {
+    if (!itemToDelete) return;
     try {
-      await deleteNavItem(id);
+      await deleteNavItem(itemToDelete.id);
       setMenuItems(await getNavTree());
       window.dispatchEvent(new Event('menuUpdated'));
     } catch (e: any) {
       alert("Error: " + e.message);
+    } finally {
+      setItemToDelete(null);
     }
   };
 
@@ -241,7 +249,7 @@ export default function NavbarManagementPage() {
                     </div>
                     <div className="flex items-center gap-3">
                       <button onClick={() => handleEdit(item)} className="text-secondary hover:underline text-sm flex items-center gap-1"><Edit size={14}/> Edit</button>
-                      <button onClick={() => handleDelete(item.id, false)} className="text-red-600 hover:underline text-sm flex items-center gap-1"><Trash2 size={14}/> Delete</button>
+                      <button onClick={() => handleDeleteClick(item.id, false)} className="text-red-600 hover:underline text-sm flex items-center gap-1"><Trash2 size={14}/> Delete</button>
                     </div>
                   </div>
                   
@@ -266,7 +274,7 @@ export default function NavbarManagementPage() {
                             </div>
                             <div className="flex items-center gap-3">
                               <button onClick={() => handleEdit(child, item.id)} className="text-secondary hover:underline text-xs">Edit</button>
-                              <button onClick={() => handleDelete(child.id, true, item.id)} className="text-red-600 hover:underline text-xs">Delete</button>
+                              <button onClick={() => handleDeleteClick(child.id, true, item.id)} className="text-red-600 hover:underline text-xs">Delete</button>
                             </div>
                           </Reorder.Item>
                         ))}
@@ -279,6 +287,14 @@ export default function NavbarManagementPage() {
           </div>
         </div>
       </div>
+      
+      <ConfirmModal
+        isOpen={!!itemToDelete}
+        title="Delete Navigation Item"
+        message="Are you sure you want to delete this navigation item? This action cannot be undone."
+        onConfirm={confirmDelete}
+        onCancel={() => setItemToDelete(null)}
+      />
     </AdminWrapper>
   );
 }
