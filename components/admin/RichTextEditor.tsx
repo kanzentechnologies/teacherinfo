@@ -660,16 +660,16 @@ export default function RichTextEditor({ value, onChange, placeholder = 'Start w
     },
   });
 
-  const [initialValueSet, setInitialValueSet] = React.useState(false);
+  const initialValueSet = React.useRef(false);
 
   React.useEffect(() => {
     if (editor && value !== undefined && typeof value === 'string') {
-      if (!initialValueSet && value !== '') {
+      if (!initialValueSet.current && value !== '') {
         editor.commands.setContent(value);
-        setInitialValueSet(true);
+        initialValueSet.current = true;
       }
     }
-  }, [editor, value, initialValueSet]);
+  }, [editor, value]);
 
   return (
     <div className="border border-border-main bg-white rounded-md overflow-hidden flex flex-col focus-within:border-secondary transition-colors shadow-sm">

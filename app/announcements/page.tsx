@@ -22,46 +22,67 @@ export default async function AnnouncementsPage() {
         </div>
       </div>
 
-      <div className="space-y-4">
-        {activeAnnouncements.length === 0 ? (
-          <div className="text-center py-10 text-text-muted italic">
-            No announcements available at the moment.
-          </div>
-        ) : (
-          activeAnnouncements.map((item, index) => {
-            const isRecent = new Date().getTime() - new Date(item.date).getTime() < 7 * 24 * 60 * 60 * 1000;
-            const isHighPriority = item.priority === 'High';
-            
-            return (
-              <div key={item.id || index} className="flex gap-4 items-start border border-border-main p-4 hover:bg-gray-50 transition-colors">
-                <div className="mt-1 w-3 h-3 rounded-full bg-accent flex-shrink-0"></div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
-                    <div className="flex-1 min-w-0">
+      <div className="overflow-x-auto shadow-sm">
+        <table className="w-full border-collapse border border-border-main text-left bg-white">
+          <thead>
+            <tr className="bg-gray-100 text-primary border-b border-border-main">
+              <th className="p-3 border-r border-border-main w-12 text-center text-sm uppercase tracking-wide">#</th>
+              <th className="p-3 border-r border-border-main text-sm uppercase tracking-wide">Title & Status</th>
+              <th className="p-3 w-32 border-r border-border-main text-center text-sm uppercase tracking-wide">Date</th>
+              <th className="p-3 w-32 text-center text-sm uppercase tracking-wide">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {activeAnnouncements.length === 0 ? (
+              <tr>
+                <td colSpan={4} className="p-8 text-center text-text-muted italic">
+                  No announcements available at the moment.
+                </td>
+              </tr>
+            ) : (
+              activeAnnouncements.map((item, index) => {
+                const isRecent = new Date().getTime() - new Date(item.date).getTime() < 7 * 24 * 60 * 60 * 1000;
+                const isHighPriority = item.priority === 'High';
+                
+                return (
+                  <tr key={item.id || index} className="border-b border-border-main hover:bg-gray-50 transition-colors group">
+                    <td className="p-3 border-r border-border-main text-center font-bold text-gray-500">{index + 1}</td>
+                    <td className="p-3 border-r border-border-main">
                       {item.link ? (
-                        <a href={item.link} className="text-lg text-primary hover:text-secondary hover:underline font-bold break-words block">
+                        <a href={item.link} className="text-lg text-primary hover:text-secondary hover:underline font-bold break-words inline-flex items-center gap-2">
                           {item.title}
                         </a>
                       ) : (
-                        <Link href={`/announcements/${item.id}`} className="text-lg text-primary hover:text-secondary hover:underline font-bold break-words block">
+                        <Link href={`/announcements/${item.id}`} className="text-lg text-primary hover:text-secondary hover:underline font-bold break-words inline-flex items-center gap-2">
                           {item.title}
                         </Link>
                       )}
                       {(isRecent || isHighPriority) && (
-                        <span className="mt-2 inline-block bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-sm font-bold animate-pulse align-middle">
+                        <span className="ml-2 inline-block bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-sm font-bold animate-pulse align-middle">
                           NEW
                         </span>
                       )}
-                    </div>
-                    <div className="text-sm text-text-muted whitespace-nowrap flex-shrink-0">
+                    </td>
+                    <td className="p-3 border-r border-border-main text-center text-sm text-text-muted whitespace-nowrap">
                       {item.date}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            );
-          })
-        )}
+                    </td>
+                    <td className="p-3 text-center align-middle">
+                      {item.link ? (
+                        <a href={item.link} className="inline-flex items-center justify-center gap-1 w-full px-3 py-2 bg-primary text-white text-xs font-bold rounded hover:bg-secondary transition-colors uppercase tracking-wide shadow-sm">
+                          Visit
+                        </a>
+                      ) : (
+                        <Link href={`/announcements/${item.id}`} className="inline-flex items-center justify-center gap-1 w-full px-3 py-2 bg-primary text-white text-xs font-bold rounded hover:bg-secondary transition-colors uppercase tracking-wide shadow-sm">
+                          Read
+                        </Link>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })
+            )}
+          </tbody>
+        </table>
       </div>
       
       <div className="mt-8 text-center sm:text-left">

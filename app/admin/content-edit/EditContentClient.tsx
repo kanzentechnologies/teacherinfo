@@ -5,7 +5,9 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { AdminWrapper } from '@/components/admin/AdminWrapper';
 import RichTextEditor from '@/components/admin/RichTextEditor';
 import { getPageById, savePage, PageItem } from '@/lib/pageStore';
-import { PlusCircle, Trash2, GripVertical } from 'lucide-react';
+import { PlusCircle, Trash2, GripVertical, FileSearch } from 'lucide-react';
+import { FileSelector } from '@/components/admin/FileSelector';
+import { FileItem } from '@/lib/fileStore';
 
 interface LinkItem {
   id: string;
@@ -23,6 +25,7 @@ export default function EditContentClient() {
   const [content, setContent] = useState('');
   const [links, setLinks] = useState<LinkItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showFileSelectorFor, setShowFileSelectorFor] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchItem = async () => {
@@ -72,6 +75,19 @@ export default function EditContentClient() {
     setLinks(links.filter(l => l.id !== linkId));
   };
 
+  const handleFileSelect = (file: FileItem) => {
+    if (showFileSelectorFor) {
+      updateLink(showFileSelectorFor, 'url', file.url);
+      
+      // Optionally pre-fill title if empty
+      const targetLink = links.find(l => l.id === showFileSelectorFor);
+      if (targetLink && !targetLink.title) {
+        updateLink(showFileSelectorFor, 'title', file.name);
+      }
+    }
+    setShowFileSelectorFor(null);
+  };
+
   if (loading) {
     return <AdminWrapper><div className="p-6">Loading...</div></AdminWrapper>;
   }
@@ -82,6 +98,13 @@ export default function EditContentClient() {
 
   return (
     <AdminWrapper>
+      {showFileSelectorFor && (
+        <FileSelector 
+          onSelect={handleFileSelect} 
+          onClose={() => setShowFileSelectorFor(null)} 
+        />
+      )}
+      
       <div className="flex flex-col gap-6">
         <div className="bg-white border border-border-main p-4 sm:p-6 flex justify-between items-center">
           <div>
@@ -140,7 +163,16 @@ export default function EditContentClient() {
                           />
                         </div>
                         <div>
-                          <label className="block text-xs font-bold text-gray-600 mb-1">URL / Target</label>
+                          <label className="block text-xs font-bold text-gray-600 mb-1 flex justify-between">
+                            URL / Target
+                            <button 
+                              onClick={() => setShowFileSelectorFor(link.id)}
+                              className="text-primary hover:text-secondary flex items-center gap-1"
+                              title="Select uploaded file"
+                            >
+                              <FileSearch size={12} /> Select File
+                            </button>
+                          </label>
                           <input 
                             type="text" 
                             className="w-full border border-border-main p-2 text-sm bg-white" 
