@@ -5,14 +5,8 @@ import { getPageBySlug, getPages } from '@/lib/pageStore';
 import Link from 'next/link';
 import { PrintButton } from '@/components/ui/PrintButton';
 
-export const revalidate = 60;
-
-export async function generateStaticParams() {
-  const pages = await getPages();
-  return pages.map((page) => ({
-    slug: page.slug.split('/'),
-  }));
-}
+export const runtime = 'edge';
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string[] }> }): Promise<Metadata> {
   const { slug } = await params;

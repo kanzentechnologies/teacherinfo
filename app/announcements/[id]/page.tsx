@@ -6,14 +6,8 @@ import { EmbedIframe } from "@/components/ui/EmbedIframe";
 import { notFound } from "next/navigation";
 import { PrintButton } from "@/components/ui/PrintButton";
 
-export const revalidate = 60;
-
-export async function generateStaticParams() {
-  const announcements = await getAnnouncements();
-  return announcements.map((a) => ({
-    id: a.id.toString(),
-  }));
-}
+export const runtime = 'edge';
+export const dynamic = 'force-dynamic';
 
 export default async function AnnouncementDetailPage({
   params,

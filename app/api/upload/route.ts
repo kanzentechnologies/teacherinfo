@@ -2,6 +2,8 @@ import { r2 } from '@/lib/r2';
 import { PutObjectCommand } from '@aws-sdk/client-s3';
 import { NextResponse } from 'next/server';
 
+export const runtime = 'edge';
+
 export async function POST(request: Request) {
   try {
     const formData = await request.formData();
@@ -11,7 +13,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 });
     }
 
-    const buffer = Buffer.from(await file.arrayBuffer());
+    const arrayBuffer = await file.arrayBuffer();
+    const body = new Uint8Array(arrayBuffer);
     
     // Create a unique filename
     const uniqueId = Date.now().toString(36) + Math.random().toString(36).substring(2, 7);
@@ -21,7 +24,7 @@ export async function POST(request: Request) {
       new PutObjectCommand({
         Bucket: process.env.R2_BUCKET_NAME,
         Key: fileName,
-        Body: buffer,
+        Body: body,
         ContentType: file.type,
       })
     );

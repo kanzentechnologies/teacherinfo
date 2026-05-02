@@ -5,6 +5,9 @@ import { ImportantLinks } from '@/components/home/ImportantLinks';
 import { UpdatesTicker } from '@/components/home/UpdatesTicker';
 import { HeroBanner } from '@/components/home/HeroBanner';
 
+export const runtime = 'edge';
+export const dynamic = 'force-dynamic';
+
 export default async function Home() {
   const [announcements, importantLinks] = await Promise.all([
     getAnnouncements(),
