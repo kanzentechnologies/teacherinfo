@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useRef, useState, useEffect } from 'react';
-import { RefreshCw, ArrowLeft, ArrowRight, ExternalLink, Loader2, AlertCircle } from 'lucide-react';
+import { RefreshCw, ArrowLeft, ArrowRight, ExternalLink, Loader2, AlertCircle, ZoomIn, ZoomOut, Maximize2, Minimize2, RotateCcw } from 'lucide-react';
 
 function processUrlForEmbed(rawUrl: string): string {
   if (!rawUrl) return '';
@@ -63,6 +63,8 @@ export function EmbedIframe({ url, title }: { url: string, title?: string }) {
 
   const [showHint, setShowHint] = useState(false);
   const [containerWidth, setContainerWidth] = useState(0);
+  const [customZoom, setCustomZoom] = useState(1);
+  const [isMinimized, setIsMinimized] = useState(false);
 
   if (processedUrl !== prevProcessedUrl || frameKey !== prevFrameKey) {
     setPrevProcessedUrl(processedUrl);
@@ -121,8 +123,13 @@ export function EmbedIframe({ url, title }: { url: string, title?: string }) {
     }
   };
 
+  const zoomIn = () => setCustomZoom(prev => Math.min(prev + 0.1, 2));
+  const zoomOut = () => setCustomZoom(prev => Math.max(prev - 0.1, 0.5));
+  const resetZoom = () => setCustomZoom(1);
+
   const DESKTOP_WIDTH = 1280;
-  const scale = containerWidth && containerWidth < DESKTOP_WIDTH ? containerWidth / DESKTOP_WIDTH : 1;
+  const responsiveScale = containerWidth && containerWidth < DESKTOP_WIDTH ? containerWidth / DESKTOP_WIDTH : 1;
+  const finalScale = responsiveScale * customZoom;
 
   const getDisplayUrl = () => {
     if (frameKey === 0 || !refreshTimestamp) return processedUrl;
@@ -144,18 +151,64 @@ export function EmbedIframe({ url, title }: { url: string, title?: string }) {
   const activeSrc = getDisplayUrl();
 
   return (
-    <div className="mt-8 border border-border-main bg-gray-50 rounded-sm shadow-sm flex flex-col h-[75vh] min-h-[500px]">
+    <div 
+      className={`mt-4 border border-border-main bg-gray-50 rounded-sm shadow-sm flex flex-col transition-all duration-300 ${isMinimized ? 'h-auto min-h-0' : 'h-[75vh] min-h-[500px]'}`}
+      id="embed-iframe-container"
+    >
       {/* Browser Bar */}
       <div className="bg-[#f0f0f0] border-b border-border-main px-3 py-2 flex items-center justify-between text-text-main rounded-t-sm shadow-sm z-10 w-full relative">
         <div className="flex items-center gap-1.5 shrink-0">
-          <button onClick={handleBack} className="p-1.5 hover:bg-gray-300 rounded transition-colors text-gray-700" title="Go Back (May be blocked by browser)">
+          <button 
+            id="iframe-back-btn"
+            onClick={handleBack} 
+            className="p-1.5 hover:bg-gray-300 rounded transition-colors text-gray-700" 
+            title="Go Back"
+          >
             <ArrowLeft size={16} />
           </button>
-          <button onClick={handleForward} className="p-1.5 hover:bg-gray-300 rounded transition-colors text-gray-700" title="Go Forward (May be blocked by browser)">
+          <button 
+            id="iframe-forward-btn"
+            onClick={handleForward} 
+            className="p-1.5 hover:bg-gray-300 rounded transition-colors text-gray-700" 
+            title="Go Forward"
+          >
             <ArrowRight size={16} />
           </button>
-          <button onClick={handleReload} className="p-1.5 hover:bg-gray-300 rounded transition-colors text-gray-700" title="Reload Frame">
+          <button 
+            id="iframe-reload-btn"
+            onClick={handleReload} 
+            className="p-1.5 hover:bg-gray-300 rounded transition-colors text-gray-700" 
+            title="Reload Frame"
+          >
             <RefreshCw size={16} />
+          </button>
+          
+          <div className="h-6 w-[1px] bg-gray-300 mx-1" />
+          
+          <button 
+            id="iframe-zoom-out-btn"
+            onClick={zoomOut} 
+            className="p-1.5 hover:bg-gray-300 rounded transition-colors text-gray-700" 
+            title="Zoom Out"
+          >
+            <ZoomOut size={16} />
+          </button>
+          <span className="text-[10px] font-mono text-gray-500 w-8 text-center">{Math.round(customZoom * 100)}%</span>
+          <button 
+            id="iframe-zoom-in-btn"
+            onClick={zoomIn} 
+            className="p-1.5 hover:bg-gray-300 rounded transition-colors text-gray-700" 
+            title="Zoom In"
+          >
+            <ZoomIn size={16} />
+          </button>
+          <button 
+            id="iframe-zoom-reset-btn"
+            onClick={resetZoom} 
+            className="p-1.5 hover:bg-gray-300 rounded transition-colors text-gray-700" 
+            title="Reset Zoom"
+          >
+            <RotateCcw size={14} />
           </button>
         </div>
         
@@ -165,15 +218,32 @@ export function EmbedIframe({ url, title }: { url: string, title?: string }) {
             </div>
         </div>
 
-        <div className="shrink-0">
-          <a href={url} target="_blank" rel="noopener noreferrer" className="p-1.5 flex items-center gap-1 hover:bg-gray-300 rounded transition-colors text-gray-700 text-xs font-bold" title="Open in New Tab">
+        <div className="flex items-center gap-1.5 shrink-0">
+          <button 
+            id="iframe-minimize-toggle"
+            onClick={() => setIsMinimized(!isMinimized)} 
+            className="p-1.5 hover:bg-gray-300 rounded transition-colors text-gray-700" 
+            title={isMinimized ? "Show Content" : "Hide Content"}
+          >
+            {isMinimized ? <Maximize2 size={16} /> : <Minimize2 size={16} />}
+          </button>
+          
+          <a 
+            id="iframe-external-link"
+            href={url} 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className="p-1.5 flex items-center gap-1 hover:bg-gray-300 rounded transition-colors text-gray-700 text-xs font-bold" 
+            title="Open in New Tab"
+          >
             <span>Open</span>
             <ExternalLink size={14} />
           </a>
         </div>
       </div>
       {/* Frame Container */}
-      <div className="flex-1 w-full bg-white relative overflow-hidden rounded-b-sm" ref={containerRef}>
+      {!isMinimized && (
+        <div className="flex-1 w-full bg-white relative overflow-hidden rounded-b-sm" ref={containerRef}>
         {isLoading && (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-white z-0 text-text-muted">
             <Loader2 className="h-8 w-8 animate-spin text-primary mb-2" />
@@ -187,9 +257,9 @@ export function EmbedIframe({ url, title }: { url: string, title?: string }) {
           title={title || "Embedded Content"}
           className={`border-0 absolute top-0 left-0 z-10 transition-opacity duration-300 ${isLoading ? 'opacity-0' : 'opacity-100'}`}
           style={{
-            width: scale < 1 ? `${DESKTOP_WIDTH}px` : '100%',
-            height: scale < 1 ? `${100 / scale}%` : '100%',
-            transform: scale < 1 ? `scale(${scale})` : 'none',
+            width: finalScale < 1 ? `${DESKTOP_WIDTH / customZoom}px` : '100%',
+            height: finalScale < 1 ? `${(100 / finalScale)}%` : '100%',
+            transform: `scale(${finalScale})`,
             transformOrigin: '0 0'
           }}
           allowFullScreen
@@ -210,6 +280,7 @@ export function EmbedIframe({ url, title }: { url: string, title?: string }) {
           </div>
         )}
       </div>
-    </div>
+    )}
+  </div>
   );
 }

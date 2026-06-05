@@ -112,9 +112,6 @@ export default function AdminLogin() {
           </button>
         </form>
         
-        <div className="mt-6 text-center text-xs text-text-muted">
-          <p>Login with your Supabase authenticated account.</p>
-        </div>
       </div>
     </div>
   );
