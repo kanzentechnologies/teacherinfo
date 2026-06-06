@@ -66,6 +66,17 @@ export function EmbedIframe({ url, title }: { url: string, title?: string }) {
   const [customZoom, setCustomZoom] = useState(1);
   const [isMinimized, setIsMinimized] = useState(false);
 
+  // Check if URL is known to block iframes
+  const isKnownBlocked = React.useMemo(() => {
+    try {
+      const u = new URL(processedUrl);
+      const blocked = ['github.com', 'twitter.com', 'x.com', 'linkedin.com', 'facebook.com', 'instagram.com', 'stackoverflow.com', 'medium.com', 'reddit.com'];
+      return blocked.some(domain => u.hostname === domain || u.hostname.endsWith('.' + domain));
+    } catch {
+      return false;
+    }
+  }, [processedUrl]);
+
   if (processedUrl !== prevProcessedUrl || frameKey !== prevFrameKey) {
     setPrevProcessedUrl(processedUrl);
     setPrevFrameKey(frameKey);
@@ -244,32 +255,52 @@ export function EmbedIframe({ url, title }: { url: string, title?: string }) {
       {/* Frame Container */}
       {!isMinimized && (
         <div className="flex-1 w-full bg-white relative overflow-hidden rounded-b-sm" ref={containerRef}>
-        {isLoading && (
+        {isLoading && !isKnownBlocked && (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-white z-0 text-text-muted">
             <Loader2 className="h-8 w-8 animate-spin text-primary mb-2" />
             <span className="text-sm font-medium">Loading content...</span>
           </div>
         )}
-        <iframe
-          key={`${processedUrl}-${frameKey}`}
-          ref={iframeRef}
-          src={activeSrc}
-          title={title || "Embedded Content"}
-          className={`border-0 absolute top-0 left-0 z-10 transition-opacity duration-300 ${isLoading ? 'opacity-0' : 'opacity-100'}`}
-          style={{
-            width: finalScale < 1 ? `${DESKTOP_WIDTH / customZoom}px` : '100%',
-            height: finalScale < 1 ? `${(100 / finalScale)}%` : '100%',
-            transform: `scale(${finalScale})`,
-            transformOrigin: '0 0'
-          }}
-          allowFullScreen
-          referrerPolicy="no-referrer"
-          onLoad={() => {
-            setIsLoading(false);
-            setShowHint(true);
-          }}
-        />
-        {showHint && (
+        
+        {isKnownBlocked ? (
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-50 z-20 text-text-main p-6 text-center border-t border-border-main">
+            <AlertCircle className="h-10 w-10 text-orange-500 mb-3" />
+            <h3 className="text-lg font-bold mb-2">Embedding Restricted</h3>
+            <p className="text-sm text-text-muted max-w-md mb-4 mt-2">
+              This website ({new URL(processedUrl).hostname}) blocks other websites from embedding its content for security reasons.
+            </p>
+            <a 
+              href={url} 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="px-6 py-2 bg-primary text-white text-sm font-bold rounded shadow-sm hover:opacity-90 flex items-center gap-2"
+            >
+              Open Link in New Tab <ExternalLink size={16} />
+            </a>
+          </div>
+        ) : (
+          <iframe
+            key={`${processedUrl}-${frameKey}`}
+            ref={iframeRef}
+            src={activeSrc}
+            title={title || "Embedded Content"}
+            className={`border-0 absolute top-0 left-0 z-10 transition-opacity duration-300 ${isLoading ? 'opacity-0' : 'opacity-100'}`}
+            style={{
+              width: finalScale < 1 ? `${DESKTOP_WIDTH / customZoom}px` : '100%',
+              height: finalScale < 1 ? `${(100 / finalScale)}%` : '100%',
+              transform: `scale(${finalScale})`,
+              transformOrigin: '0 0'
+            }}
+            allowFullScreen
+            referrerPolicy="no-referrer"
+            onLoad={() => {
+              setIsLoading(false);
+              setShowHint(true);
+            }}
+          />
+        )}
+
+        {showHint && !isKnownBlocked && (
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 bg-gray-800 text-white text-xs px-3 py-2 rounded-full shadow-lg opacity-80 hover:opacity-100 flex items-center gap-2 transition-opacity duration-300">
              <AlertCircle size={14} />
              <span>Blank? Some websites block embedding.</span>
