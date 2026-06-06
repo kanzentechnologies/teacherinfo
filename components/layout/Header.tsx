@@ -7,7 +7,7 @@ export function Header() {
       <div className="flex items-center gap-4">
         <Link href="/">
           <Image 
-            src="https://firebasestorage.googleapis.com/v0/b/studio-6624311534-29f23.firebasestorage.app/o/logo.png?alt=media&token=79cb88ef-c95b-4959-a8f3-79da6a33f3c4" 
+            src="https://pub-394d485f92444007bc7c08718b11be20.r2.dev/logo.png" 
             alt="Teacher Info Portal Logo" 
             width={64} 
             height={64} 

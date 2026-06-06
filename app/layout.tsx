@@ -40,7 +40,7 @@ export const metadata: Metadata = {
     type: 'website',
     images: [
       {
-        url: 'https://firebasestorage.googleapis.com/v0/b/studio-6624311534-29f23.firebasestorage.app/o/logo.png?alt=media&token=79cb88ef-c95b-4959-a8f3-79da6a33f3c4',
+        url: 'https://pub-394d485f92444007bc7c08718b11be20.r2.dev/logo.png',
         width: 1200,
         height: 630,
         alt: 'Teacher Info Portal',
@@ -51,11 +51,11 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Teacher Info Portal - AP/TS Teachers & Education Updates',
     description: 'Latest AP/TS Teachers updates, Manabadi results, PRC, Employees news, DSC/TET notifications, and study materials.',
-    images: ['https://firebasestorage.googleapis.com/v0/b/studio-6624311534-29f23.firebasestorage.app/o/logo.png?alt=media&token=79cb88ef-c95b-4959-a8f3-79da6a33f3c4'],
+    images: ['https://pub-394d485f92444007bc7c08718b11be20.r2.dev/logo.png'],
   },
   icons: {
-    icon: 'https://firebasestorage.googleapis.com/v0/b/studio-6624311534-29f23.firebasestorage.app/o/logo.png?alt=media&token=79cb88ef-c95b-4959-a8f3-79da6a33f3c4',
-    apple: 'https://firebasestorage.googleapis.com/v0/b/studio-6624311534-29f23.firebasestorage.app/o/logo.png?alt=media&token=79cb88ef-c95b-4959-a8f3-79da6a33f3c4',
+    icon: 'https://pub-394d485f92444007bc7c08718b11be20.r2.dev/logo.png',
+    apple: 'https://pub-394d485f92444007bc7c08718b11be20.r2.dev/logo.png',
   },
   robots: {
     index: true,
