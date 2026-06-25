@@ -49,21 +49,32 @@ export default function PagesManagement() {
     // Remove leading and trailing slashes to ensure it matches properly
     slug = slug.replace(/^\/+/, '').replace(/\/+$/, '');
 
-    const newPage: PageItem = {
-      id: editingId || generateId(),
-      title,
-      slug,
-      content: layout === 'links' ? '[]' : '', // default content
-      status: 'Published',
-      layout
-    };
+    let finalContent = layout === 'links' ? '[]' : '';
 
     if (editingId) {
       const existing = pages.find(p => p.id === editingId);
       if (existing) {
-        newPage.content = existing.content;
+        if (existing.layout !== layout) {
+          // Layout changed: initialize appropriately
+          const confirmSwitch = window.confirm(
+            `Warning: Changing the page layout will reset the existing page content. Are you sure you want to change to a ${layout === 'links' ? 'Links' : 'Rich Content'} layout?`
+          );
+          if (!confirmSwitch) return;
+          finalContent = layout === 'links' ? '[]' : '';
+        } else {
+          finalContent = existing.content;
+        }
       }
     }
+
+    const newPage: PageItem = {
+      id: editingId || generateId(),
+      title,
+      slug,
+      content: finalContent,
+      status: 'Published',
+      layout
+    };
 
     try {
       await savePage(newPage);
@@ -152,35 +163,47 @@ export default function PagesManagement() {
                 />
               </div>
 
-              {!editingId && (
-                <div className="md:col-span-2 mt-2">
-                  <label className="block text-sm font-bold text-primary mb-2">Page Layout / Type</label>
-                  <div className="flex gap-4">
-                    <label className="flex items-center gap-2 cursor-pointer bg-gray-50 p-3 rounded border border-border-main flex-1">
-                      <input 
-                        type="radio" 
-                        name="layout" 
-                        value="content"
-                        checked={layout === 'content'}
-                        onChange={() => setLayout('content')}
-                        className="text-primary focus:ring-primary h-4 w-4"
-                      />
-                      <span className="text-sm font-medium">Rich Content Page</span>
-                    </label>
-                    <label className="flex items-center gap-2 cursor-pointer bg-gray-50 p-3 rounded border border-border-main flex-1">
-                      <input 
-                        type="radio" 
-                        name="layout" 
-                        value="links"
-                        checked={layout === 'links'}
-                        onChange={() => setLayout('links')}
-                        className="text-primary focus:ring-primary h-4 w-4"
-                      />
-                      <span className="text-sm font-medium">List View of Links</span>
-                    </label>
-                  </div>
+              <div className="md:col-span-2 mt-2">
+                <label className="block text-sm font-bold text-primary mb-2">Page Layout / Type</label>
+                <p className="text-xs text-text-muted mb-3">
+                  Choose how content is structured on this page. (Can be modified anytime, but changes will reset the layout content).
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <label className="flex items-start gap-3 cursor-pointer bg-gray-50 hover:bg-gray-100/75 p-4 rounded border border-border-main transition-colors">
+                    <input 
+                      type="radio" 
+                      name="layout" 
+                      value="content"
+                      checked={layout === 'content'}
+                      onChange={() => setLayout('content')}
+                      className="text-primary focus:ring-primary h-4 w-4 mt-1"
+                    />
+                    <div>
+                      <span className="block text-sm font-bold text-primary">Content-Related Page</span>
+                      <span className="block text-xs text-text-muted mt-1 leading-relaxed">
+                        For standard articles, announcements, formatted text, embedded images, and tables. Uses a Rich Text editor.
+                      </span>
+                    </div>
+                  </label>
+                  
+                  <label className="flex items-start gap-3 cursor-pointer bg-gray-50 hover:bg-gray-100/75 p-4 rounded border border-border-main transition-colors">
+                    <input 
+                      type="radio" 
+                      name="layout" 
+                      value="links"
+                      checked={layout === 'links'}
+                      onChange={() => setLayout('links')}
+                      className="text-primary focus:ring-primary h-4 w-4 mt-1"
+                    />
+                    <div>
+                      <span className="block text-sm font-bold text-primary">Links-Type Display</span>
+                      <span className="block text-xs text-text-muted mt-1 leading-relaxed">
+                        For a tabular list of links, downloads, and attachments (as seen on the Academics page). Easy list builder.
+                      </span>
+                    </div>
+                  </label>
                 </div>
-              )}
+              </div>
 
               <div className="md:col-span-2 flex justify-end gap-2 mt-4">
                 <button type="button" onClick={resetForm} className="px-4 py-2 border border-border-main text-sm font-bold text-text-muted">Cancel</button>
