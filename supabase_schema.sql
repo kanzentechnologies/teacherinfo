@@ -50,16 +50,7 @@ CREATE TABLE IF NOT EXISTS public.important_links (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 5. Quick Links Table (Homepage Icon Links)
-CREATE TABLE IF NOT EXISTS public.quick_links (
-    id BIGINT PRIMARY KEY,
-    title TEXT NOT NULL,
-    link TEXT NOT NULL,
-    icon TEXT NOT NULL DEFAULT 'Link',
-    color TEXT NOT NULL DEFAULT 'blue',
-    "order" INTEGER NOT NULL DEFAULT 0,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
+
 
 -- 6. Services Table (Homepage Official Services)
 CREATE TABLE IF NOT EXISTS public.services (
@@ -127,7 +118,6 @@ ALTER TABLE public.nav_items DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.announcements DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.contacts DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.important_links DISABLE ROW LEVEL SECURITY;
-ALTER TABLE public.quick_links DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.services DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.posts DISABLE ROW LEVEL SECURITY;
 
@@ -138,7 +128,6 @@ GRANT ALL ON public.nav_items TO anon, authenticated;
 GRANT ALL ON public.announcements TO anon, authenticated;
 GRANT ALL ON public.contacts TO anon, authenticated;
 GRANT ALL ON public.important_links TO anon, authenticated;
-GRANT ALL ON public.quick_links TO anon, authenticated;
 GRANT ALL ON public.services TO anon, authenticated;
 GRANT ALL ON public.posts TO anon, authenticated;
 
