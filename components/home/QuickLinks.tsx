@@ -1,47 +1,46 @@
 import Link from 'next/link';
-import { Calculator, FileText, Monitor, ClipboardList, BookOpen, Briefcase, LucideIcon, Folder, Link as LinkIcon } from 'lucide-react';
+import { ExternalLink, Link as LinkIcon } from 'lucide-react';
 import { QuickLinkType } from '@/lib/quickLinkStore';
-
-const iconMap: Record<string, LucideIcon> = {
-  'Calculator': Calculator,
-  'FileText': FileText,
-  'Monitor': Monitor,
-  'ClipboardList': ClipboardList,
-  'BookOpen': BookOpen,
-  'Briefcase': Briefcase,
-  'Link': LinkIcon
-};
-
-const colorClasses: Record<string, string> = {
-  'blue': 'bg-blue-50 text-blue-700 border-blue-200',
-  'green': 'bg-green-50 text-green-700 border-green-200',
-  'purple': 'bg-purple-50 text-purple-700 border-purple-200',
-  'orange': 'bg-orange-50 text-orange-700 border-orange-200',
-  'teal': 'bg-teal-50 text-teal-700 border-teal-200',
-  'rose': 'bg-rose-50 text-rose-700 border-rose-200',
-  'gray': 'bg-gray-50 text-gray-700 border-gray-200',
-};
 
 export function QuickLinks({ links }: { links: QuickLinkType[] }) {
   if (!links || links.length === 0) return null;
   const displayLinks = links.slice(0, 12);
   
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-      {displayLinks.map((item) => {
-        const Icon = iconMap[item.icon] || Folder;
-        const color = colorClasses[item.color] || colorClasses['gray'];
-        return (
-          <Link 
-            key={item.id} 
-            href={item.link}
-            className={`border p-4 flex flex-col items-center justify-center gap-3 text-center transition-colors hover:shadow-md ${color}`}
-          >
-            <Icon size={32} />
-            <span className="font-bold text-sm">{item.title}</span>
-          </Link>
-        );
-      })}
+    <div className="bg-white border border-border-main">
+      <div className="bg-gray-100 border-b border-border-main px-4 py-3 flex justify-between items-center">
+        <h3 className="font-bold text-primary flex items-center gap-2">
+          <LinkIcon size={18} /> Quick Links
+        </h3>
+      </div>
+      <ul className="divide-y divide-border-main">
+        {displayLinks.map((link) => {
+          const isInternal = link.link?.startsWith('/') || link.url?.startsWith('/');
+          const href = link.link || link.url || '/';
+          return (
+            <li key={link.id}>
+              {isInternal ? (
+                <Link 
+                  href={href}
+                  className="flex items-center justify-between px-4 py-3 hover:bg-hover-bg transition-colors text-sm text-text-main hover:text-primary font-medium"
+                >
+                  <span className="break-words max-w-[95%] min-w-0 flex-1">{link.title}</span>
+                </Link>
+              ) : (
+                <a 
+                  href={href} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between px-4 py-3 hover:bg-hover-bg transition-colors text-sm text-text-main hover:text-primary font-medium"
+                >
+                  <span className="break-words max-w-[90%] min-w-0 flex-1">{link.title}</span>
+                  <ExternalLink size={14} className="text-text-muted flex-shrink-0 ml-2" />
+                </a>
+              )}
+            </li>
+          );
+        })}
+      </ul>
     </div>
   );
 }

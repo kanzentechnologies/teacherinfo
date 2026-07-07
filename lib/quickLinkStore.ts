@@ -4,18 +4,16 @@ export type QuickLinkType = {
   id: number;
   title: string;
   link: string;
-  icon: string;
-  color: string;
   order: number;
 };
 
 export const defaultQuickLinks: QuickLinkType[] = [
-  { id: 1, title: 'Income Tax', link: '/category/income-tax', icon: 'Calculator', color: 'blue', order: 1 },
-  { id: 2, title: 'GO\'s & Proceedings', link: '/category/gos-and-proceedings', icon: 'FileText', color: 'green', order: 2 },
-  { id: 3, title: 'Softwares', link: '/category/softwares', icon: 'Monitor', color: 'purple', order: 3 },
-  { id: 4, title: 'Forms', link: '/category/forms', icon: 'ClipboardList', color: 'orange', order: 4 },
-  { id: 5, title: 'Academics', link: '/category/academics', icon: 'BookOpen', color: 'teal', order: 5 },
-  { id: 6, title: 'Services', link: '/services', icon: 'Briefcase', color: 'rose', order: 6 },
+  { id: 1, title: 'Income Tax', link: '/category/income-tax', order: 1 },
+  { id: 2, title: 'GO\'s & Proceedings', link: '/category/gos-and-proceedings', order: 2 },
+  { id: 3, title: 'Softwares', link: '/category/softwares', order: 3 },
+  { id: 4, title: 'Forms', link: '/category/forms', order: 4 },
+  { id: 5, title: 'Academics', link: '/category/academics', order: 5 },
+  { id: 6, title: 'Services', link: '/services', order: 6 },
 ];
 
 let cachedLinks = [...defaultQuickLinks];

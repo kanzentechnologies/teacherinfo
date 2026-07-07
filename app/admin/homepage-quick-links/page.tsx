@@ -10,9 +10,6 @@ import { PageLinkSelector } from '@/components/admin/PageLinkSelector';
 
 const generateId = () => Date.now();
 
-const iconList = ['Calculator', 'FileText', 'Monitor', 'ClipboardList', 'BookOpen', 'Briefcase', 'Link', 'ExternalLink', 'Info', 'File', 'Folder', 'User', 'Settings'];
-const colorList = ['blue', 'green', 'purple', 'orange', 'teal', 'rose', 'gray'];
-
 export default function HomepageQuickLinksPage() {
   const [links, setLinks] = useState<QuickLinkType[]>([]);
   const [isAdding, setIsAdding] = useState(false);
@@ -20,8 +17,6 @@ export default function HomepageQuickLinksPage() {
 
   const [title, setTitle] = useState('');
   const [linkUrl, setLinkUrl] = useState('');
-  const [icon, setIcon] = useState('Link');
-  const [color, setColor] = useState('blue');
 
   useEffect(() => {
     const fetchLinks = async () => {
@@ -38,8 +33,6 @@ export default function HomepageQuickLinksPage() {
   const resetForm = () => {
     setTitle('');
     setLinkUrl('');
-    setIcon('Link');
-    setColor('blue');
     setIsAdding(false);
     setEditingId(null);
   };
@@ -52,8 +45,6 @@ export default function HomepageQuickLinksPage() {
       id: editingId || generateId(),
       title,
       link: linkUrl,
-      icon,
-      color,
       order: editingId ? (links.find(l => l.id === editingId)?.order || 0) : links.length + 1,
     };
 
@@ -78,8 +69,6 @@ export default function HomepageQuickLinksPage() {
   const handleEdit = (linkItem: QuickLinkType) => {
     setTitle(linkItem.title);
     setLinkUrl(linkItem.link);
-    setIcon(linkItem.icon);
-    setColor(linkItem.color);
     setEditingId(linkItem.id);
     setIsAdding(true);
   };
@@ -125,26 +114,6 @@ export default function HomepageQuickLinksPage() {
                   label="URL / Link"
                 />
               </div>
-              <div>
-                <label className="block text-sm font-bold text-primary mb-1">Icon Theme</label>
-                <select 
-                  className="w-full border border-border-main p-2 text-sm"
-                  value={icon}
-                  onChange={(e) => setIcon(e.target.value)}
-                >
-                  {iconList.map(i => <option key={i} value={i}>{i}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-primary mb-1">Color Theme</label>
-                <select 
-                  className="w-full border border-border-main p-2 text-sm capitalize"
-                  value={color}
-                  onChange={(e) => setColor(e.target.value)}
-                >
-                  {colorList.map(i => <option key={i} value={i}>{i}</option>)}
-                </select>
-              </div>
               <div className="md:col-span-2 flex justify-end gap-2 mt-2">
                 <button type="button" onClick={resetForm} className="px-4 py-2 border border-border-main text-sm font-bold">Cancel</button>
                 <button type="submit" className="px-4 py-2 bg-primary text-white text-sm font-bold">Save Link</button>
@@ -169,7 +138,6 @@ export default function HomepageQuickLinksPage() {
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
-                      <div className="px-2 py-1 text-xs bg-gray-100 uppercase">{linkItem.color}</div>
                       <button onClick={() => handleEdit(linkItem)} className="text-secondary hover:underline text-sm flex items-center gap-1"><Edit size={14}/> Edit</button>
                       <button onClick={() => handleDelete(linkItem.id)} className="text-red-600 hover:underline text-sm flex items-center gap-1"><Trash2 size={14}/> Delete</button>
                     </div>
