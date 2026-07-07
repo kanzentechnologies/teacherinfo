@@ -30,13 +30,21 @@ export const getQuickLinks = async (): Promise<QuickLinkType[]> => {
   }
   
   if (data) {
-    cachedLinks = data as QuickLinkType[];
+    cachedLinks = data.map((d: any) => ({
+      ...d,
+      link: d.url || d.link
+    })) as QuickLinkType[];
   }
   return cachedLinks;
 };
 
 export const saveQuickLinks = async (links: QuickLinkType[]): Promise<void> => {
-  const { error } = await supabase.from('quick_links').upsert(links, { onConflict: 'id' });
+  // Map 'link' to 'url' for database compatibility and omit 'link'
+  const linksToSave = links.map(({ link, ...rest }) => ({
+    ...rest,
+    url: link
+  }));
+  const { error } = await supabase.from('quick_links').upsert(linksToSave, { onConflict: 'id' });
   if (error) {
     console.error('Error in write:', error.message || error);
     throw new Error(error.message || 'Write error');
