@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
+@source not "../.antigravity/**/*";
 
 @theme {
   --color-primary: #003366;
