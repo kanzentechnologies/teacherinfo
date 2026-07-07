@@ -21,6 +21,22 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
         title: `${item.title} | Teacher Info Portal`,
         description: item.content ? item.content.substring(0, 150).replace(/<[^>]*>?/gm, '') : `${item.title} at Teacher Info Portal`,
         url: `/${slugPath}`,
+        siteName: 'Teacher Info Portal',
+        type: 'website',
+        images: [
+          {
+            url: 'https://pub-394d485f92444007bc7c08718b11be20.r2.dev/logo.png',
+            width: 1200,
+            height: 630,
+            alt: item.title,
+          }
+        ]
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title: `${item.title} | Teacher Info Portal`,
+        description: item.content ? item.content.substring(0, 150).replace(/<[^>]*>?/gm, '') : `${item.title} at Teacher Info Portal`,
+        images: ['https://pub-394d485f92444007bc7c08718b11be20.r2.dev/logo.png'],
       },
     };
   }
@@ -43,6 +59,11 @@ export default async function Page({ params }: { params: Promise<{ slug: string[
   if (item.layout === 'links') {
     try {
       parsedLinks = JSON.parse(item.content || '[]');
+      parsedLinks.sort((a, b) => {
+        const titleA = a.title || '';
+        const titleB = b.title || '';
+        return titleA.localeCompare(titleB);
+      });
     } catch {
       parsedLinks = [];
     }
@@ -66,7 +87,6 @@ export default async function Page({ params }: { params: Promise<{ slug: string[
                     <tr className="bg-gray-100 text-primary border-b border-border-main">
                       <th className="p-3 border-r border-border-main w-12 text-center text-sm uppercase tracking-wide">#</th>
                       <th className="p-3 border-r border-border-main text-sm uppercase tracking-wide">Title & Description</th>
-                      <th className="p-3 w-32 text-center text-sm uppercase tracking-wide">Action</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -80,11 +100,6 @@ export default async function Page({ params }: { params: Promise<{ slug: string[
                           {link.description && (
                             <p className="text-sm text-text-muted mt-1 leading-relaxed">{link.description}</p>
                           )}
-                        </td>
-                        <td className="p-3 text-center align-middle">
-                          <a href={link.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-1 w-full px-3 py-2 bg-primary text-white text-xs font-bold rounded hover:bg-secondary transition-colors uppercase tracking-wide shadow-sm">
-                            Visit
-                          </a>
                         </td>
                       </tr>
                     ))}

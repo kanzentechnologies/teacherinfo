@@ -122,26 +122,26 @@ export default function PagesManagement() {
       <div className="flex flex-col gap-6">
         <div className="bg-white border border-border-main p-4 sm:p-6 flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold text-primary">All Pages Management</h1>
-            <p className="text-sm text-text-muted">Create and manage content for your website pages.</p>
+            <h1 className="text-2xl font-bold text-primary">Web Pages</h1>
+            <p className="text-sm text-text-muted">Create and manage pages for your website.</p>
           </div>
           <button 
             onClick={() => setIsAdding(true)}
             className="bg-accent text-primary font-bold py-2 px-4 rounded-sm hover:bg-yellow-400 transition-colors flex items-center gap-2 text-sm"
           >
             <PlusCircle size={18} />
-            Create Page
+            Create Web Page
           </button>
         </div>
 
         {isAdding && (
           <div className="bg-white border border-border-main p-6">
             <h2 className="text-lg font-bold text-primary mb-4 border-b border-border-main pb-2">
-              {editingId ? 'Edit Page Details' : 'Add New Page'}
+              {editingId ? 'Edit Web Page Details' : 'Create a New Web Page'}
             </h2>
             <form className="grid grid-cols-1 md:grid-cols-2 gap-4" onSubmit={handleSubmit}>
               <div>
-                <label className="block text-sm font-bold text-primary mb-1">Page Title</label>
+                <label className="block text-sm font-bold text-primary mb-1">Web Page Title</label>
                 <input 
                   type="text" 
                   className="w-full border border-border-main p-2 text-sm" 
@@ -153,7 +153,7 @@ export default function PagesManagement() {
               </div>
               
               <div>
-                <label className="block text-sm font-bold text-primary mb-1">URL Slug (leave empty to auto-generate)</label>
+                <label className="block text-sm font-bold text-primary mb-1">Web Address / Link Path (leave empty to auto-generate)</label>
                 <input 
                   type="text" 
                   className="w-full border border-border-main p-2 text-sm" 
@@ -164,9 +164,9 @@ export default function PagesManagement() {
               </div>
 
               <div className="md:col-span-2 mt-2">
-                <label className="block text-sm font-bold text-primary mb-2">Page Layout / Type</label>
+                <label className="block text-sm font-bold text-primary mb-2">Page Design Type</label>
                 <p className="text-xs text-text-muted mb-3">
-                  Choose how content is structured on this page. (Can be modified anytime, but changes will reset the layout content).
+                  Choose how content is structured on this page. (Changing this later will reset the content).
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <label className="flex items-start gap-3 cursor-pointer bg-gray-50 hover:bg-gray-100/75 p-4 rounded border border-border-main transition-colors">
@@ -179,7 +179,7 @@ export default function PagesManagement() {
                       className="text-primary focus:ring-primary h-4 w-4 mt-1"
                     />
                     <div>
-                      <span className="block text-sm font-bold text-primary">Content-Related Page</span>
+                      <span className="block text-sm font-bold text-primary">Standard Web Page</span>
                       <span className="block text-xs text-text-muted mt-1 leading-relaxed">
                         For standard articles, announcements, formatted text, embedded images, and tables. Uses a Rich Text editor.
                       </span>
@@ -196,7 +196,7 @@ export default function PagesManagement() {
                       className="text-primary focus:ring-primary h-4 w-4 mt-1"
                     />
                     <div>
-                      <span className="block text-sm font-bold text-primary">Links-Type Display</span>
+                      <span className="block text-sm font-bold text-primary">List of Links / Downloads</span>
                       <span className="block text-xs text-text-muted mt-1 leading-relaxed">
                         For a tabular list of links, downloads, and attachments (as seen on the Academics page). Easy list builder.
                       </span>
@@ -207,7 +207,7 @@ export default function PagesManagement() {
 
               <div className="md:col-span-2 flex justify-end gap-2 mt-4">
                 <button type="button" onClick={resetForm} className="px-4 py-2 border border-border-main text-sm font-bold text-text-muted">Cancel</button>
-                <button type="submit" className="px-4 py-2 bg-primary text-white text-sm font-bold">Save Page</button>
+                <button type="submit" className="px-4 py-2 bg-primary text-white text-sm font-bold">Save Web Page</button>
               </div>
             </form>
           </div>

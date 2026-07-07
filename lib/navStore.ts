@@ -49,12 +49,16 @@ export const getNavTree = async (): Promise<NavItem[]> => {
     }
   });
 
-  return top.sort((a, b) => a.order_index - b.order_index).map(t => {
-    if (t.children) {
-      t.children.sort((a, b) => a.order_index - b.order_index);
-    }
-    return t;
-  });
+  const sortTree = (items: NavItem[]): NavItem[] => {
+    return items.sort((a, b) => a.order_index - b.order_index).map(t => {
+      if (t.children && t.children.length > 0) {
+        t.children = sortTree(t.children);
+      }
+      return t;
+    });
+  };
+
+  return sortTree(top);
 };
 
 export const getNavItemBySlug = async (slugPath: string): Promise<NavItem | null> => {

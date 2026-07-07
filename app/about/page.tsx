@@ -7,6 +7,22 @@ export const metadata: Metadata = {
     title: 'About Us | Teacher Info Portal',
     description: 'Learn about Teacher Info Portal, our mission to empower educators with quality study materials, previous papers, and job notifications.',
     url: '/about',
+    siteName: 'Teacher Info Portal',
+    type: 'website',
+    images: [
+      {
+        url: 'https://pub-394d485f92444007bc7c08718b11be20.r2.dev/logo.png',
+        width: 1200,
+        height: 630,
+        alt: 'About Teacher Info Portal',
+      }
+    ]
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'About Us | Teacher Info Portal',
+    description: 'Learn about Teacher Info Portal, our mission to empower educators with quality study materials, previous papers, and job notifications.',
+    images: ['https://pub-394d485f92444007bc7c08718b11be20.r2.dev/logo.png'],
   },
 };
 

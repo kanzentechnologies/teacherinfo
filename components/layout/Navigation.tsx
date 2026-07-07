@@ -8,6 +8,7 @@ import { getNavTree, NavItem } from '@/lib/navStore';
 export function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [activeSubDropdown, setActiveSubDropdown] = useState<string | null>(null);
   const [navItems, setNavItems] = useState<NavItem[]>([]);
 
   useEffect(() => {
@@ -98,15 +99,53 @@ export function Navigation() {
               >
                 <ul className="py-0 md:py-2 flex flex-col">
                   {item.children.map((subItem) => (
-                    <li key={subItem.id} className="border-b border-primary/20 md:border-none last:border-none">
-                      <Link 
-                        href={getUrl(subItem)}
-                        onClick={() => setIsOpen(false)}
-                        className="block px-8 md:px-4 py-3 md:py-2 text-sm text-white/80 md:text-text-main hover:bg-primary md:hover:bg-hover-bg hover:text-white md:hover:text-primary transition-colors"
-                        target={getUrl(subItem).startsWith('http') ? '_blank' : '_self'}
-                      >
-                        {subItem.title}
-                      </Link>
+                    <li key={subItem.id} className="relative group/sub border-b border-primary/20 md:border-none last:border-none">
+                      <div className="flex md:block justify-between items-center">
+                        <Link 
+                          href={getUrl(subItem)}
+                          onClick={() => setIsOpen(false)}
+                          className="block flex-grow px-8 md:px-4 py-3 md:py-2 text-sm text-white/80 md:text-text-main hover:bg-primary md:hover:bg-hover-bg hover:text-white md:hover:text-primary transition-colors flex justify-between items-center"
+                          target={getUrl(subItem).startsWith('http') ? '_blank' : '_self'}
+                        >
+                          {subItem.title}
+                          {subItem.children && subItem.children.length > 0 && <ChevronDown size={14} className="md:-rotate-90 opacity-70 hidden md:block" />}
+                        </Link>
+                        {subItem.children && subItem.children.length > 0 && (
+                          <button
+                            onClick={() => setActiveSubDropdown(activeSubDropdown === subItem.id ? null : subItem.id)}
+                            className="px-4 py-3 md:hidden border-l border-primary/20 flex items-center justify-center text-white/80"
+                          >
+                            <ChevronDown size={18} className={`transition-transform ${activeSubDropdown === subItem.id ? 'rotate-180' : ''}`} />
+                          </button>
+                        )}
+                      </div>
+                      
+                      {/* 3rd Level Menu */}
+                      {subItem.children && subItem.children.length > 0 && (
+                        <div 
+                          className={`
+                            md:absolute md:left-full md:top-0 bg-white md:text-text-main md:border border-border-main md:shadow-md min-w-[200px]
+                            ${activeSubDropdown === subItem.id ? 'block' : 'hidden'}
+                            md:group-hover/sub:block
+                            bg-black/20 md:bg-white
+                          `}
+                        >
+                          <ul className="py-0 md:py-2 flex flex-col">
+                            {subItem.children.map((subSubItem) => (
+                              <li key={subSubItem.id} className="border-b border-primary/20 md:border-none last:border-none">
+                                <Link 
+                                  href={getUrl(subSubItem)}
+                                  onClick={() => setIsOpen(false)}
+                                  className="block px-12 md:px-4 py-3 md:py-2 text-sm text-white/70 md:text-text-main hover:bg-primary md:hover:bg-hover-bg hover:text-white md:hover:text-primary transition-colors"
+                                  target={getUrl(subSubItem).startsWith('http') ? '_blank' : '_self'}
+                                >
+                                  {subSubItem.title}
+                                </Link>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
                     </li>
                   ))}
                 </ul>

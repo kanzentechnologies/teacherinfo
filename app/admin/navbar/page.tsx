@@ -67,6 +67,24 @@ export default function NavbarManagementPage() {
     await handleSaveMenu(newMenu);
   };
 
+  const handleReorderSubChildren = async (parentIdStr: string, childIdStr: string, newSubChildren: NavItem[]) => {
+    const newMenu = menuItems.map(item => {
+      if (item.id === parentIdStr && item.children) {
+        return {
+          ...item,
+          children: item.children.map(child => {
+            if (child.id === childIdStr) {
+              return { ...child, children: newSubChildren };
+            }
+            return child;
+          })
+        };
+      }
+      return item;
+    });
+    await handleSaveMenu(newMenu);
+  };
+
   const resetForm = () => {
     setTitle('');
     setLink('');
@@ -169,7 +187,7 @@ export default function NavbarManagementPage() {
       <div className="flex flex-col gap-6">
         <div className="bg-white border border-border-main p-4 sm:p-6 flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold text-primary">Navigation Menu</h1>
+            <h1 className="text-2xl font-bold text-primary">Website Menu Builder</h1>
             <p className="text-sm text-text-muted">Organize links in the site navigation bar.</p>
           </div>
           <button 
@@ -177,18 +195,18 @@ export default function NavbarManagementPage() {
             className="bg-accent text-primary font-bold py-2 px-4 rounded-sm hover:bg-yellow-400 transition-colors flex items-center gap-2 text-sm"
           >
             <PlusCircle size={18} />
-            Create Menu Link
+            Add Menu Link
           </button>
         </div>
 
         {isAdding && (
           <div className="bg-white border border-border-main p-6">
             <h2 className="text-lg font-bold text-primary mb-4 border-b border-border-main pb-2">
-              {editingId ? 'Edit Link' : 'Add New Link'}
+              {editingId ? 'Edit Menu Link' : 'Add New Menu Link'}
             </h2>
             <form className="grid grid-cols-1 md:grid-cols-2 gap-4" onSubmit={handleSubmit}>
               <div>
-                <label className="block text-sm font-bold text-primary mb-1">Title</label>
+                <label className="block text-sm font-bold text-primary mb-1">Link Title</label>
                 <input 
                   type="text" 
                   className="w-full border border-border-main p-2 text-sm" 
@@ -200,7 +218,7 @@ export default function NavbarManagementPage() {
               </div>
               
               <div>
-                <label className="block text-sm font-bold text-primary mb-1">Destination</label>
+                <label className="block text-sm font-bold text-primary mb-1">Link To (Web Page or URL)</label>
                 <PageLinkSelector 
                   value={link}
                   onChange={setLink}
@@ -208,15 +226,20 @@ export default function NavbarManagementPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-primary mb-1">Parent Menu (Optional)</label>
+                <label className="block text-sm font-bold text-primary mb-1">Place Under Menu (Optional)</label>
                 <select 
                   className="w-full border border-border-main p-2 text-sm bg-white"
                   value={parentId}
                   onChange={(e) => setParentId(e.target.value)}
                 >
-                  <option value="">None (Top Level)</option>
+                  <option value="">None (Top Level Menu)</option>
                   {menuItems.map(item => (
-                    <option key={item.id} value={item.id}>{item.title}</option>
+                    <React.Fragment key={item.id}>
+                      <option value={item.id}>{item.title}</option>
+                      {item.children && item.children.map(child => (
+                        <option key={child.id} value={child.id}>-- {item.title} &gt; {child.title}</option>
+                      ))}
+                    </React.Fragment>
                   ))}
                 </select>
               </div>
@@ -262,20 +285,50 @@ export default function NavbarManagementPage() {
                         className="space-y-2"
                       >
                         {item.children.map((child) => (
-                          <Reorder.Item key={child.id} value={child} className="flex items-center justify-between p-2 border border-border-main bg-white select-none">
-                            <div className="flex items-center gap-3">
-                              <div className="text-gray-400 cursor-grab active:cursor-grabbing p-1 hover:text-primary transition-colors">
-                                <GripVertical size={16} />
+                          <Reorder.Item key={child.id} value={child} className="flex flex-col border border-border-main bg-white select-none">
+                            <div className="flex items-center justify-between p-2">
+                              <div className="flex items-center gap-3">
+                                <div className="text-gray-400 cursor-grab active:cursor-grabbing p-1 hover:text-primary transition-colors">
+                                  <GripVertical size={16} />
+                                </div>
+                                <div>
+                                  <span className="font-bold text-text-main text-sm">{child.title}</span>
+                                  <div className="text-xs text-secondary">{child.externalUrl || `/${child.slug}`}</div>
+                                </div>
                               </div>
-                              <div>
-                                <span className="font-bold text-text-main text-sm">{child.title}</span>
-                                <div className="text-xs text-secondary">{child.externalUrl || `/${child.slug}`}</div>
+                              <div className="flex items-center gap-3">
+                                <button onClick={() => handleEdit(child, item.id)} className="text-secondary hover:underline text-xs">Edit</button>
+                                <button onClick={() => handleDeleteClick(child.id, true, item.id)} className="text-red-600 hover:underline text-xs">Delete</button>
                               </div>
                             </div>
-                            <div className="flex items-center gap-3">
-                              <button onClick={() => handleEdit(child, item.id)} className="text-secondary hover:underline text-xs">Edit</button>
-                              <button onClick={() => handleDeleteClick(child.id, true, item.id)} className="text-red-600 hover:underline text-xs">Delete</button>
-                            </div>
+                            {child.children && child.children.length > 0 && (
+                              <div className="pl-8 pr-2 pb-2 border-t border-border-main pt-2 bg-gray-50/50">
+                                <Reorder.Group 
+                                  axis="y" 
+                                  values={child.children} 
+                                  onReorder={(newSubChildren) => handleReorderSubChildren(item.id, child.id, newSubChildren)}
+                                  className="space-y-1"
+                                >
+                                  {child.children.map((subChild) => (
+                                    <Reorder.Item key={subChild.id} value={subChild} className="flex items-center justify-between p-2 border border-border-main bg-white select-none">
+                                      <div className="flex items-center gap-2">
+                                        <div className="text-gray-400 cursor-grab active:cursor-grabbing p-1 hover:text-primary transition-colors">
+                                          <GripVertical size={14} />
+                                        </div>
+                                        <div>
+                                          <span className="font-bold text-text-main text-xs">{subChild.title}</span>
+                                          <div className="text-[10px] text-secondary">{subChild.externalUrl || `/${subChild.slug}`}</div>
+                                        </div>
+                                      </div>
+                                      <div className="flex items-center gap-2">
+                                        <button onClick={() => handleEdit(subChild, child.id)} className="text-secondary hover:underline text-xs">Edit</button>
+                                        <button onClick={() => handleDeleteClick(subChild.id, true, child.id)} className="text-red-600 hover:underline text-xs">Delete</button>
+                                      </div>
+                                    </Reorder.Item>
+                                  ))}
+                                </Reorder.Group>
+                              </div>
+                            )}
                           </Reorder.Item>
                         ))}
                       </Reorder.Group>

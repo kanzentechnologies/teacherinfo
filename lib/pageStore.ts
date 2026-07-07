@@ -11,7 +11,7 @@ export interface PageItem {
 }
 
 export const getPages = async (): Promise<PageItem[]> => {
-  const { data, error } = await supabase.from('posts').select('*').eq('type', 'page');
+  const { data, error } = await supabase.from('posts').select('*').eq('type', 'page').order('date', { ascending: true, nullsFirst: false });
   if (error) {
     console.error('Error fetching pages:', error);
     return [];

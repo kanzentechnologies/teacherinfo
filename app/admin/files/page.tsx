@@ -40,10 +40,6 @@ export default function FilesManagementPage() {
   };
 
   const uploadFile = async (file: File) => {
-    if (file.size > 10 * 1024 * 1024) {
-      alert('File size exceeds 10MB limit.');
-      return;
-    }
     setUploading(true);
     try {
       const formData = new FormData();
@@ -140,7 +136,7 @@ export default function FilesManagementPage() {
                <Upload size={32} className="mx-auto text-gray-400 mb-3" />
             )}
             <p className="font-bold text-primary">{uploading ? 'Uploading...' : 'Click to upload or drag and drop'}</p>
-            <p className="text-sm text-text-muted mt-1">PDF, DOCX, JPG, PNG (Max 10MB)</p>
+            <p className="text-sm text-text-muted mt-1">PDF, DOCX, JPG, PNG</p>
           </div>
         </div>
 
