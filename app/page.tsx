@@ -1,6 +1,6 @@
 import { getAnnouncements } from '@/lib/announcementStore';
 import { getImportantLinks } from '@/lib/importantLinkStore';
-import { getQuickLinks } from '@/lib/quickLinkStore';
+import { getPageBySlug } from '@/lib/pageStore';
 import { AnnouncementsPanel } from '@/components/home/AnnouncementsPanel';
 import { ImportantLinks } from '@/components/home/ImportantLinks';
 import { QuickLinks } from '@/components/home/QuickLinks';
@@ -11,13 +11,24 @@ export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 export default async function Home() {
-  const [announcements, importantLinks, quickLinks] = await Promise.all([
+  const [announcements, importantLinks, usefulLinksPage] = await Promise.all([
     getAnnouncements(),
     getImportantLinks(),
-    getQuickLinks()
+    getPageBySlug('useful-links')
   ]);
 
   const activeAnnouncements = announcements.filter(a => a.status === 'Active');
+
+  let quickLinks = [];
+  if (usefulLinksPage && usefulLinksPage.content) {
+    try {
+      quickLinks = JSON.parse(usefulLinksPage.content);
+      // Alphabetical sort like in [...slug]/page.tsx
+      quickLinks.sort((a: any, b: any) => (a.title || '').localeCompare(b.title || ''));
+    } catch {
+      quickLinks = [];
+    }
+  }
 
   return (
     <div className="flex flex-col gap-6">

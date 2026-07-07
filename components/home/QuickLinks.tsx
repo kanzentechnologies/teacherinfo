@@ -1,10 +1,9 @@
 import Link from 'next/link';
-import { ExternalLink, Link as LinkIcon } from 'lucide-react';
-import { QuickLinkType } from '@/lib/quickLinkStore';
+import { ExternalLink, Link as LinkIcon, ArrowRight } from 'lucide-react';
 
-export function QuickLinks({ links }: { links: QuickLinkType[] }) {
+export function QuickLinks({ links }: { links: any[] }) {
   if (!links || links.length === 0) return null;
-  const displayLinks = links.slice(0, 12);
+  const displayLinks = links.slice(0, 10);
   
   return (
     <div className="bg-white border border-border-main">
@@ -41,6 +40,13 @@ export function QuickLinks({ links }: { links: QuickLinkType[] }) {
           );
         })}
       </ul>
+      {links.length > 10 && (
+        <div className="p-3 border-t border-border-main bg-gray-50 text-center">
+          <Link href="/useful-links" className="text-secondary hover:underline font-bold text-sm inline-flex items-center gap-1">
+            Show more <ArrowRight size={14} />
+          </Link>
+        </div>
+      )}
     </div>
   );
 }
