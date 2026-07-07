@@ -36,8 +36,7 @@ export const getQuickLinks = async (): Promise<QuickLinkType[]> => {
 };
 
 export const saveQuickLinks = async (links: QuickLinkType[]): Promise<void> => {
-  const linksToSave = links.map(({ color, ...rest }) => rest);
-  const { error } = await supabase.from('quick_links').upsert(linksToSave, { onConflict: 'id' });
+  const { error } = await supabase.from('quick_links').upsert(links, { onConflict: 'id' });
   if (error) {
     console.error('Error in write:', error.message || error);
     throw new Error(error.message || 'Write error');
