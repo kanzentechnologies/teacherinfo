@@ -104,7 +104,7 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
         />
         <Header />
         <Navigation />
-        <main id="main-content" className="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-8 py-6">
+        <main id="main-content" className="flex-grow w-full px-4 sm:px-8 py-6">
           {children}
         </main>
         <Footer />
