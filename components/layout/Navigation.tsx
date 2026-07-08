@@ -104,11 +104,10 @@ export function Navigation() {
                 </button>
               )}
             </div>
-            
             {item.children && item.children.length > 0 && (
-              <div 
+              <div
                 className={`
-                  md:absolute top-full left-0 bg-white md:text-text-main md:border border-border-main md:shadow-md min-w-[200px]
+                  md:absolute top-full left-0 md:text-text-main md:border border-border-main md:shadow-md min-w-[200px]
                   ${activeDropdown === item.id ? 'block' : 'hidden'}
                   md:group-hover:block
                   border-t md:border-t-0 border-primary/20 bg-secondary md:bg-white
