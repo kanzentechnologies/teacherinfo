@@ -61,6 +61,7 @@ export default function FilesManagementPage() {
         
         const formData = new FormData();
         formData.append('file', file);
+        formData.append('fullPath', file.webkitRelativePath || file.name);
         
         const res = await fetch('/api/upload', {
           method: 'POST',
@@ -153,19 +154,32 @@ export default function FilesManagementPage() {
     return isNaN(d.getTime()) ? '' : d.toLocaleDateString();
   };
 
-  const groupedFiles = React.useMemo(() => {
-    const groups: Record<string, FileItem[]> = { 'Root': [] };
+  type TreeNode = {
+    name: string;
+    files: FileItem[];
+    folders: Record<string, TreeNode>;
+  };
+
+  const fileTree = React.useMemo(() => {
+    const root: TreeNode = { name: 'Root', files: [], folders: {} };
+    
     files.forEach(file => {
       const parts = file.name.split('/');
-      if (parts.length > 1) {
-        const folder = parts.slice(0, -1).join('/');
-        if (!groups[folder]) groups[folder] = [];
-        groups[folder].push(file);
+      if (parts.length === 1) {
+        root.files.push(file);
       } else {
-        groups['Root'].push(file);
+        let current = root;
+        for (let i = 0; i < parts.length - 1; i++) {
+          const folderName = parts[i];
+          if (!current.folders[folderName]) {
+            current.folders[folderName] = { name: folderName, files: [], folders: {} };
+          }
+          current = current.folders[folderName];
+        }
+        current.files.push(file);
       }
     });
-    return groups;
+    return root;
   }, [files]);
 
   const toggleFolder = (folder: string) => {
@@ -175,12 +189,12 @@ export default function FilesManagementPage() {
     setExpandedFolders(newExpanded);
   };
 
-  const renderFileRow = (file: FileItem, isSubFile: boolean = false) => (
+  const renderFileRow = (file: FileItem, depth: number = 0) => (
     <tr key={file.id} className="hover:bg-hover-bg">
-      <td className={`px-4 py-3 font-medium text-text-main flex items-center gap-2 ${isSubFile ? 'pl-10' : ''}`}>
-        {file.type === 'Image' ? <ImageIcon size={16} className="text-blue-500" /> : <FileText size={16} className="text-red-500" />}
-        <a href={file.url} target="_blank" rel="noopener noreferrer" className="hover:underline text-primary break-words max-w-[200px] sm:max-w-sm">
-          {isSubFile ? file.name.split('/').pop() : file.name}
+      <td className="px-4 py-3 font-medium text-text-main flex items-center gap-2" style={{ paddingLeft: `${depth * 1.5 + (depth > 0 ? 2.5 : 1)}rem` }}>
+        {file.type === 'Image' ? <ImageIcon size={16} className="text-blue-500 min-w-[16px]" /> : <FileText size={16} className="text-red-500 min-w-[16px]" />}
+        <a href={file.url} target="_blank" rel="noopener noreferrer" className="hover:underline text-primary break-words max-w-[150px] sm:max-w-sm truncate">
+          {file.name.split('/').pop()}
         </a>
       </td>
       <td className="px-4 py-3 text-text-muted">{file.type}</td>
@@ -196,6 +210,47 @@ export default function FilesManagementPage() {
       </td>
     </tr>
   );
+
+  const renderTree = (node: TreeNode, path: string, depth: number) => {
+    const result: React.ReactNode[] = [];
+    
+    // Render files in this node
+    node.files.forEach(file => {
+      result.push(renderFileRow(file, depth));
+    });
+    
+    // Render subfolders
+    Object.keys(node.folders).sort().forEach(folderName => {
+      const fullPath = path ? `${path}/${folderName}` : folderName;
+      const isExpanded = expandedFolders.has(fullPath);
+      
+      const countFiles = (n: TreeNode): number => {
+        return n.files.length + Object.values(n.folders).reduce((acc, f) => acc + countFiles(f), 0);
+      };
+      const count = countFiles(node.folders[folderName]);
+      
+      result.push(
+        <tr 
+          key={`folder-${fullPath}`}
+          className="bg-gray-50 hover:bg-gray-100 cursor-pointer border-t border-border-main"
+          onClick={() => toggleFolder(fullPath)}
+        >
+          <td colSpan={5} className="px-4 py-3 font-bold text-primary flex items-center gap-2" style={{ paddingLeft: `${depth * 1.5 + 1}rem` }}>
+            {isExpanded ? <ChevronDown size={18} className="min-w-[18px]" /> : <ChevronRight size={18} className="min-w-[18px]" />}
+            <Folder size={18} className="text-blue-500 min-w-[18px]" />
+            <span className="truncate max-w-[200px] sm:max-w-md">{folderName}</span> 
+            <span className="text-text-muted font-normal text-xs ml-2">({count} item{count !== 1 ? 's' : ''})</span>
+          </td>
+        </tr>
+      );
+      
+      if (isExpanded) {
+        result.push(...renderTree(node.folders[folderName], fullPath, depth + 1));
+      }
+    });
+    
+    return result;
+  };
 
   return (
     <AdminWrapper>
@@ -288,32 +343,7 @@ export default function FilesManagementPage() {
                       <td colSpan={5} className="px-4 py-8 text-center text-text-muted italic">No files found.</td>
                     </tr>
                   ) : (
-                    <>
-                      {/* Render root files */}
-                      {groupedFiles['Root']?.map(file => renderFileRow(file, false))}
-                      
-                      {/* Render folders */}
-                      {Object.keys(groupedFiles)
-                        .filter(key => key !== 'Root')
-                        .sort()
-                        .map(folderName => (
-                          <React.Fragment key={folderName}>
-                            <tr 
-                              className="bg-gray-50 hover:bg-gray-100 cursor-pointer border-t border-border-main"
-                              onClick={() => toggleFolder(folderName)}
-                            >
-                              <td colSpan={5} className="px-4 py-3 font-bold text-primary flex items-center gap-2">
-                                {expandedFolders.has(folderName) ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
-                                <Folder size={18} className="text-blue-500" />
-                                {folderName} <span className="text-text-muted font-normal text-xs ml-2">({groupedFiles[folderName].length} files)</span>
-                              </td>
-                            </tr>
-                            {expandedFolders.has(folderName) && (
-                              groupedFiles[folderName].map(file => renderFileRow(file, true))
-                            )}
-                          </React.Fragment>
-                      ))}
-                    </>
+                    renderTree(fileTree, '', 0)
                   )}
                 </tbody>
               </table>

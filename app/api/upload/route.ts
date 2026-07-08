@@ -16,20 +16,33 @@ export async function POST(request: Request) {
     const arrayBuffer = await file.arrayBuffer();
     const body = new Uint8Array(arrayBuffer);
     
+    const fullPath = formData.get('fullPath') as string | null;
+    
     // Create a unique filename
     const uniqueId = Date.now().toString(36) + Math.random().toString(36).substring(2, 7);
-    const fileName = `${uniqueId}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+    
+    let finalKey = '';
+    if (fullPath && fullPath.includes('/')) {
+      const parts = fullPath.split('/');
+      const originalName = parts.pop() || file.name;
+      const safeName = `${uniqueId}-${originalName.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+      // Keep spaces in folder names, but remove other special chars
+      const safePath = parts.map(p => p.replace(/[^a-zA-Z0-9.\s-()]/g, '_')).join('/');
+      finalKey = `${safePath}/${safeName}`;
+    } else {
+      finalKey = `${uniqueId}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+    }
 
     await r2.send(
       new PutObjectCommand({
         Bucket: process.env.R2_BUCKET_NAME,
-        Key: fileName,
+        Key: finalKey,
         Body: body,
         ContentType: file.type,
       })
     );
 
-    const publicUrl = `${process.env.NEXT_PUBLIC_R2_PUBLIC_URL}/${fileName}`;
+    const publicUrl = `${process.env.NEXT_PUBLIC_R2_PUBLIC_URL}/${finalKey.split('/').map(encodeURIComponent).join('/')}`;
 
     return NextResponse.json({ success: true, url: publicUrl });
   } catch (error) {
