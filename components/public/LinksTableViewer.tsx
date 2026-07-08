@@ -21,11 +21,35 @@ export function LinksTableViewer({ links }: { links: any[] }) {
     }, 0);
   };
 
+  const getAllFolderIds = (items: any[]): string[] => {
+    let ids: string[] = [];
+    items.forEach(item => {
+      if (item.type === 'folder') {
+        ids.push(item.id);
+        if (item.children) {
+          ids = ids.concat(getAllFolderIds(item.children));
+        }
+      }
+    });
+    return ids;
+  };
+
+  const handleExpandAll = () => {
+    setExpandedFolders(new Set(getAllFolderIds(links)));
+  };
+
+  const handleCollapseAll = () => {
+    setExpandedFolders(new Set());
+  };
+
   const renderTree = (items: any[], depth: number = 0) => {
     const result: React.ReactNode[] = [];
     
-    const folders = items.filter(i => i.type === 'folder');
-    const files = items.filter(i => i.type !== 'folder');
+    // Sort items alphabetically
+    const sortedItems = [...items].sort((a, b) => a.title.localeCompare(b.title));
+    
+    const folders = sortedItems.filter(i => i.type === 'folder');
+    const files = sortedItems.filter(i => i.type !== 'folder');
     
     folders.forEach(folder => {
       const isExpanded = expandedFolders.has(folder.id);
@@ -79,18 +103,24 @@ export function LinksTableViewer({ links }: { links: any[] }) {
   };
 
   return (
-    <div className="overflow-x-auto shadow-sm">
-      <table className="w-full border-collapse border border-border-main text-left bg-white">
-        <thead>
-          <tr className="bg-gray-100 text-primary border-b border-border-main">
-            <th className="p-3 border-r border-border-main w-12 text-center text-sm uppercase tracking-wide">Type</th>
-            <th className="p-3 border-r border-border-main text-sm uppercase tracking-wide">Title & Description</th>
-          </tr>
-        </thead>
-        <tbody>
-          {renderTree(links)}
-        </tbody>
-      </table>
+    <div className="flex flex-col gap-3">
+      <div className="flex justify-end gap-3">
+        <button onClick={handleExpandAll} className="text-sm font-bold text-primary hover:text-secondary underline decoration-primary/30 underline-offset-2">Expand All</button>
+        <button onClick={handleCollapseAll} className="text-sm font-bold text-primary hover:text-secondary underline decoration-primary/30 underline-offset-2">Collapse All</button>
+      </div>
+      <div className="overflow-x-auto shadow-sm">
+        <table className="w-full border-collapse border border-border-main text-left bg-white">
+          <thead>
+            <tr className="bg-gray-100 text-primary border-b border-border-main">
+              <th className="p-3 border-r border-border-main w-12 text-center text-sm uppercase tracking-wide">Type</th>
+              <th className="p-3 border-r border-border-main text-sm uppercase tracking-wide">Title & Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            {renderTree(links)}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

@@ -71,8 +71,15 @@ export function Navigation() {
             <div className="flex md:block">
               {getUrl(item) === '#' ? (
                 <div 
-                  onClick={() => setIsOpen(false)}
-                  className="w-full px-4 py-3 hover:bg-primary transition-colors flex items-center justify-between md:justify-start gap-1 font-medium text-sm cursor-default"
+                  onClick={(e) => {
+                    if (window.innerWidth < 768) {
+                      e.preventDefault();
+                      setActiveDropdown(activeDropdown === item.id ? null : item.id);
+                    } else {
+                      setIsOpen(false);
+                    }
+                  }}
+                  className="w-full px-4 py-3 hover:bg-primary transition-colors flex items-center justify-between md:justify-start gap-1 font-medium text-sm cursor-pointer md:cursor-default"
                 >
                   {item.title}
                   {item.children && item.children.length > 0 && <ChevronDown size={16} className="opacity-70 hidden md:block" />}
@@ -113,8 +120,15 @@ export function Navigation() {
                       <div className="flex md:block justify-between items-center">
                         {getUrl(subItem) === '#' ? (
                           <div 
-                            onClick={() => setIsOpen(false)}
-                            className="block flex-grow px-8 md:px-4 py-3 md:py-2 text-sm text-white/80 md:text-text-main hover:bg-primary md:hover:bg-hover-bg hover:text-white md:hover:text-primary transition-colors flex justify-between items-center cursor-default"
+                            onClick={(e) => {
+                              if (window.innerWidth < 768) {
+                                e.preventDefault();
+                                setActiveSubDropdown(activeSubDropdown === subItem.id ? null : subItem.id);
+                              } else {
+                                setIsOpen(false);
+                              }
+                            }}
+                            className="block flex-grow px-8 md:px-4 py-3 md:py-2 text-sm text-white/80 md:text-text-main hover:bg-primary md:hover:bg-hover-bg hover:text-white md:hover:text-primary transition-colors flex justify-between items-center cursor-pointer md:cursor-default"
                           >
                             {subItem.title}
                             {subItem.children && subItem.children.length > 0 && <ChevronDown size={14} className="md:-rotate-90 opacity-70 hidden md:block" />}
