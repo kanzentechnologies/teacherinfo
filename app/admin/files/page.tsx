@@ -149,6 +149,7 @@ export default function FilesManagementPage() {
     if (!confirm(msg)) return;
     
     try {
+      setUploadProgress({ current: 0, total: 1 });
       setOperationStatus(`Deleting ${isFolder ? 'folder' : 'file'}...`);
       const res = await fetch('/api/files/delete', {
         method: 'POST',
@@ -157,10 +158,13 @@ export default function FilesManagementPage() {
       });
       
       if (!res.ok) throw new Error('Delete failed');
+      setUploadProgress({ current: 1, total: 1 });
       await fetchFiles();
     } catch (err: any) {
       alert('Failed to delete: ' + err.message);
+    } finally {
       setOperationStatus(null);
+      setUploadProgress(null);
     }
   };
 
@@ -178,17 +182,37 @@ export default function FilesManagementPage() {
     });
     
     try {
-      setOperationStatus(`Deleting ${selectedItems.size} selected item(s)...`);
-      const res = await fetch('/api/files/delete', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ keys, folders })
-      });
-      if (!res.ok) throw new Error('Bulk delete failed');
+      const totalItems = keys.length + folders.length;
+      setUploadProgress({ current: 0, total: totalItems });
+      setOperationStatus(`Deleting 0 of ${totalItems} selected item(s)...`);
+      
+      let deletedCount = 0;
+      
+      // Delete folders sequentially
+      for (const folder of folders) {
+        const res = await fetch('/api/files/delete', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ keys: [], folders: [folder] }) });
+        if (!res.ok) throw new Error('Delete folder failed');
+        deletedCount++;
+        setUploadProgress({ current: deletedCount, total: totalItems });
+        setOperationStatus(`Deleting ${deletedCount} of ${totalItems} selected item(s)...`);
+      }
+
+      // Delete files in chunks of 5
+      for (let i = 0; i < keys.length; i += 5) {
+        const chunk = keys.slice(i, i + 5);
+        const res = await fetch('/api/files/delete', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ keys: chunk, folders: [] }) });
+        if (!res.ok) throw new Error('Bulk delete failed');
+        deletedCount += chunk.length;
+        setUploadProgress({ current: Math.min(deletedCount, totalItems), total: totalItems });
+        setOperationStatus(`Deleting ${Math.min(deletedCount, totalItems)} of ${totalItems} selected item(s)...`);
+      }
+      
       await fetchFiles();
     } catch (err: any) {
       alert('Failed to delete: ' + err.message);
+    } finally {
       setOperationStatus(null);
+      setUploadProgress(null);
     }
   };
 
@@ -396,8 +420,10 @@ export default function FilesManagementPage() {
 
   return (
     <AdminWrapper>
-      <div className="flex flex-col gap-6">
-        <div className="bg-white border border-border-main p-4 sm:p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div className="flex flex-col gap-6 relative min-h-[400px]">
+        <OperationStatusOverlay status={operationStatus} progress={uploadProgress ? (uploadProgress.current / uploadProgress.total) * 100 : undefined} />
+        
+        <div className="bg-white border border-border-main p-4 sm:p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h1 className="text-2xl font-bold text-primary">File Management</h1>
             <p className="text-sm text-text-muted">Directly synced with Cloudflare R2 Storage</p>

@@ -31,7 +31,9 @@ export default function EditContentClient() {
   const [content, setContent] = useState('');
   const [links, setLinks] = useState<LinkItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [operationStatus, setOperationStatus] = useState<string | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<{current: number, total: number} | null>(null);
   const [showFileSelectorFor, setShowFileSelectorFor] = useState<string | null>(null);
   const [showFolderSelector, setShowFolderSelector] = useState(false);
   const [selectedLinks, setSelectedLinks] = useState<Set<string>>(new Set());
@@ -78,16 +80,49 @@ export default function EditContentClient() {
 
   const handleSave = async () => {
     if (!item) return;
+    setSaving(true);
+    setOperationStatus('Saving changes...');
+    setUploadProgress({ current: 0, total: 100 });
+    
+    // Fake progress for UX
+    const interval = setInterval(() => {
+      setUploadProgress(prev => {
+        if (!prev) return null;
+        if (prev.current >= 90) return prev;
+        return { ...prev, current: prev.current + 15 };
+      });
+    }, 100);
+
     try {
-      setOperationStatus('Saving content...');
-      const finalContent = item.layout === 'links' ? JSON.stringify(links) : content;
-      await savePage({ ...item, content: finalContent });
-      alert('Content saved successfully!');
-      router.push('/admin/pages');
-    } catch (err: any) {
-      alert('Error saving content: ' + err.message);
-    } finally {
+      const pageToSave = { ...item };
+      if (item.layout === 'links') {
+        pageToSave.content = JSON.stringify(links);
+      } else {
+        pageToSave.content = content;
+      }
+      
+      const res = await fetch('/api/pages/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(pageToSave),
+      });
+
+      if (!res.ok) throw new Error('Failed to save');
+      
+      setUploadProgress({ current: 100, total: 100 });
+      
+      setTimeout(() => {
+        alert('Saved successfully!');
+        router.push('/admin/pages');
+      }, 300);
+    } catch (err) {
+      console.error(err);
+      alert('Error saving changes');
       setOperationStatus(null);
+      setUploadProgress(null);
+    } finally {
+      clearInterval(interval);
+      setSaving(false);
     }
   };
 
@@ -340,7 +375,7 @@ export default function EditContentClient() {
       )}
       
       <div className="flex flex-col gap-6 relative min-h-[400px]">
-        <OperationStatusOverlay status={operationStatus} />
+        <OperationStatusOverlay status={operationStatus} progress={uploadProgress ? (uploadProgress.current / uploadProgress.total) * 100 : undefined} />
         <div className="bg-white border border-border-main p-4 sm:p-6 flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-bold text-primary">Edit {item.layout === 'links' ? 'Links' : 'Content'}: {item.title}</h1>
