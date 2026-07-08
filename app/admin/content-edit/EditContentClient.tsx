@@ -232,35 +232,58 @@ export default function EditContentClient() {
     setShowFileSelectorFor(null);
   };
 
-  const handleFolderSelect = (folderPath: string, filesInFolder: FileItem[]) => {
-    const folderName = folderPath.split('/').pop() || folderPath;
-    
-    const children = filesInFolder.map(file => {
-      const fileName = file.name.split('/').pop() || file.name;
-      return {
-        id: Date.now().toString() + Math.random().toString(36).substring(2, 7),
+  const handleFolderSelect = (folderName: string, filesInFolder: FileItem[]) => {
+    const rootName = folderName.split('/').pop() || folderName;
+    const rootLink: LinkItem = {
+      id: Date.now().toString() + Math.random().toString(36).substring(2, 10),
+      title: rootName,
+      type: 'folder',
+      children: []
+    };
+
+    filesInFolder.forEach(file => {
+      // Ensure file is actually inside this folder
+      if (!file.name.startsWith(folderName + '/')) return;
+      
+      const relativePath = file.name.substring(folderName.length + 1); // e.g. "28) SSC/file.pdf"
+      const parts = relativePath.split('/'); 
+      
+      let currentFolder = rootLink;
+      
+      // Traverse and create subfolders if they don't exist
+      for (let i = 0; i < parts.length - 1; i++) {
+        const folderPart = parts[i];
+        let nextFolder = currentFolder.children?.find(c => c.title === folderPart && c.type === 'folder');
+        
+        if (!nextFolder) {
+          nextFolder = {
+            id: Date.now().toString() + Math.random().toString(36).substring(2, 10),
+            title: folderPart,
+            type: 'folder',
+            children: []
+          };
+          if (!currentFolder.children) currentFolder.children = [];
+          currentFolder.children.push(nextFolder);
+        }
+        currentFolder = nextFolder;
+      }
+      
+      // Add the file to the current (deepest) folder
+      const fileName = parts[parts.length - 1];
+      if (!currentFolder.children) currentFolder.children = [];
+      currentFolder.children.push({
+        id: Date.now().toString() + Math.random().toString(36).substring(2, 10),
         title: fileName,
         url: file.url,
         description: '',
-        type: 'link' as const,
+        type: 'link',
         fileType: file.type,
         fileSize: file.size
-      };
+      });
     });
-    
-    children.sort((a, b) => a.title.localeCompare(b.title));
 
-    const newFolder: LinkItem = {
-      id: Date.now().toString() + Math.random().toString(36).substring(2, 7),
-      title: folderName,
-      url: '',
-      type: 'folder',
-      children
-    };
-
-    setLinks(prev => [...prev, newFolder]);
+    setLinks(prev => [...prev, rootLink]);
     setShowFolderSelector(false);
-    alert(`Successfully imported folder with ${children.length} files!`);
   };
 
   if (loading) {
