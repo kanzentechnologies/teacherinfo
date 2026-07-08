@@ -44,7 +44,6 @@ export async function POST(request: Request) {
           Key: obj.Key,
         }));
       }
-      }
     }
 
     // 3. Cascading delete to Pages
