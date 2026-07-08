@@ -10,6 +10,7 @@ export default function FilesManagementPage() {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const folderInputRef = useRef<HTMLInputElement>(null);
 
   const fetchFiles = async () => {
     setLoading(true);
@@ -32,11 +33,58 @@ export default function FilesManagementPage() {
     fileInputRef.current?.click();
   };
 
+  const handleFolderUploadClick = () => {
+    folderInputRef.current?.click();
+  };
+
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     await uploadFile(file);
     if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const handleFolderChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    
+    setUploading(true);
+    let successCount = 0;
+    
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        if (file.name.startsWith('.')) continue; // Skip hidden files
+        
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        const res = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
+        });
+        
+        const data = await res.json();
+        if (res.ok && data.success) {
+          const fileRecord: FileItem = {
+            id: Date.now().toString() + Math.random().toString(36).substring(2, 7),
+            name: file.webkitRelativePath || file.name,
+            type: file.type.startsWith('image/') ? 'Image' : 'Document',
+            size: file.size,
+            url: data.url,
+          };
+          await saveFileRecord(fileRecord);
+          successCount++;
+        }
+      }
+      await fetchFiles();
+      alert(`Successfully uploaded ${successCount} files!`);
+    } catch (err: any) {
+      alert('Error uploading folder: ' + err.message);
+    } finally {
+      setUploading(false);
+      if (folderInputRef.current) folderInputRef.current.value = '';
+    }
   };
 
   const uploadFile = async (file: File) => {
@@ -115,28 +163,58 @@ export default function FilesManagementPage() {
             className="hidden" 
             accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.gif"
           />
-          <button 
-            onClick={handleUploadClick}
-            disabled={uploading}
-            className="bg-accent text-primary font-bold py-2 px-4 rounded-sm hover:bg-yellow-400 transition-colors flex items-center gap-2 text-sm disabled:opacity-50"
-          >
-            {uploading ? <Loader2 size={18} className="animate-spin" /> : <Upload size={18} />}
-            {uploading ? 'Uploading...' : 'Upload File'}
-          </button>
+          <input 
+            type="file" 
+            ref={folderInputRef} 
+            onChange={handleFolderChange} 
+            className="hidden" 
+            {...{webkitdirectory: "", directory: ""}}
+          />
+          <div className="flex gap-2">
+            <button 
+              onClick={handleFolderUploadClick}
+              disabled={uploading}
+              className="bg-gray-100 text-primary font-bold py-2 px-4 rounded-sm hover:bg-gray-200 transition-colors flex items-center gap-2 text-sm disabled:opacity-50"
+            >
+              <Upload size={18} />
+              {uploading ? 'Uploading...' : 'Upload Folder'}
+            </button>
+            <button 
+              onClick={handleUploadClick}
+              disabled={uploading}
+              className="bg-accent text-primary font-bold py-2 px-4 rounded-sm hover:bg-yellow-400 transition-colors flex items-center gap-2 text-sm disabled:opacity-50"
+            >
+              <Upload size={18} />
+              {uploading ? 'Uploading...' : 'Upload File'}
+            </button>
+          </div>
         </div>
 
-        <div className="bg-white border border-border-main p-6">
+        <div className="bg-white border border-border-main p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
           <div 
             onClick={handleUploadClick}
-            className="border-2 border-dashed border-border-main p-10 text-center bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer"
+            className="border-2 border-dashed border-border-main p-10 text-center bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer rounded-sm"
           >
             {uploading ? (
                <Loader2 size={32} className="animate-spin mx-auto text-primary mb-3" />
             ) : (
                <Upload size={32} className="mx-auto text-gray-400 mb-3" />
             )}
-            <p className="font-bold text-primary">{uploading ? 'Uploading...' : 'Click to upload or drag and drop'}</p>
+            <p className="font-bold text-primary">Upload File</p>
             <p className="text-sm text-text-muted mt-1">PDF, DOCX, JPG, PNG</p>
+          </div>
+          
+          <div 
+            onClick={handleFolderUploadClick}
+            className="border-2 border-dashed border-border-main p-10 text-center bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer rounded-sm"
+          >
+            {uploading ? (
+               <Loader2 size={32} className="animate-spin mx-auto text-primary mb-3" />
+            ) : (
+               <Upload size={32} className="mx-auto text-gray-400 mb-3" />
+            )}
+            <p className="font-bold text-primary">Upload Folder</p>
+            <p className="text-sm text-text-muted mt-1">Preserves directory structure</p>
           </div>
         </div>
 

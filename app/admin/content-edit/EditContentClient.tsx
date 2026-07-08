@@ -8,6 +8,7 @@ import { getPageById, savePage, PageItem } from '@/lib/pageStore';
 import { PlusCircle, Trash2, GripVertical, FileSearch, Upload } from 'lucide-react';
 import * as xlsx from 'xlsx';
 import { FileSelector } from '@/components/admin/FileSelector';
+import { FolderSelector } from '@/components/admin/FolderSelector';
 import { FileItem } from '@/lib/fileStore';
 
 interface LinkItem {
@@ -27,6 +28,7 @@ export default function EditContentClient() {
   const [links, setLinks] = useState<LinkItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [showFileSelectorFor, setShowFileSelectorFor] = useState<string | null>(null);
+  const [showFolderSelector, setShowFolderSelector] = useState(false);
   const [selectedLinks, setSelectedLinks] = useState<Set<string>>(new Set());
   const [showDesc, setShowDesc] = useState<Set<string>>(new Set());
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -168,6 +170,26 @@ export default function EditContentClient() {
     setShowFileSelectorFor(null);
   };
 
+  const handleFolderSelect = (folderPath: string, filesInFolder: FileItem[]) => {
+    const newLinks = filesInFolder.map(file => {
+      // Extract base filename (remove folder path)
+      const fileName = file.name.substring(folderPath.length + 1);
+      return {
+        id: Date.now().toString() + Math.random().toString(36).substring(2, 7),
+        title: fileName,
+        url: file.url,
+        description: ''
+      };
+    });
+    
+    // Alphabetically sort the incoming links by title
+    newLinks.sort((a, b) => a.title.localeCompare(b.title));
+
+    setLinks(prev => [...prev, ...newLinks]);
+    setShowFolderSelector(false);
+    alert(`Successfully imported ${newLinks.length} files from ${folderPath}!`);
+  };
+
   if (loading) {
     return <AdminWrapper><div className="p-6">Loading...</div></AdminWrapper>;
   }
@@ -182,6 +204,12 @@ export default function EditContentClient() {
         <FileSelector 
           onSelect={handleFileSelect} 
           onClose={() => setShowFileSelectorFor(null)} 
+        />
+      )}
+      {showFolderSelector && (
+        <FolderSelector
+          onSelect={handleFolderSelect}
+          onClose={() => setShowFolderSelector(false)}
         />
       )}
       
@@ -246,6 +274,12 @@ export default function EditContentClient() {
                     className="flex items-center gap-2 text-sm font-bold bg-green-100 text-green-800 px-3 py-1.5 rounded hover:bg-green-200 transition-colors"
                   >
                     <Upload size={14} /> Bulk Import
+                  </button>
+                  <button 
+                    onClick={() => setShowFolderSelector(true)}
+                    className="flex items-center gap-2 text-sm font-bold bg-blue-100 text-blue-800 px-3 py-1.5 rounded hover:bg-blue-200 transition-colors"
+                  >
+                    Import Folder
                   </button>
                   <button 
                     onClick={handleAddLink}
