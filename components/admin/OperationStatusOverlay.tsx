@@ -3,116 +3,41 @@ import { Loader2 } from 'lucide-react';
 
 interface OperationStatusOverlayProps {
   status: string | null;
-  details?: string | null;
   progress?: number | null; // 0 to 100
+  details?: string | null;
 }
 
-export function OperationStatusOverlay({ status, details, progress }: OperationStatusOverlayProps) {
+export function OperationStatusOverlay({ status, progress, details }: OperationStatusOverlayProps) {
   if (!status) return null;
 
   return (
-    <>
-      <style>{`
-        .os-overlay-backdrop {
-          position: absolute;
-          inset: 0;
-          z-index: 50;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background: rgba(255, 255, 255, 0.4);
-          backdrop-filter: blur(8px);
-          -webkit-backdrop-filter: blur(8px);
-          min-height: 200px;
-          border-radius: 8px;
-        }
-        .os-overlay-dialog {
-          background: rgba(255, 255, 255, 0.85);
-          border: 1px solid rgba(0, 0, 0, 0.1);
-          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.05);
-          border-radius: 12px;
-          padding: 24px;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          width: 100%;
-          max-width: 320px;
-          box-sizing: border-box;
-          backdrop-filter: blur(16px);
-          -webkit-backdrop-filter: blur(16px);
-          margin: 0 16px;
-        }
-        .os-overlay-icon {
-          animation: os-spin 1.2s linear infinite;
-          color: #007aff;
-          margin-bottom: 16px;
-        }
-        .os-overlay-title {
-          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-          font-size: 16px;
-          font-weight: 600;
-          color: #1d1d1f;
-          text-align: center;
-          margin: 0 0 6px 0;
-        }
-        .os-overlay-details {
-          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-          font-size: 13px;
-          color: #86868b;
-          text-align: center;
-          margin: 0 0 16px 0;
-          line-height: 1.4;
-        }
-        .os-overlay-progress-track {
-          width: 100%;
-          height: 6px;
-          background: rgba(0, 0, 0, 0.08);
-          border-radius: 4px;
-          overflow: hidden;
-        }
-        .os-overlay-progress-fill {
-          height: 100%;
-          background: #007aff;
-          transition: width 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
-        }
-        .os-overlay-percentage {
-          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-          font-size: 12px;
-          color: #86868b;
-          font-weight: 500;
-          text-align: center;
-          margin-top: 8px;
-        }
-        @keyframes os-spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
-      
-      <div className="os-overlay-backdrop">
-        <div className="os-overlay-dialog">
-          <Loader2 size={36} className="os-overlay-icon" />
-          <div className="os-overlay-title">{status}</div>
-          
-          {details && (
-            <div className="os-overlay-details">{details}</div>
-          )}
-          
-          {progress !== undefined && progress !== null && (
-            <div style={{ width: '100%', marginTop: !details ? '12px' : '0' }}>
-              <div className="os-overlay-progress-track">
-                <div 
-                  className="os-overlay-progress-fill"
-                  style={{ width: `${Math.max(0, Math.min(100, progress))}%` }}
-                />
-              </div>
-              <div className="os-overlay-percentage">
-                {Math.round(progress)}%
-              </div>
-            </div>
-          )}
+    <div className="absolute inset-0 bg-white/70 z-50 flex flex-col items-center justify-center backdrop-blur-[2px] rounded-md transition-all">
+      <div className="bg-white p-5 sm:p-6 rounded-xl shadow-xl border border-gray-100 flex flex-col w-full max-w-sm mx-4">
+        <div className="flex items-center gap-4 mb-2">
+          <div className="p-2.5 bg-blue-50 rounded-full text-blue-600 shrink-0">
+            <Loader2 size={22} className="animate-spin" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3 className="text-[15px] font-semibold text-gray-900 truncate" title={status}>{status}</h3>
+            {details && <p className="text-xs text-gray-500 mt-0.5 truncate" title={details}>{details}</p>}
+          </div>
         </div>
+        
+        {progress !== undefined && progress !== null && (
+          <div className="w-full mt-3">
+            <div className="flex justify-between items-center mb-1.5 px-1">
+              <span className="text-[11px] font-medium text-gray-500 uppercase tracking-wider">Progress</span>
+              <span className="text-xs font-semibold text-blue-600">{Math.round(progress)}%</span>
+            </div>
+            <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-blue-600 transition-all duration-300 ease-out"
+                style={{ width: `${Math.max(0, Math.min(100, progress))}%` }}
+              />
+            </div>
+          </div>
+        )}
       </div>
-    </>
+    </div>
   );
 }
