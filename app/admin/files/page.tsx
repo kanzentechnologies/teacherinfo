@@ -13,6 +13,28 @@ export default function FilesManagementPage() {
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   
+  const allSelectableItems = React.useMemo(() => {
+    const items = new Set<string>();
+    files.forEach(f => {
+      items.add(JSON.stringify({ key: f.id, type: 'file' }));
+      const parts = f.name.split('/');
+      let currentPath = '';
+      for (let i = 0; i < parts.length - 1; i++) {
+        currentPath = currentPath ? `${currentPath}/${parts[i]}` : parts[i];
+        items.add(JSON.stringify({ key: currentPath, type: 'folder' }));
+      }
+    });
+    return items;
+  }, [files]);
+
+  const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.checked) {
+      setSelectedItems(new Set(allSelectableItems));
+    } else {
+      setSelectedItems(new Set());
+    }
+  };
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const folderInputRef = useRef<HTMLInputElement>(null);
 
@@ -397,7 +419,23 @@ export default function FilesManagementPage() {
               <table className="w-full text-sm text-left">
                 <thead className="bg-gray-50 border-b border-border-main text-text-muted">
                   <tr>
-                    <th className="px-4 py-3 font-medium">File Name</th>
+                    <th className="px-4 py-3 font-medium">
+                      <div className="flex items-center gap-2">
+                        <input 
+                          type="checkbox"
+                          className="cursor-pointer"
+                          checked={selectedItems.size > 0 && selectedItems.size === allSelectableItems.size}
+                          ref={input => {
+                            if (input) {
+                              input.indeterminate = selectedItems.size > 0 && selectedItems.size < allSelectableItems.size;
+                            }
+                          }}
+                          onChange={handleSelectAll}
+                          title="Select All"
+                        />
+                        <span>File Name</span>
+                      </div>
+                    </th>
                     <th className="px-4 py-3 font-medium">Type</th>
                     <th className="px-4 py-3 font-medium">Size</th>
                     <th className="px-4 py-3 font-medium">Upload Date</th>
