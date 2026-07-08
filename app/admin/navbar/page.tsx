@@ -8,6 +8,7 @@ import { getNavTree, saveNavItems, deleteNavItem, NavItem, saveNavItem } from '@
 import { Reorder } from 'motion/react';
 import { PageLinkSelector } from '@/components/admin/PageLinkSelector';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
+import { OperationStatusOverlay } from '@/components/admin/OperationStatusOverlay';
 
 const generateId = () => Date.now().toString();
 
@@ -16,6 +17,7 @@ export default function NavbarManagementPage() {
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [itemToDelete, setItemToDelete] = useState<{ id: string, isChild: boolean, parentIdStr?: string } | null>(null);
+  const [operationStatus, setOperationStatus] = useState<string | null>(null);
   
   // Form state
   const [title, setTitle] = useState('');
@@ -50,10 +52,13 @@ export default function NavbarManagementPage() {
     flatten(newMenu, null);
     
     try {
+      setOperationStatus('Saving menu order...');
       await saveNavItems(flatItems);
       window.dispatchEvent(new Event('menuUpdated'));
     } catch (e: any) {
       alert("Error saving order: " + e.message);
+    } finally {
+      setOperationStatus(null);
     }
   };
 
@@ -138,19 +143,25 @@ export default function NavbarManagementPage() {
       });
       // also if parent changed, it breaks local tree, so just save and refetch
       try {
+        setOperationStatus('Saving menu item...');
         await saveNavItem(newItem);
         setMenuItems(await getNavTree());
         window.dispatchEvent(new Event('menuUpdated'));
       } catch (err: any) {
         alert(err.message);
+      } finally {
+        setOperationStatus(null);
       }
     } else {
       try {
+        setOperationStatus('Creating menu item...');
         await saveNavItem(newItem);
         setMenuItems(await getNavTree());
         window.dispatchEvent(new Event('menuUpdated'));
       } catch (err: any) {
         alert(err.message);
+      } finally {
+        setOperationStatus(null);
       }
     }
 
@@ -164,6 +175,7 @@ export default function NavbarManagementPage() {
   const confirmDelete = async () => {
     if (!itemToDelete) return;
     try {
+      setOperationStatus('Deleting menu item...');
       await deleteNavItem(itemToDelete.id);
       setMenuItems(await getNavTree());
       window.dispatchEvent(new Event('menuUpdated'));
@@ -171,6 +183,7 @@ export default function NavbarManagementPage() {
       alert("Error: " + e.message);
     } finally {
       setItemToDelete(null);
+      setOperationStatus(null);
     }
   };
 
@@ -184,7 +197,8 @@ export default function NavbarManagementPage() {
 
   return (
     <AdminWrapper>
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-6 relative min-h-[400px]">
+        <OperationStatusOverlay status={operationStatus} />
         <div className="bg-white border border-border-main p-4 sm:p-6 flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-bold text-primary">Website Menu Builder</h1>

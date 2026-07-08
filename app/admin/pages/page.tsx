@@ -6,6 +6,7 @@ import { AdminWrapper } from '@/components/admin/AdminWrapper';
 import { PlusCircle, Edit, Trash2, FileEdit } from 'lucide-react';
 import { getPages, savePage, deletePage, PageItem } from '@/lib/pageStore';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
+import { OperationStatusOverlay } from '@/components/admin/OperationStatusOverlay';
 
 const generateId = () => Date.now().toString();
 
@@ -14,6 +15,7 @@ export default function PagesManagement() {
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [itemToDelete, setItemToDelete] = useState<string | null>(null);
+  const [operationStatus, setOperationStatus] = useState<string | null>(null);
 
   // Form state
   const [title, setTitle] = useState('');
@@ -77,11 +79,14 @@ export default function PagesManagement() {
     };
 
     try {
+      setOperationStatus(editingId ? 'Saving web page details...' : 'Creating web page...');
       await savePage(newPage);
       await fetchPages();
       resetForm();
     } catch (e: any) {
       alert("Error saving page: " + e.message);
+    } finally {
+      setOperationStatus(null);
     }
   };
 
@@ -92,12 +97,14 @@ export default function PagesManagement() {
   const confirmDelete = async () => {
     if (!itemToDelete) return;
     try {
+      setOperationStatus('Deleting web page...');
       await deletePage(itemToDelete);
       await fetchPages();
     } catch (e: any) {
       alert("Error deleting page: " + e.message);
     } finally {
       setItemToDelete(null);
+      setOperationStatus(null);
     }
   };
 
@@ -119,7 +126,8 @@ export default function PagesManagement() {
 
   return (
     <AdminWrapper>
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-6 relative min-h-[400px]">
+        <OperationStatusOverlay status={operationStatus} />
         <div className="bg-white border border-border-main p-4 sm:p-6 flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-bold text-primary">Web Pages</h1>

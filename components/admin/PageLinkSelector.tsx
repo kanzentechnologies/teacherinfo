@@ -12,8 +12,8 @@ interface PageLinkSelectorProps {
 
 export function PageLinkSelector({ value, onChange, label = "Destination" }: PageLinkSelectorProps) {
   const [pages, setPages] = useState<PageItem[]>([]);
-  const [mode, setMode] = useState<'internal' | 'external'>(
-    value.startsWith('http') || value.startsWith('www') || value === '' ? 'external' : 'internal'
+  const [mode, setMode] = useState<'internal' | 'external' | 'none'>(
+    value === '#' ? 'none' : (value.startsWith('http') || value.startsWith('www') ? 'external' : 'internal')
   );
 
   useEffect(() => {
@@ -28,7 +28,9 @@ export function PageLinkSelector({ value, onChange, label = "Destination" }: Pag
   const [prevValue, setPrevValue] = useState(value);
   if (value !== prevValue) {
     setPrevValue(value);
-    if (value && !value.startsWith('http') && !value.startsWith('www') && value.startsWith('/')) {
+    if (value === '#') {
+      setMode('none');
+    } else if (value && !value.startsWith('http') && !value.startsWith('www') && value.startsWith('/')) {
       setMode('internal');
     } else if (value.startsWith('http') || value.startsWith('www')) {
       setMode('external');
@@ -66,7 +68,7 @@ export function PageLinkSelector({ value, onChange, label = "Destination" }: Pag
           type="button"
           onClick={() => {
             setMode('external');
-            // Don't clear value if it was already external
+            if (value === '#' || value.startsWith('/')) onChange('');
           }}
           className={`flex-1 flex items-center justify-center gap-2 py-1.5 text-xs font-bold border ${
             mode === 'external' 
@@ -77,9 +79,27 @@ export function PageLinkSelector({ value, onChange, label = "Destination" }: Pag
           <ExternalLink size={14} />
           External URL
         </button>
+        <button
+          type="button"
+          onClick={() => {
+            setMode('none');
+            onChange('#');
+          }}
+          className={`flex-1 flex items-center justify-center gap-2 py-1.5 text-xs font-bold border ${
+            mode === 'none' 
+              ? 'bg-primary text-white border-primary' 
+              : 'bg-white text-text-muted border-border-main hover:bg-gray-50'
+          }`}
+        >
+          No Link (Category)
+        </button>
       </div>
 
-      {mode === 'internal' ? (
+      {mode === 'none' ? (
+        <div className="w-full border border-border-main p-2 text-sm bg-gray-50 text-text-muted italic">
+          This item will only act as a dropdown menu parent and won't have a clickable page.
+        </div>
+      ) : mode === 'internal' ? (
         <select
           className="w-full border border-border-main p-2 text-sm bg-white"
           value={value.startsWith('/') ? value : ''}

@@ -69,15 +69,25 @@ export function Navigation() {
             onMouseLeave={() => setActiveDropdown(null)}
           >
             <div className="flex md:block">
-              <Link 
-                href={getUrl(item)}
-                onClick={() => setIsOpen(false)}
-                className="w-full block px-4 py-3 hover:bg-primary transition-colors flex items-center justify-between md:justify-start gap-1 font-medium text-sm"
-                target={getUrl(item).startsWith('http') ? '_blank' : '_self'}
-              >
-                {item.title}
-                {item.children && item.children.length > 0 && <ChevronDown size={16} className="opacity-70 hidden md:block" />}
-              </Link>
+              {getUrl(item) === '#' ? (
+                <div 
+                  onClick={() => setIsOpen(false)}
+                  className="w-full px-4 py-3 hover:bg-primary transition-colors flex items-center justify-between md:justify-start gap-1 font-medium text-sm cursor-default"
+                >
+                  {item.title}
+                  {item.children && item.children.length > 0 && <ChevronDown size={16} className="opacity-70 hidden md:block" />}
+                </div>
+              ) : (
+                <Link 
+                  href={getUrl(item)}
+                  onClick={() => setIsOpen(false)}
+                  className="w-full block px-4 py-3 hover:bg-primary transition-colors flex items-center justify-between md:justify-start gap-1 font-medium text-sm"
+                  target={getUrl(item).startsWith('http') ? '_blank' : '_self'}
+                >
+                  {item.title}
+                  {item.children && item.children.length > 0 && <ChevronDown size={16} className="opacity-70 hidden md:block" />}
+                </Link>
+              )}
               {item.children && item.children.length > 0 && (
                 <button
                   onClick={() => setActiveDropdown(activeDropdown === item.id ? null : item.id)}
@@ -101,15 +111,25 @@ export function Navigation() {
                   {item.children.map((subItem) => (
                     <li key={subItem.id} className="relative group/sub border-b border-primary/20 md:border-none last:border-none">
                       <div className="flex md:block justify-between items-center">
-                        <Link 
-                          href={getUrl(subItem)}
-                          onClick={() => setIsOpen(false)}
-                          className="block flex-grow px-8 md:px-4 py-3 md:py-2 text-sm text-white/80 md:text-text-main hover:bg-primary md:hover:bg-hover-bg hover:text-white md:hover:text-primary transition-colors flex justify-between items-center"
-                          target={getUrl(subItem).startsWith('http') ? '_blank' : '_self'}
-                        >
-                          {subItem.title}
-                          {subItem.children && subItem.children.length > 0 && <ChevronDown size={14} className="md:-rotate-90 opacity-70 hidden md:block" />}
-                        </Link>
+                        {getUrl(subItem) === '#' ? (
+                          <div 
+                            onClick={() => setIsOpen(false)}
+                            className="block flex-grow px-8 md:px-4 py-3 md:py-2 text-sm text-white/80 md:text-text-main hover:bg-primary md:hover:bg-hover-bg hover:text-white md:hover:text-primary transition-colors flex justify-between items-center cursor-default"
+                          >
+                            {subItem.title}
+                            {subItem.children && subItem.children.length > 0 && <ChevronDown size={14} className="md:-rotate-90 opacity-70 hidden md:block" />}
+                          </div>
+                        ) : (
+                          <Link 
+                            href={getUrl(subItem)}
+                            onClick={() => setIsOpen(false)}
+                            className="block flex-grow px-8 md:px-4 py-3 md:py-2 text-sm text-white/80 md:text-text-main hover:bg-primary md:hover:bg-hover-bg hover:text-white md:hover:text-primary transition-colors flex justify-between items-center"
+                            target={getUrl(subItem).startsWith('http') ? '_blank' : '_self'}
+                          >
+                            {subItem.title}
+                            {subItem.children && subItem.children.length > 0 && <ChevronDown size={14} className="md:-rotate-90 opacity-70 hidden md:block" />}
+                          </Link>
+                        )}
                         {subItem.children && subItem.children.length > 0 && (
                           <button
                             onClick={() => setActiveSubDropdown(activeSubDropdown === subItem.id ? null : subItem.id)}
@@ -133,14 +153,23 @@ export function Navigation() {
                           <ul className="py-0 md:py-2 flex flex-col">
                             {subItem.children.map((subSubItem) => (
                               <li key={subSubItem.id} className="border-b border-primary/20 md:border-none last:border-none">
-                                <Link 
-                                  href={getUrl(subSubItem)}
-                                  onClick={() => setIsOpen(false)}
-                                  className="block px-12 md:px-4 py-3 md:py-2 text-sm text-white/70 md:text-text-main hover:bg-primary md:hover:bg-hover-bg hover:text-white md:hover:text-primary transition-colors"
-                                  target={getUrl(subSubItem).startsWith('http') ? '_blank' : '_self'}
-                                >
-                                  {subSubItem.title}
-                                </Link>
+                                {getUrl(subSubItem) === '#' ? (
+                                  <div 
+                                    onClick={() => setIsOpen(false)}
+                                    className="block px-12 md:px-4 py-3 md:py-2 text-sm text-white/70 md:text-text-main hover:bg-primary md:hover:bg-hover-bg hover:text-white md:hover:text-primary transition-colors cursor-default"
+                                  >
+                                    {subSubItem.title}
+                                  </div>
+                                ) : (
+                                  <Link 
+                                    href={getUrl(subSubItem)}
+                                    onClick={() => setIsOpen(false)}
+                                    className="block px-12 md:px-4 py-3 md:py-2 text-sm text-white/70 md:text-text-main hover:bg-primary md:hover:bg-hover-bg hover:text-white md:hover:text-primary transition-colors"
+                                    target={getUrl(subSubItem).startsWith('http') ? '_blank' : '_self'}
+                                  >
+                                    {subSubItem.title}
+                                  </Link>
+                                )}
                               </li>
                             ))}
                           </ul>

@@ -6,6 +6,7 @@ import { PlusCircle, Edit, Trash2 } from 'lucide-react';
 import { Announcement, getAnnouncements, saveAnnouncement, deleteAnnouncement } from '@/lib/announcementStore';
 import RichTextEditor from '@/components/admin/RichTextEditor';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
+import { OperationStatusOverlay } from '@/components/admin/OperationStatusOverlay';
 
 const generateId = () => Date.now();
 
@@ -14,6 +15,7 @@ export default function AnnouncementsManagementPage() {
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [itemToDelete, setItemToDelete] = useState<number | null>(null);
+  const [operationStatus, setOperationStatus] = useState<string | null>(null);
 
   const [title, setTitle] = useState('');
   const [priority, setPriority] = useState<'High' | 'Normal'>('Normal');
@@ -56,9 +58,16 @@ export default function AnnouncementsManagementPage() {
 
   const confirmDelete = async () => {
     if (itemToDelete !== null) {
-      await deleteAnnouncement(itemToDelete);
-      loadAnnouncements();
-      setItemToDelete(null);
+      try {
+        setOperationStatus('Deleting announcement...');
+        await deleteAnnouncement(itemToDelete);
+        loadAnnouncements();
+      } catch (err: any) {
+        alert('Error deleting announcement: ' + (err.message || 'Unknown error'));
+      } finally {
+        setItemToDelete(null);
+        setOperationStatus(null);
+      }
     }
   };
 
@@ -87,6 +96,7 @@ export default function AnnouncementsManagementPage() {
     }
 
     try {
+      setOperationStatus(editingId ? 'Saving announcement...' : 'Creating announcement...');
       await saveAnnouncement(payload);
       setIsAdding(false);
       setEditingId(null);
@@ -99,6 +109,8 @@ export default function AnnouncementsManagementPage() {
       loadAnnouncements();
     } catch (err: any) {
       alert('Error saving announcement: ' + (err.message || 'Unknown error'));
+    } finally {
+      setOperationStatus(null);
     }
   };
 
@@ -115,7 +127,8 @@ export default function AnnouncementsManagementPage() {
 
   return (
     <AdminWrapper>
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-6 relative min-h-[400px]">
+        <OperationStatusOverlay status={operationStatus} />
         <div className="bg-white border border-border-main p-4 sm:p-6 flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-bold text-primary">Manage Announcements</h1>

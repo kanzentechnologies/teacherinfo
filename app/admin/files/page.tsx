@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { AdminWrapper } from '@/components/admin/AdminWrapper';
 import { Upload, FileText, Trash2, Copy, Image as ImageIcon, Loader2, Folder, ChevronDown, ChevronRight, Edit2, CheckSquare } from 'lucide-react';
 import { getFiles, FileItem } from '@/lib/fileStore';
+import { OperationStatusOverlay } from '@/components/admin/OperationStatusOverlay';
 
 export default function FilesManagementPage() {
   const [files, setFiles] = useState<FileItem[]>([]);
@@ -78,6 +79,7 @@ export default function FilesManagementPage() {
     
     setUploading(true);
     setUploadProgress({ current: 0, total: filesList.length });
+    setOperationStatus('Preparing upload...');
     let successCount = 0;
     
     try {
@@ -99,6 +101,7 @@ export default function FilesManagementPage() {
           successCount++;
         }
         setUploadProgress(prev => prev ? { ...prev, current: prev.current + 1 } : null);
+        setOperationStatus(`Uploading ${i + 1} of ${filesList.length} files...`);
       }
       await fetchFiles();
       alert(`Successfully uploaded ${successCount} files!`);
@@ -113,6 +116,7 @@ export default function FilesManagementPage() {
 
   const uploadFile = async (file: File) => {
     setUploading(true);
+    setOperationStatus('Uploading file...');
     try {
       const formData = new FormData();
       formData.append('file', file);
@@ -131,6 +135,7 @@ export default function FilesManagementPage() {
       alert('File uploaded successfully!');
     } catch (err: any) {
       alert('Error uploading file: ' + err.message);
+      setOperationStatus(null);
     } finally {
       setUploading(false);
     }
@@ -437,12 +442,10 @@ export default function FilesManagementPage() {
         </div>
 
         <div className="bg-white border border-border-main relative min-h-[200px]">
-          {operationStatus && (
-            <div className="absolute inset-0 bg-white/70 z-10 flex flex-col items-center justify-center backdrop-blur-sm">
-              <Loader2 size={32} className="animate-spin text-primary mb-3" />
-              <div className="text-lg font-bold text-primary">{operationStatus}</div>
-            </div>
-          )}
+          <OperationStatusOverlay 
+            status={operationStatus} 
+            progress={uploadProgress ? (uploadProgress.current / uploadProgress.total) * 100 : undefined} 
+          />
           {loading && !operationStatus ? (
             <div className="p-8 text-center text-text-muted flex flex-col items-center">
               <Loader2 size={32} className="animate-spin text-gray-400 mb-3" />

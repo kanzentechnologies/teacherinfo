@@ -7,6 +7,7 @@ import { getImportantLinks, saveImportantLinks, deleteImportantLink, ImportantLi
 import { Reorder } from 'motion/react';
 
 import { PageLinkSelector } from '@/components/admin/PageLinkSelector';
+import { OperationStatusOverlay } from '@/components/admin/OperationStatusOverlay';
 
 const generateId = () => Date.now();
 
@@ -14,6 +15,7 @@ export default function ImportantLinksManagementPage() {
   const [links, setLinks] = useState<ImportantLink[]>([]);
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [operationStatus, setOperationStatus] = useState<string | null>(null);
 
   // Form state
   const [title, setTitle] = useState('');
@@ -27,8 +29,15 @@ export default function ImportantLinksManagementPage() {
   }, []);
 
   const handleSaveLinks = async (newLinks: ImportantLink[]) => {
-    setLinks(newLinks);
-    await saveImportantLinks(newLinks);
+    try {
+      setOperationStatus('Saving link order...');
+      setLinks(newLinks);
+      await saveImportantLinks(newLinks);
+    } catch (e: any) {
+      alert("Error saving links: " + e.message);
+    } finally {
+      setOperationStatus(null);
+    }
   };
 
   const resetForm = () => {
@@ -56,15 +65,30 @@ export default function ImportantLinksManagementPage() {
       newLinks.push(newLinkItem);
     }
 
-    await handleSaveLinks(newLinks);
-    resetForm();
+    try {
+      setOperationStatus(editingId ? 'Saving link...' : 'Creating link...');
+      setLinks(newLinks);
+      await saveImportantLinks(newLinks);
+      resetForm();
+    } catch (e: any) {
+      alert("Error saving link: " + e.message);
+    } finally {
+      setOperationStatus(null);
+    }
   };
 
   const handleDelete = async (id: number) => {
     if (!confirm('Are you sure you want to delete this link?')) return;
-    await deleteImportantLink(id);
-    const newLinks = links.filter(l => l.id !== id);
-    setLinks(newLinks);
+    try {
+      setOperationStatus('Deleting link...');
+      await deleteImportantLink(id);
+      const newLinks = links.filter(l => l.id !== id);
+      setLinks(newLinks);
+    } catch (e: any) {
+      alert("Error deleting link: " + e.message);
+    } finally {
+      setOperationStatus(null);
+    }
   };
 
   const handleEdit = (linkItem: ImportantLink) => {
@@ -76,7 +100,8 @@ export default function ImportantLinksManagementPage() {
 
   return (
     <AdminWrapper>
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-6 relative min-h-[400px]">
+        <OperationStatusOverlay status={operationStatus} />
         <div className="bg-white border border-border-main p-4 sm:p-6 flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-bold text-primary">Important Links</h1>
