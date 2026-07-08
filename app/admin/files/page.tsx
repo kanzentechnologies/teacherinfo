@@ -333,12 +333,16 @@ export default function FilesManagementPage() {
     const result: React.ReactNode[] = [];
     
     // Render files in this node
-    node.files.forEach(file => {
+    node.files.sort((a, b) => {
+      const nameA = a.name.split('/').pop() || '';
+      const nameB = b.name.split('/').pop() || '';
+      return nameA.localeCompare(nameB, undefined, { numeric: true, sensitivity: 'base' });
+    }).forEach(file => {
       result.push(renderFileRow(file, depth));
     });
     
     // Render subfolders
-    Object.keys(node.folders).sort().forEach(folderName => {
+    Object.keys(node.folders).sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' })).forEach(folderName => {
       const fullPath = path ? `${path}/${folderName}` : folderName;
       const isExpanded = expandedFolders.has(fullPath);
       const isSelected = selectedItems.has(JSON.stringify({ key: fullPath, type: 'folder' }));

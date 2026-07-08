@@ -63,7 +63,7 @@ export default async function Page({ params }: { params: Promise<{ slug: string[
       parsedLinks.sort((a, b) => {
         const titleA = a.title || '';
         const titleB = b.title || '';
-        return titleA.localeCompare(titleB);
+        return titleA.localeCompare(titleB, undefined, { numeric: true, sensitivity: 'base' });
       });
     } catch {
       parsedLinks = [];

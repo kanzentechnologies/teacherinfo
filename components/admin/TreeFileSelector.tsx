@@ -48,7 +48,7 @@ const TreeNodeComponent = ({
           .sort((a, b) => {
             // Folders first
             if (a.type !== b.type) return a.type === 'folder' ? -1 : 1;
-            return a.name.localeCompare(b.name);
+            return a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' });
           })
           .map((child) => (
             <TreeNodeComponent
@@ -116,7 +116,7 @@ const TreeNodeComponent = ({
           {Object.values(node.children)
             .sort((a, b) => {
               if (a.type !== b.type) return a.type === 'folder' ? -1 : 1;
-              return a.name.localeCompare(b.name);
+              return a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' });
             })
             .map((child) => (
               <TreeNodeComponent

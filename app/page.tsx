@@ -24,7 +24,7 @@ export default async function Home() {
     try {
       quickLinks = JSON.parse(usefulLinksPage.content);
       // Alphabetical sort like in [...slug]/page.tsx
-      quickLinks.sort((a: any, b: any) => (a.title || '').localeCompare(b.title || ''));
+      quickLinks.sort((a: any, b: any) => (a.title || '').localeCompare(b.title || '', undefined, { numeric: true, sensitivity: 'base' }));
     } catch {
       quickLinks = [];
     }

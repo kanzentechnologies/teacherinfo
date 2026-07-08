@@ -45,8 +45,8 @@ export function LinksTableViewer({ links }: { links: any[] }) {
   const renderTree = (items: any[], depth: number = 0) => {
     const result: React.ReactNode[] = [];
     
-    // Sort items alphabetically
-    const sortedItems = [...items].sort((a, b) => a.title.localeCompare(b.title));
+    // Sort items alphabetically with natural numeric sorting
+    const sortedItems = [...items].sort((a, b) => a.title.localeCompare(b.title, undefined, { numeric: true, sensitivity: 'base' }));
     
     const folders = sortedItems.filter(i => i.type === 'folder');
     const files = sortedItems.filter(i => i.type !== 'folder');
