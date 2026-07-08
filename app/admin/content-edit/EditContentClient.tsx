@@ -33,6 +33,7 @@ export default function EditContentClient() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [operationStatus, setOperationStatus] = useState<string | null>(null);
+  const [operationDetails, setOperationDetails] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState<{current: number, total: number} | null>(null);
   const [showFileSelectorFor, setShowFileSelectorFor] = useState<string | null>(null);
   const [showFolderSelector, setShowFolderSelector] = useState(false);
@@ -81,7 +82,8 @@ export default function EditContentClient() {
   const handleSave = async () => {
     if (!item) return;
     setSaving(true);
-    setOperationStatus('Saving changes...');
+    setOperationStatus('Saving Changes');
+    setOperationDetails('Syncing with database...');
     setUploadProgress({ current: 0, total: 100 });
     
     // Fake progress for UX
@@ -107,6 +109,7 @@ export default function EditContentClient() {
       console.error(err);
       alert('Error saving content: ' + err.message);
       setOperationStatus(null);
+      setOperationDetails(null);
       setUploadProgress(null);
     } finally {
       clearInterval(interval);
@@ -365,7 +368,11 @@ export default function EditContentClient() {
       )}
       
       <div className="flex flex-col gap-6 relative min-h-[400px]">
-        <OperationStatusOverlay status={operationStatus} progress={uploadProgress ? (uploadProgress.current / uploadProgress.total) * 100 : undefined} />
+        <OperationStatusOverlay 
+          status={operationStatus} 
+          details={operationDetails}
+          progress={uploadProgress ? (uploadProgress.current / uploadProgress.total) * 100 : undefined} 
+        />
         <div className="bg-white border border-border-main p-4 sm:p-6 flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-bold text-primary">Edit {item.layout === 'links' ? 'Links' : 'Content'}: {item.title}</h1>

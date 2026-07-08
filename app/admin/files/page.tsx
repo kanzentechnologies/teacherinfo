@@ -12,6 +12,7 @@ export default function FilesManagementPage() {
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<{current: number, total: number} | null>(null);
   const [operationStatus, setOperationStatus] = useState<string | null>(null);
+  const [operationDetails, setOperationDetails] = useState<string | null>(null);
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   
@@ -50,6 +51,7 @@ export default function FilesManagementPage() {
     } finally {
       setLoading(false);
       setOperationStatus(null);
+      setOperationDetails(null);
       setSelectedItems(new Set());
     }
   };
@@ -79,7 +81,8 @@ export default function FilesManagementPage() {
     
     setUploading(true);
     setUploadProgress({ current: 0, total: filesList.length });
-    setOperationStatus('Preparing upload...');
+    setOperationStatus('Uploading Folder');
+    setOperationDetails('Preparing upload...');
     let successCount = 0;
     
     try {
@@ -101,7 +104,7 @@ export default function FilesManagementPage() {
           successCount++;
         }
         setUploadProgress(prev => prev ? { ...prev, current: prev.current + 1 } : null);
-        setOperationStatus(`Uploading ${i + 1} of ${filesList.length} files...`);
+        setOperationDetails(`Uploading file ${i + 1} of ${filesList.length}`);
       }
       await fetchFiles();
       alert(`Successfully uploaded ${successCount} files!`);
@@ -110,13 +113,16 @@ export default function FilesManagementPage() {
     } finally {
       setUploading(false);
       setUploadProgress(null);
+      setOperationStatus(null);
+      setOperationDetails(null);
       if (folderInputRef.current) folderInputRef.current.value = '';
     }
   };
 
   const uploadFile = async (file: File) => {
     setUploading(true);
-    setOperationStatus('Uploading file...');
+    setOperationStatus('Uploading File');
+    setOperationDetails(file.name);
     try {
       const formData = new FormData();
       formData.append('file', file);
@@ -136,6 +142,7 @@ export default function FilesManagementPage() {
     } catch (err: any) {
       alert('Error uploading file: ' + err.message);
       setOperationStatus(null);
+      setOperationDetails(null);
     } finally {
       setUploading(false);
     }
@@ -150,7 +157,8 @@ export default function FilesManagementPage() {
     
     try {
       setUploadProgress({ current: 0, total: 1 });
-      setOperationStatus(`Deleting ${isFolder ? 'folder' : 'file'}...`);
+      setOperationStatus(`Deleting ${isFolder ? 'Folder' : 'File'}`);
+      setOperationDetails(key);
       const res = await fetch('/api/files/delete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -164,6 +172,7 @@ export default function FilesManagementPage() {
       alert('Failed to delete: ' + err.message);
     } finally {
       setOperationStatus(null);
+      setOperationDetails(null);
       setUploadProgress(null);
     }
   };
@@ -184,7 +193,8 @@ export default function FilesManagementPage() {
     try {
       const totalItems = keys.length + folders.length;
       setUploadProgress({ current: 0, total: totalItems });
-      setOperationStatus(`Deleting 0 of ${totalItems} selected item(s)...`);
+      setOperationStatus('Deleting Items');
+      setOperationDetails(`0 of ${totalItems} selected item(s) deleted`);
       
       let deletedCount = 0;
       
@@ -194,7 +204,7 @@ export default function FilesManagementPage() {
         if (!res.ok) throw new Error('Delete folder failed');
         deletedCount++;
         setUploadProgress({ current: deletedCount, total: totalItems });
-        setOperationStatus(`Deleting ${deletedCount} of ${totalItems} selected item(s)...`);
+        setOperationDetails(`${deletedCount} of ${totalItems} selected item(s) deleted`);
       }
 
       // Delete files in chunks of 5
@@ -204,7 +214,7 @@ export default function FilesManagementPage() {
         if (!res.ok) throw new Error('Bulk delete failed');
         deletedCount += chunk.length;
         setUploadProgress({ current: Math.min(deletedCount, totalItems), total: totalItems });
-        setOperationStatus(`Deleting ${Math.min(deletedCount, totalItems)} of ${totalItems} selected item(s)...`);
+        setOperationDetails(`${Math.min(deletedCount, totalItems)} of ${totalItems} selected item(s) deleted`);
       }
       
       await fetchFiles();
@@ -212,6 +222,7 @@ export default function FilesManagementPage() {
       alert('Failed to delete: ' + err.message);
     } finally {
       setOperationStatus(null);
+      setOperationDetails(null);
       setUploadProgress(null);
     }
   };
@@ -241,7 +252,8 @@ export default function FilesManagementPage() {
     if (oldKey === newKey) return;
     
     try {
-      setOperationStatus(`Renaming ${isFolder ? 'folder' : 'file'}...`);
+      setOperationStatus(`Renaming ${isFolder ? 'Folder' : 'File'}`);
+      setOperationDetails(`To: ${newName}`);
       const res = await fetch('/api/files/rename', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -252,6 +264,7 @@ export default function FilesManagementPage() {
     } catch (err: any) {
       alert('Failed to rename: ' + err.message);
       setOperationStatus(null);
+      setOperationDetails(null);
     }
   };
 
@@ -421,7 +434,6 @@ export default function FilesManagementPage() {
   return (
     <AdminWrapper>
       <div className="flex flex-col gap-6 relative min-h-[400px]">
-        <OperationStatusOverlay status={operationStatus} progress={uploadProgress ? (uploadProgress.current / uploadProgress.total) * 100 : undefined} />
         
         <div className="bg-white border border-border-main p-4 sm:p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
@@ -474,6 +486,7 @@ export default function FilesManagementPage() {
         <div className="bg-white border border-border-main relative min-h-[200px]">
           <OperationStatusOverlay 
             status={operationStatus} 
+            details={operationDetails}
             progress={uploadProgress ? (uploadProgress.current / uploadProgress.total) * 100 : undefined} 
           />
           {loading && !operationStatus ? (
