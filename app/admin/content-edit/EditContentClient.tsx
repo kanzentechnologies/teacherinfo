@@ -261,6 +261,7 @@ export default function EditContentClient() {
       id: Date.now().toString() + Math.random().toString(36).substring(2, 10),
       title: rootName,
       type: 'folder',
+      url: '',
       children: []
     };
 
@@ -283,6 +284,7 @@ export default function EditContentClient() {
             id: Date.now().toString() + Math.random().toString(36).substring(2, 10),
             title: folderPart,
             type: 'folder',
+            url: '',
             children: []
           };
           if (!currentFolder.children) currentFolder.children = [];
