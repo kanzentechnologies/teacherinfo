@@ -7,8 +7,7 @@ import RichTextEditor from '@/components/admin/RichTextEditor';
 import { getPageById, savePage, PageItem } from '@/lib/pageStore';
 import { PlusCircle, Trash2, GripVertical, FileSearch, Upload } from 'lucide-react';
 import * as xlsx from 'xlsx';
-import { FileSelector } from '@/components/admin/FileSelector';
-import { FolderSelector } from '@/components/admin/FolderSelector';
+import { TreeFileSelector } from '@/components/admin/TreeFileSelector';
 import { FileItem } from '@/lib/fileStore';
 import { OperationStatusOverlay } from '@/components/admin/OperationStatusOverlay';
 
@@ -169,7 +168,7 @@ export default function EditContentClient() {
       // Optionally pre-fill title if empty
       const targetLink = links.find(l => l.id === showFileSelectorFor);
       if (targetLink && !targetLink.title) {
-        updateLink(showFileSelectorFor, 'title', file.name);
+        updateLink(showFileSelectorFor, 'title', file.name.split('/').pop() || file.name);
       }
     }
     setShowFileSelectorFor(null);
@@ -206,14 +205,30 @@ export default function EditContentClient() {
   return (
     <AdminWrapper>
       {showFileSelectorFor && (
-        <FileSelector 
-          onSelect={handleFileSelect} 
+        <TreeFileSelector 
+          mode="file"
+          title="Select a File"
+          onSelectFile={handleFileSelect} 
           onClose={() => setShowFileSelectorFor(null)} 
         />
       )}
       {showFolderSelector && (
-        <FolderSelector
-          onSelect={handleFolderSelect}
+        <TreeFileSelector
+          mode="both"
+          title="Import Folder or Files"
+          onSelectFolder={handleFolderSelect}
+          onSelectFile={(file) => {
+            const fileName = file.name.split('/').pop() || file.name;
+            const newLink = {
+              id: Date.now().toString() + Math.random().toString(36).substring(2, 7),
+              title: fileName,
+              url: file.url,
+              description: ''
+            };
+            setLinks(prev => [...prev, newLink]);
+            setShowFolderSelector(false);
+            alert(`Successfully imported 1 file!`);
+          }}
           onClose={() => setShowFolderSelector(false)}
         />
       )}
