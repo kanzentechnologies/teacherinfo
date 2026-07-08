@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { AdminWrapper } from '@/components/admin/AdminWrapper';
-import { Upload, FileText, Trash2, Copy, Image as ImageIcon, Loader2, Folder, ChevronDown, ChevronRight } from 'lucide-react';
-import { getFiles, saveFileRecord, deleteFileRecord, FileItem } from '@/lib/fileStore';
+import { Upload, FileText, Trash2, Copy, Image as ImageIcon, Loader2, Folder, ChevronDown, ChevronRight, Edit2, CheckSquare } from 'lucide-react';
+import { getFiles, FileItem } from '@/lib/fileStore';
 
 export default function FilesManagementPage() {
   const [files, setFiles] = useState<FileItem[]>([]);
@@ -11,6 +11,8 @@ export default function FilesManagementPage() {
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<{current: number, total: number} | null>(null);
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
+  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
+  
   const fileInputRef = useRef<HTMLInputElement>(null);
   const folderInputRef = useRef<HTMLInputElement>(null);
 
@@ -23,11 +25,11 @@ export default function FilesManagementPage() {
       console.error('Failed to fetch files:', err);
     } finally {
       setLoading(false);
+      setSelectedItems(new Set());
     }
   };
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchFiles();
   }, []);
 
@@ -47,16 +49,16 @@ export default function FilesManagementPage() {
   };
 
   const handleFolderChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
+    const filesList = e.target.files;
+    if (!filesList || filesList.length === 0) return;
     
     setUploading(true);
-    setUploadProgress({ current: 0, total: files.length });
+    setUploadProgress({ current: 0, total: filesList.length });
     let successCount = 0;
     
     try {
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
+      for (let i = 0; i < filesList.length; i++) {
+        const file = filesList[i];
         if (file.name.startsWith('.')) continue; // Skip hidden files
         
         const formData = new FormData();
@@ -70,14 +72,6 @@ export default function FilesManagementPage() {
         
         const data = await res.json();
         if (res.ok && data.success) {
-          const fileRecord: FileItem = {
-            id: Date.now().toString() + Math.random().toString(36).substring(2, 7),
-            name: file.webkitRelativePath || file.name,
-            type: file.type.startsWith('image/') ? 'Image' : 'Document',
-            size: file.size,
-            url: data.url,
-          };
-          await saveFileRecord(fileRecord);
           successCount++;
         }
         setUploadProgress(prev => prev ? { ...prev, current: prev.current + 1 } : null);
@@ -109,15 +103,6 @@ export default function FilesManagementPage() {
         throw new Error(data.error || 'Upload failed');
       }
 
-      const fileRecord: FileItem = {
-        id: Date.now().toString(),
-        name: file.name,
-        type: file.type.startsWith('image/') ? 'Image' : 'Document',
-        size: file.size,
-        url: data.url,
-      };
-
-      await saveFileRecord(fileRecord);
       await fetchFiles();
       alert('File uploaded successfully!');
     } catch (err: any) {
@@ -127,13 +112,78 @@ export default function FilesManagementPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this file record?')) return;
+  const handleDelete = async (key: string, isFolder = false) => {
+    const msg = isFolder 
+      ? `Are you sure you want to delete the folder "${key}" and ALL its contents?` 
+      : `Are you sure you want to delete "${key}"?`;
+      
+    if (!confirm(msg)) return;
+    
     try {
-      await deleteFileRecord(id);
+      const res = await fetch('/api/files/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(isFolder ? { folders: [key] } : { keys: [key] })
+      });
+      
+      if (!res.ok) throw new Error('Delete failed');
       await fetchFiles();
     } catch (err: any) {
-      alert('Failed to delete file: ' + err.message);
+      alert('Failed to delete: ' + err.message);
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedItems.size === 0) return;
+    if (!confirm(`Are you sure you want to delete ${selectedItems.size} selected item(s)?`)) return;
+    
+    const keys: string[] = [];
+    const folders: string[] = [];
+    
+    selectedItems.forEach(itemStr => {
+      const { type, key } = JSON.parse(itemStr);
+      if (type === 'folder') folders.push(key);
+      else keys.push(key);
+    });
+    
+    try {
+      setLoading(true);
+      const res = await fetch('/api/files/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ keys, folders })
+      });
+      if (!res.ok) throw new Error('Bulk delete failed');
+      await fetchFiles();
+    } catch (err: any) {
+      alert('Failed to delete: ' + err.message);
+      setLoading(false);
+    }
+  };
+
+  const handleRename = async (oldKey: string, isFolder = false) => {
+    const newName = prompt(`Enter new name for ${isFolder ? 'folder' : 'file'}:`, oldKey.split('/').pop());
+    if (!newName) return;
+    
+    const parts = oldKey.split('/');
+    parts.pop(); // remove old name
+    parts.push(newName);
+    const newKey = parts.join('/');
+    
+    if (oldKey === newKey) return;
+    
+    try {
+      setLoading(true);
+      const res = await fetch('/api/files/rename', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ oldKey, newKey, isFolder })
+      });
+      if (!res.ok) throw new Error('Rename failed');
+      await fetchFiles();
+    } catch (err: any) {
+      alert('Failed to rename: ' + err.message);
+      setLoading(false);
     }
   };
 
@@ -189,27 +239,47 @@ export default function FilesManagementPage() {
     setExpandedFolders(newExpanded);
   };
 
-  const renderFileRow = (file: FileItem, depth: number = 0) => (
-    <tr key={file.id} className="hover:bg-hover-bg">
-      <td className="px-4 py-3 font-medium text-text-main flex items-center gap-2" style={{ paddingLeft: `${depth * 1.5 + (depth > 0 ? 2.5 : 1)}rem` }}>
-        {file.type === 'Image' ? <ImageIcon size={16} className="text-blue-500 min-w-[16px]" /> : <FileText size={16} className="text-red-500 min-w-[16px]" />}
-        <a href={file.url} target="_blank" rel="noopener noreferrer" className="hover:underline text-primary break-words max-w-[150px] sm:max-w-sm truncate">
-          {file.name.split('/').pop()}
-        </a>
-      </td>
-      <td className="px-4 py-3 text-text-muted">{file.type}</td>
-      <td className="px-4 py-3 text-text-muted">{formatSize(file.size)}</td>
-      <td className="px-4 py-3 text-text-muted">{formatDate(file.created_at)}</td>
-      <td className="px-4 py-3 text-right whitespace-nowrap">
-        <button onClick={() => copyToClipboard(file.url)} className="text-secondary hover:underline mr-3 inline-flex items-center gap-1" title="Copy URL">
-          <Copy size={14}/> Copy
-        </button>
-        <button onClick={() => handleDelete(file.id)} className="text-red-600 hover:underline inline-flex items-center gap-1">
-          <Trash2 size={14}/> Del
-        </button>
-      </td>
-    </tr>
-  );
+  const toggleSelection = (key: string, type: 'file' | 'folder') => {
+    const val = JSON.stringify({ key, type });
+    const newSelected = new Set(selectedItems);
+    if (newSelected.has(val)) newSelected.delete(val);
+    else newSelected.add(val);
+    setSelectedItems(newSelected);
+  };
+
+  const renderFileRow = (file: FileItem, depth: number = 0) => {
+    const isSelected = selectedItems.has(JSON.stringify({ key: file.id, type: 'file' }));
+    return (
+      <tr key={file.id} className="hover:bg-hover-bg">
+        <td className="px-4 py-3 font-medium text-text-main flex items-center gap-2" style={{ paddingLeft: `${depth * 1.5 + (depth > 0 ? 2.5 : 1)}rem` }}>
+          <input 
+            type="checkbox" 
+            checked={isSelected}
+            onChange={() => toggleSelection(file.id, 'file')}
+            className="cursor-pointer mr-1"
+          />
+          {file.type === 'Image' ? <ImageIcon size={16} className="text-blue-500 min-w-[16px]" /> : <FileText size={16} className="text-red-500 min-w-[16px]" />}
+          <a href={file.url} target="_blank" rel="noopener noreferrer" className="hover:underline text-primary break-words max-w-[150px] sm:max-w-sm truncate">
+            {file.name.split('/').pop()}
+          </a>
+        </td>
+        <td className="px-4 py-3 text-text-muted">{file.type}</td>
+        <td className="px-4 py-3 text-text-muted">{formatSize(file.size)}</td>
+        <td className="px-4 py-3 text-text-muted">{formatDate(file.created_at)}</td>
+        <td className="px-4 py-3 text-right whitespace-nowrap">
+          <button onClick={() => copyToClipboard(file.url)} className="text-secondary hover:underline mr-3 inline-flex items-center gap-1" title="Copy URL">
+            <Copy size={14}/> Copy
+          </button>
+          <button onClick={() => handleRename(file.id, false)} className="text-blue-600 hover:underline mr-3 inline-flex items-center gap-1" title="Rename File">
+            <Edit2 size={14}/> Rename
+          </button>
+          <button onClick={() => handleDelete(file.id, false)} className="text-red-600 hover:underline inline-flex items-center gap-1">
+            <Trash2 size={14}/> Del
+          </button>
+        </td>
+      </tr>
+    );
+  };
 
   const renderTree = (node: TreeNode, path: string, depth: number) => {
     const result: React.ReactNode[] = [];
@@ -223,6 +293,7 @@ export default function FilesManagementPage() {
     Object.keys(node.folders).sort().forEach(folderName => {
       const fullPath = path ? `${path}/${folderName}` : folderName;
       const isExpanded = expandedFolders.has(fullPath);
+      const isSelected = selectedItems.has(JSON.stringify({ key: fullPath, type: 'folder' }));
       
       const countFiles = (n: TreeNode): number => {
         return n.files.length + Object.values(n.folders).reduce((acc, f) => acc + countFiles(f), 0);
@@ -232,14 +303,29 @@ export default function FilesManagementPage() {
       result.push(
         <tr 
           key={`folder-${fullPath}`}
-          className="bg-gray-50 hover:bg-gray-100 cursor-pointer border-t border-border-main"
-          onClick={() => toggleFolder(fullPath)}
+          className="bg-gray-50 hover:bg-gray-100 border-t border-border-main"
         >
-          <td colSpan={5} className="px-4 py-3 font-bold text-primary flex items-center gap-2" style={{ paddingLeft: `${depth * 1.5 + 1}rem` }}>
-            {isExpanded ? <ChevronDown size={18} className="min-w-[18px]" /> : <ChevronRight size={18} className="min-w-[18px]" />}
-            <Folder size={18} className="text-blue-500 min-w-[18px]" />
-            <span className="truncate max-w-[200px] sm:max-w-md">{folderName}</span> 
-            <span className="text-text-muted font-normal text-xs ml-2">({count} item{count !== 1 ? 's' : ''})</span>
+          <td colSpan={4} className="px-4 py-3 font-bold text-primary flex items-center gap-2" style={{ paddingLeft: `${depth * 1.5 + 1}rem` }}>
+            <input 
+              type="checkbox" 
+              checked={isSelected}
+              onChange={() => toggleSelection(fullPath, 'folder')}
+              className="cursor-pointer mr-1"
+            />
+            <div className="cursor-pointer flex items-center gap-2" onClick={() => toggleFolder(fullPath)}>
+              {isExpanded ? <ChevronDown size={18} className="min-w-[18px]" /> : <ChevronRight size={18} className="min-w-[18px]" />}
+              <Folder size={18} className="text-blue-500 min-w-[18px]" />
+              <span className="truncate max-w-[200px] sm:max-w-md">{folderName}</span> 
+              <span className="text-text-muted font-normal text-xs ml-2">({count} item{count !== 1 ? 's' : ''})</span>
+            </div>
+          </td>
+          <td className="px-4 py-3 text-right whitespace-nowrap">
+            <button onClick={() => handleRename(fullPath, true)} className="text-blue-600 hover:underline mr-3 inline-flex items-center gap-1" title="Rename Folder">
+              <Edit2 size={14}/> Rename
+            </button>
+            <button onClick={() => handleDelete(fullPath, true)} className="text-red-600 hover:underline inline-flex items-center gap-1">
+              <Trash2 size={14}/> Del
+            </button>
           </td>
         </tr>
       );
@@ -255,10 +341,10 @@ export default function FilesManagementPage() {
   return (
     <AdminWrapper>
       <div className="flex flex-col gap-6">
-        <div className="bg-white border border-border-main p-4 sm:p-6 flex justify-between items-center">
+        <div className="bg-white border border-border-main p-4 sm:p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
             <h1 className="text-2xl font-bold text-primary">File Management</h1>
-            <p className="text-sm text-text-muted">Upload and manage documents and images</p>
+            <p className="text-sm text-text-muted">Directly synced with Cloudflare R2 Storage</p>
           </div>
           <input 
             type="file" 
@@ -274,7 +360,16 @@ export default function FilesManagementPage() {
             className="hidden" 
             {...{webkitdirectory: "", directory: ""}}
           />
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
+            {selectedItems.size > 0 && (
+              <button 
+                onClick={handleBulkDelete}
+                className="bg-red-50 text-red-600 border border-red-200 font-bold py-2 px-4 rounded-sm hover:bg-red-100 transition-colors flex items-center gap-2 text-sm"
+              >
+                <Trash2 size={18} />
+                Delete Selected ({selectedItems.size})
+              </button>
+            )}
             <button 
               onClick={handleFolderUploadClick}
               disabled={uploading}
@@ -294,37 +389,9 @@ export default function FilesManagementPage() {
           </div>
         </div>
 
-        <div className="bg-white border border-border-main p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div 
-            onClick={handleUploadClick}
-            className="border-2 border-dashed border-border-main p-10 text-center bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer rounded-sm"
-          >
-            {uploading ? (
-               <Loader2 size={32} className="animate-spin mx-auto text-primary mb-3" />
-            ) : (
-               <Upload size={32} className="mx-auto text-gray-400 mb-3" />
-            )}
-            <p className="font-bold text-primary">Upload File</p>
-            <p className="text-sm text-text-muted mt-1">PDF, DOCX, JPG, PNG</p>
-          </div>
-          
-          <div 
-            onClick={handleFolderUploadClick}
-            className="border-2 border-dashed border-border-main p-10 text-center bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer rounded-sm"
-          >
-            {uploading ? (
-               <Loader2 size={32} className="animate-spin mx-auto text-primary mb-3" />
-            ) : (
-               <Upload size={32} className="mx-auto text-gray-400 mb-3" />
-            )}
-            <p className="font-bold text-primary">Upload Folder</p>
-            <p className="text-sm text-text-muted mt-1">Preserves directory structure</p>
-          </div>
-        </div>
-
         <div className="bg-white border border-border-main">
           {loading ? (
-            <div className="p-8 text-center text-text-muted">Loading files...</div>
+            <div className="p-8 text-center text-text-muted">Loading files from R2...</div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm text-left">
@@ -340,7 +407,7 @@ export default function FilesManagementPage() {
                 <tbody className="divide-y divide-border-main">
                   {files.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="px-4 py-8 text-center text-text-muted italic">No files found.</td>
+                      <td colSpan={5} className="px-4 py-8 text-center text-text-muted italic">No files found in R2 Storage.</td>
                     </tr>
                   ) : (
                     renderTree(fileTree, '', 0)
