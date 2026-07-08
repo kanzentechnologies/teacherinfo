@@ -280,7 +280,19 @@ export default function EditContentClient() {
         fileType: file.type,
         fileSize: file.size
       });
+      });
     });
+
+    const sortTree = (node: LinkItem) => {
+      if (node.children) {
+        node.children.sort((a, b) => {
+          if (a.type !== b.type) return a.type === 'folder' ? -1 : 1;
+          return (a.title || '').localeCompare(b.title || '', undefined, { numeric: true, sensitivity: 'base' });
+        });
+        node.children.forEach(sortTree);
+      }
+    };
+    sortTree(rootLink);
 
     setLinks(prev => [...prev, rootLink]);
     setShowFolderSelector(false);
