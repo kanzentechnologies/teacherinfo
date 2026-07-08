@@ -2,13 +2,15 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { AdminWrapper } from '@/components/admin/AdminWrapper';
-import { Upload, FileText, Trash2, Copy, Image as ImageIcon, Loader2 } from 'lucide-react';
+import { Upload, FileText, Trash2, Copy, Image as ImageIcon, Loader2, Folder, ChevronDown, ChevronRight } from 'lucide-react';
 import { getFiles, saveFileRecord, deleteFileRecord, FileItem } from '@/lib/fileStore';
 
 export default function FilesManagementPage() {
   const [files, setFiles] = useState<FileItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<{current: number, total: number} | null>(null);
+  const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
   const fileInputRef = useRef<HTMLInputElement>(null);
   const folderInputRef = useRef<HTMLInputElement>(null);
 
@@ -49,6 +51,7 @@ export default function FilesManagementPage() {
     if (!files || files.length === 0) return;
     
     setUploading(true);
+    setUploadProgress({ current: 0, total: files.length });
     let successCount = 0;
     
     try {
@@ -76,6 +79,7 @@ export default function FilesManagementPage() {
           await saveFileRecord(fileRecord);
           successCount++;
         }
+        setUploadProgress(prev => prev ? { ...prev, current: prev.current + 1 } : null);
       }
       await fetchFiles();
       alert(`Successfully uploaded ${successCount} files!`);
@@ -83,6 +87,7 @@ export default function FilesManagementPage() {
       alert('Error uploading folder: ' + err.message);
     } finally {
       setUploading(false);
+      setUploadProgress(null);
       if (folderInputRef.current) folderInputRef.current.value = '';
     }
   };
@@ -148,6 +153,50 @@ export default function FilesManagementPage() {
     return isNaN(d.getTime()) ? '' : d.toLocaleDateString();
   };
 
+  const groupedFiles = React.useMemo(() => {
+    const groups: Record<string, FileItem[]> = { 'Root': [] };
+    files.forEach(file => {
+      const parts = file.name.split('/');
+      if (parts.length > 1) {
+        const folder = parts.slice(0, -1).join('/');
+        if (!groups[folder]) groups[folder] = [];
+        groups[folder].push(file);
+      } else {
+        groups['Root'].push(file);
+      }
+    });
+    return groups;
+  }, [files]);
+
+  const toggleFolder = (folder: string) => {
+    const newExpanded = new Set(expandedFolders);
+    if (newExpanded.has(folder)) newExpanded.delete(folder);
+    else newExpanded.add(folder);
+    setExpandedFolders(newExpanded);
+  };
+
+  const renderFileRow = (file: FileItem, isSubFile: boolean = false) => (
+    <tr key={file.id} className="hover:bg-hover-bg">
+      <td className={`px-4 py-3 font-medium text-text-main flex items-center gap-2 ${isSubFile ? 'pl-10' : ''}`}>
+        {file.type === 'Image' ? <ImageIcon size={16} className="text-blue-500" /> : <FileText size={16} className="text-red-500" />}
+        <a href={file.url} target="_blank" rel="noopener noreferrer" className="hover:underline text-primary break-words max-w-[200px] sm:max-w-sm">
+          {isSubFile ? file.name.split('/').pop() : file.name}
+        </a>
+      </td>
+      <td className="px-4 py-3 text-text-muted">{file.type}</td>
+      <td className="px-4 py-3 text-text-muted">{formatSize(file.size)}</td>
+      <td className="px-4 py-3 text-text-muted">{formatDate(file.created_at)}</td>
+      <td className="px-4 py-3 text-right whitespace-nowrap">
+        <button onClick={() => copyToClipboard(file.url)} className="text-secondary hover:underline mr-3 inline-flex items-center gap-1" title="Copy URL">
+          <Copy size={14}/> Copy
+        </button>
+        <button onClick={() => handleDelete(file.id)} className="text-red-600 hover:underline inline-flex items-center gap-1">
+          <Trash2 size={14}/> Del
+        </button>
+      </td>
+    </tr>
+  );
+
   return (
     <AdminWrapper>
       <div className="flex flex-col gap-6">
@@ -177,7 +226,7 @@ export default function FilesManagementPage() {
               className="bg-gray-100 text-primary font-bold py-2 px-4 rounded-sm hover:bg-gray-200 transition-colors flex items-center gap-2 text-sm disabled:opacity-50"
             >
               <Upload size={18} />
-              {uploading ? 'Uploading...' : 'Upload Folder'}
+              {uploading && uploadProgress ? `Uploading ${uploadProgress.current}/${uploadProgress.total}...` : uploading ? 'Uploading...' : 'Upload Folder'}
             </button>
             <button 
               onClick={handleUploadClick}
@@ -239,27 +288,32 @@ export default function FilesManagementPage() {
                       <td colSpan={5} className="px-4 py-8 text-center text-text-muted italic">No files found.</td>
                     </tr>
                   ) : (
-                    files.map((file) => (
-                      <tr key={file.id} className="hover:bg-hover-bg">
-                        <td className="px-4 py-3 font-medium text-text-main flex items-center gap-2">
-                          {file.type === 'Image' ? <ImageIcon size={16} className="text-blue-500" /> : <FileText size={16} className="text-red-500" />}
-                          <a href={file.url} target="_blank" rel="noopener noreferrer" className="hover:underline text-primary">
-                            {file.name}
-                          </a>
-                        </td>
-                        <td className="px-4 py-3 text-text-muted">{file.type}</td>
-                        <td className="px-4 py-3 text-text-muted">{formatSize(file.size)}</td>
-                        <td className="px-4 py-3 text-text-muted">{formatDate(file.created_at)}</td>
-                        <td className="px-4 py-3 text-right whitespace-nowrap">
-                          <button onClick={() => copyToClipboard(file.url)} className="text-secondary hover:underline mr-3 inline-flex items-center gap-1" title="Copy URL">
-                            <Copy size={14}/> Copy URL
-                          </button>
-                          <button onClick={() => handleDelete(file.id)} className="text-red-600 hover:underline inline-flex items-center gap-1">
-                            <Trash2 size={14}/> Delete
-                          </button>
-                        </td>
-                      </tr>
-                    ))
+                    <>
+                      {/* Render root files */}
+                      {groupedFiles['Root']?.map(file => renderFileRow(file, false))}
+                      
+                      {/* Render folders */}
+                      {Object.keys(groupedFiles)
+                        .filter(key => key !== 'Root')
+                        .sort()
+                        .map(folderName => (
+                          <React.Fragment key={folderName}>
+                            <tr 
+                              className="bg-gray-50 hover:bg-gray-100 cursor-pointer border-t border-border-main"
+                              onClick={() => toggleFolder(folderName)}
+                            >
+                              <td colSpan={5} className="px-4 py-3 font-bold text-primary flex items-center gap-2">
+                                {expandedFolders.has(folderName) ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
+                                <Folder size={18} className="text-blue-500" />
+                                {folderName} <span className="text-text-muted font-normal text-xs ml-2">({groupedFiles[folderName].length} files)</span>
+                              </td>
+                            </tr>
+                            {expandedFolders.has(folderName) && (
+                              groupedFiles[folderName].map(file => renderFileRow(file, true))
+                            )}
+                          </React.Fragment>
+                      ))}
+                    </>
                   )}
                 </tbody>
               </table>
