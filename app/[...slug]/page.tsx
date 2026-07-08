@@ -17,10 +17,10 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   if (item && item.status === 'Published') {
     return {
       title: item.title,
-      description: '', // Intentionally blank so only the title shows when sharing
+      description: '\u00A0', // Non-breaking space prevents scraper fallback
       openGraph: {
         title: `${item.title} | Teacher Info Portal`,
-        description: '',
+        description: '\u00A0',
         url: `/${slugPath}`,
         siteName: 'Teacher Info Portal',
         type: 'website',
@@ -36,7 +36,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       twitter: {
         card: 'summary_large_image',
         title: `${item.title} | Teacher Info Portal`,
-        description: '',
+        description: '\u00A0',
         images: ['https://pub-394d485f92444007bc7c08718b11be20.r2.dev/logo.png'],
       },
     };
