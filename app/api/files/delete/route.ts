@@ -3,6 +3,8 @@ import { DeleteObjectCommand, ListObjectsV2Command } from '@aws-sdk/client-s3';
 import { NextResponse } from 'next/server';
 import { getPages, savePage } from '@/lib/pageStore';
 
+export const runtime = 'edge';
+
 export async function POST(request: Request) {
   try {
     const { keys = [], folders = [] } = await request.json();

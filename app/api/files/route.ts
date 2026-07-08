@@ -2,6 +2,7 @@ import { r2 } from '@/lib/r2';
 import { ListObjectsV2Command } from '@aws-sdk/client-s3';
 import { NextResponse } from 'next/server';
 
+export const runtime = 'edge';
 
 export async function GET() {
   try {
