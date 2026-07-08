@@ -188,8 +188,21 @@ export default function FilesManagementPage() {
   };
 
   const handleRename = async (oldKey: string, isFolder = false) => {
-    const newName = prompt(`Enter new name for ${isFolder ? 'folder' : 'file'}:`, oldKey.split('/').pop());
-    if (!newName) return;
+    const currentName = oldKey.split('/').pop() || '';
+    
+    let defaultPrompt = currentName;
+    let extension = '';
+    
+    if (!isFolder && currentName.includes('.')) {
+      const nameParts = currentName.split('.');
+      extension = '.' + nameParts.pop();
+      defaultPrompt = nameParts.join('.');
+    }
+    
+    const newNameInput = prompt(`Enter new name for ${isFolder ? 'folder' : 'file'} (without extension):`, defaultPrompt);
+    if (!newNameInput || newNameInput.trim() === '') return;
+    
+    const newName = isFolder ? newNameInput.trim() : `${newNameInput.trim()}${extension}`;
     
     const parts = oldKey.split('/');
     parts.pop(); // remove old name
