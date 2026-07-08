@@ -15,12 +15,20 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const item = await getPageBySlug(slugPath);
 
   if (item && item.status === 'Published') {
+    let description = `${item.title} at Teacher Info Portal`;
+    if (item.layout === 'links') {
+      description = `View resources and links for ${item.title} at Teacher Info Portal.`;
+    } else if (item.content) {
+      const strippedContent = item.content.replace(/<[^>]*>?/gm, '').trim();
+      description = strippedContent.length > 150 ? `${strippedContent.substring(0, 150)}...` : strippedContent;
+    }
+
     return {
       title: item.title,
-      description: item.content ? item.content.substring(0, 150).replace(/<[^>]*>?/gm, '') : `${item.title} at Teacher Info Portal`,
+      description: description,
       openGraph: {
         title: `${item.title} | Teacher Info Portal`,
-        description: item.content ? item.content.substring(0, 150).replace(/<[^>]*>?/gm, '') : `${item.title} at Teacher Info Portal`,
+        description: description,
         url: `/${slugPath}`,
         siteName: 'Teacher Info Portal',
         type: 'website',
@@ -36,7 +44,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       twitter: {
         card: 'summary_large_image',
         title: `${item.title} | Teacher Info Portal`,
-        description: item.content ? item.content.substring(0, 150).replace(/<[^>]*>?/gm, '') : `${item.title} at Teacher Info Portal`,
+        description: description,
         images: ['https://pub-394d485f92444007bc7c08718b11be20.r2.dev/logo.png'],
       },
     };
