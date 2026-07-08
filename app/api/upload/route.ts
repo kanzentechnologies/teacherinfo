@@ -16,20 +16,15 @@ export async function POST(request: Request) {
     const body = new Uint8Array(arrayBuffer);
     
     const fullPath = formData.get('fullPath') as string | null;
-    
-    // Create a unique filename
-    const uniqueId = Date.now().toString(36) + Math.random().toString(36).substring(2, 7);
-    
     let finalKey = '';
     if (fullPath && fullPath.includes('/')) {
       const parts = fullPath.split('/');
       const originalName = parts.pop() || file.name;
-      const safeName = `${uniqueId}-${originalName.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
-      // Keep spaces in folder names, but remove other special chars
-      const safePath = parts.map(p => p.replace(/[^a-zA-Z0-9.\s-()]/g, '_')).join('/');
+      const safeName = originalName.replace(/[^a-zA-Z0-9.\s-()_]/g, '_');
+      const safePath = parts.map(p => p.replace(/[^a-zA-Z0-9.\s-()_]/g, '_')).join('/');
       finalKey = `${safePath}/${safeName}`;
     } else {
-      finalKey = `${uniqueId}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+      finalKey = file.name.replace(/[^a-zA-Z0-9.\s-()_]/g, '_');
     }
 
     await r2.send(
