@@ -96,12 +96,14 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
         />
       </head>
       <body suppressHydrationWarning className="flex flex-col min-h-screen">
-        <Script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5843738252123218"
-          crossOrigin="anonymous"
-          strategy="afterInteractive"
-        />
+        {process.env.NODE_ENV === 'production' && (
+          <Script
+            async
+            src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5843738252123218"
+            crossOrigin="anonymous"
+            strategy="afterInteractive"
+          />
+        )}
         <Header />
         <Navigation />
         <main id="main-content" className="flex-grow w-full px-4 sm:px-8 py-6">
