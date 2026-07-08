@@ -94,30 +94,18 @@ export default function EditContentClient() {
     }, 100);
 
     try {
-      const pageToSave = { ...item };
-      if (item.layout === 'links') {
-        pageToSave.content = JSON.stringify(links);
-      } else {
-        pageToSave.content = content;
-      }
-      
-      const res = await fetch('/api/pages/save', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(pageToSave),
-      });
-
-      if (!res.ok) throw new Error('Failed to save');
+      const finalContent = item.layout === 'links' ? JSON.stringify(links) : content;
+      await savePage({ ...item, content: finalContent });
       
       setUploadProgress({ current: 100, total: 100 });
       
       setTimeout(() => {
-        alert('Saved successfully!');
+        alert('Content saved successfully!');
         router.push('/admin/pages');
       }, 300);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert('Error saving changes');
+      alert('Error saving content: ' + err.message);
       setOperationStatus(null);
       setUploadProgress(null);
     } finally {
