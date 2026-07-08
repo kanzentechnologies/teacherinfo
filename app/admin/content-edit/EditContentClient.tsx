@@ -16,6 +16,8 @@ interface LinkItem {
   title: string;
   url: string;
   description?: string;
+  type?: 'link' | 'folder';
+  children?: LinkItem[];
 }
 
 export default function EditContentClient() {
@@ -74,11 +76,19 @@ export default function EditContentClient() {
   };
 
   const handleAddLink = () => {
-    setLinks([...links, { id: Date.now().toString(), title: '', url: '', description: '' }]);
+    setLinks([...links, { id: Date.now().toString(), title: '', url: '', description: '', type: 'link' }]);
+  };
+
+  const updateLinkInTree = (tree: LinkItem[], linkId: string, field: keyof LinkItem, value: any): LinkItem[] => {
+    return tree.map(l => {
+      if (l.id === linkId) return { ...l, [field]: value };
+      if (l.children) return { ...l, children: updateLinkInTree(l.children, linkId, field, value) };
+      return l;
+    });
   };
 
   const updateLink = (linkId: string, field: keyof LinkItem, value: string) => {
-    setLinks(links.map(l => l.id === linkId ? { ...l, [field]: value } : l));
+    setLinks(prev => updateLinkInTree(prev, linkId, field, value));
   };
 
   const handleBulkImport = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -118,8 +128,15 @@ export default function EditContentClient() {
     reader.readAsBinaryString(file);
   };
 
+  const removeLinkInTree = (tree: LinkItem[], linkId: string): LinkItem[] => {
+    return tree.filter(l => l.id !== linkId).map(l => {
+      if (l.children) return { ...l, children: removeLinkInTree(l.children, linkId) };
+      return l;
+    });
+  };
+
   const removeLink = (linkId: string) => {
-    setLinks(links.filter(l => l.id !== linkId));
+    setLinks(prev => removeLinkInTree(prev, linkId));
     if (selectedLinks.has(linkId)) {
       const newSelected = new Set(selectedLinks);
       newSelected.delete(linkId);
@@ -147,17 +164,34 @@ export default function EditContentClient() {
     setShowDesc(newShowDesc);
   };
 
+  const deleteSelectedInTree = (tree: LinkItem[], selected: Set<string>): LinkItem[] => {
+    return tree.filter(l => !selected.has(l.id)).map(l => {
+      if (l.children) return { ...l, children: deleteSelectedInTree(l.children, selected) };
+      return l;
+    });
+  };
+
   const deleteSelected = () => {
-    if (!window.confirm(`Are you sure you want to delete ${selectedLinks.size} links?`)) return;
-    setLinks(links.filter(l => !selectedLinks.has(l.id)));
+    if (!window.confirm(`Are you sure you want to delete ${selectedLinks.size} items?`)) return;
+    setLinks(prev => deleteSelectedInTree(prev, selectedLinks));
     setSelectedLinks(new Set());
   };
 
+  const getFlatIds = (tree: LinkItem[]): string[] => {
+    let ids: string[] = [];
+    for (const item of tree) {
+      ids.push(item.id);
+      if (item.children) ids = ids.concat(getFlatIds(item.children));
+    }
+    return ids;
+  };
+
   const selectAll = () => {
-    if (selectedLinks.size === links.length) {
+    const allIds = getFlatIds(links);
+    if (selectedLinks.size === allIds.length && allIds.length > 0) {
       setSelectedLinks(new Set());
     } else {
-      setSelectedLinks(new Set(links.map(l => l.id)));
+      setSelectedLinks(new Set(allIds));
     }
   };
 
@@ -165,8 +199,16 @@ export default function EditContentClient() {
     if (showFileSelectorFor) {
       updateLink(showFileSelectorFor, 'url', file.url);
       
-      // Optionally pre-fill title if empty
-      const targetLink = links.find(l => l.id === showFileSelectorFor);
+      const flatLinks: LinkItem[] = [];
+      const flatten = (items: LinkItem[]) => {
+        for (const item of items) {
+          flatLinks.push(item);
+          if (item.children) flatten(item.children);
+        }
+      };
+      flatten(links);
+      
+      const targetLink = flatLinks.find(l => l.id === showFileSelectorFor);
       if (targetLink && !targetLink.title) {
         updateLink(showFileSelectorFor, 'title', file.name.split('/').pop() || file.name);
       }
@@ -175,23 +217,32 @@ export default function EditContentClient() {
   };
 
   const handleFolderSelect = (folderPath: string, filesInFolder: FileItem[]) => {
-    const newLinks = filesInFolder.map(file => {
-      // Extract base filename (remove folder path)
-      const fileName = file.name.substring(folderPath.length + 1);
+    const folderName = folderPath.split('/').pop() || folderPath;
+    
+    const children = filesInFolder.map(file => {
+      const fileName = file.name.split('/').pop() || file.name;
       return {
         id: Date.now().toString() + Math.random().toString(36).substring(2, 7),
         title: fileName,
         url: file.url,
-        description: ''
+        description: '',
+        type: 'link' as const
       };
     });
     
-    // Alphabetically sort the incoming links by title
-    newLinks.sort((a, b) => a.title.localeCompare(b.title));
+    children.sort((a, b) => a.title.localeCompare(b.title));
 
-    setLinks(prev => [...prev, ...newLinks]);
+    const newFolder: LinkItem = {
+      id: Date.now().toString() + Math.random().toString(36).substring(2, 7),
+      title: folderName,
+      url: '',
+      type: 'folder',
+      children
+    };
+
+    setLinks(prev => [...prev, newFolder]);
     setShowFolderSelector(false);
-    alert(`Successfully imported ${newLinks.length} files from ${folderPath}!`);
+    alert(`Successfully imported folder with ${children.length} files!`);
   };
 
   if (loading) {
@@ -219,11 +270,12 @@ export default function EditContentClient() {
           onSelectFolder={handleFolderSelect}
           onSelectFile={(file) => {
             const fileName = file.name.split('/').pop() || file.name;
-            const newLink = {
+            const newLink: LinkItem = {
               id: Date.now().toString() + Math.random().toString(36).substring(2, 7),
               title: fileName,
               url: file.url,
-              description: ''
+              description: '',
+              type: 'link'
             };
             setLinks(prev => [...prev, newLink]);
             setShowFolderSelector(false);
@@ -317,90 +369,110 @@ export default function EditContentClient() {
                     No links added yet. Click &quot;Add Link&quot; to create one.
                   </div>
                 ) : (
-                  links.map((link, index) => (
-                    <div key={link.id} className={`border p-4 flex gap-4 items-start rounded relative group ${selectedLinks.has(link.id) ? 'border-primary bg-blue-50' : 'border-border-main bg-gray-50'}`}>
-                      <div className="pt-2 flex flex-col gap-3 items-center">
-                        <input 
-                          type="checkbox" 
-                          checked={selectedLinks.has(link.id)}
-                          onChange={() => toggleSelectLink(link.id)}
-                          className="rounded border-gray-300 text-primary focus:ring-primary mt-1 w-4 h-4"
-                        />
-                        <div className="cursor-grab text-gray-400 hover:text-gray-600">
-                          <GripVertical size={20} />
-                        </div>
-                      </div>
-                      <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-xs font-bold text-gray-600 mb-1">Link Title</label>
-                          <input 
-                            type="text" 
-                            className="w-full border border-border-main p-2 text-sm bg-white" 
-                            value={link.title}
-                            placeholder="e.g. Study Materials 2026"
-                            onChange={(e) => updateLink(link.id, 'title', e.target.value)}
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs font-bold text-gray-600 mb-1 flex justify-between">
-                            URL / Target
-                            <button 
-                              onClick={() => setShowFileSelectorFor(link.id)}
-                              className="text-primary hover:text-secondary flex items-center gap-1"
-                              title="Select uploaded file"
-                            >
-                              <FileSearch size={12} /> Select File
-                            </button>
-                          </label>
-                          <input 
-                            type="text" 
-                            className="w-full border border-border-main p-2 text-sm bg-white" 
-                            value={link.url}
-                            placeholder="https://..."
-                            onChange={(e) => updateLink(link.id, 'url', e.target.value)}
-                          />
-                        </div>
-                        <div className="md:col-span-2">
-                          {link.description || showDesc.has(link.id) ? (
-                            <div>
-                              <label className="block text-xs font-bold text-gray-600 mb-1 flex justify-between">
-                                Description (Optional)
-                                <button 
-                                  type="button" 
-                                  onClick={() => { updateLink(link.id, 'description', ''); toggleDesc(link.id); }} 
-                                  className="text-red-500 hover:underline font-normal"
-                                >
-                                  Remove
-                                </button>
-                              </label>
+                  links.map(link => {
+                    const renderLinkNode = (node: LinkItem, depth: number = 0) => {
+                      const isFolder = node.type === 'folder';
+                      return (
+                        <div key={node.id} className="flex flex-col gap-2">
+                          <div 
+                            className={`border p-4 flex gap-4 items-start rounded relative group ${selectedLinks.has(node.id) ? 'border-primary bg-blue-50' : 'border-border-main bg-gray-50'}`}
+                            style={{ marginLeft: `${depth * 24}px` }}
+                          >
+                            <div className="pt-2 flex flex-col gap-3 items-center">
                               <input 
-                                type="text" 
-                                className="w-full border border-border-main p-2 text-sm bg-white" 
-                                value={link.description || ''}
-                                placeholder="Brief description for this link..."
-                                onChange={(e) => updateLink(link.id, 'description', e.target.value)}
+                                type="checkbox" 
+                                checked={selectedLinks.has(node.id)}
+                                onChange={() => toggleSelectLink(node.id)}
+                                className="rounded border-gray-300 text-primary focus:ring-primary mt-1 w-4 h-4"
                               />
+                              <div className="cursor-grab text-gray-400 hover:text-gray-600">
+                                <GripVertical size={20} />
+                              </div>
                             </div>
-                          ) : (
+                            <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div className={isFolder ? "md:col-span-2" : ""}>
+                                <label className="block text-xs font-bold text-gray-600 mb-1">{isFolder ? 'Folder Name' : 'Link Title'}</label>
+                                <input 
+                                  type="text" 
+                                  className={`w-full border border-border-main p-2 text-sm bg-white ${isFolder ? 'font-bold' : ''}`} 
+                                  value={node.title}
+                                  placeholder={isFolder ? "Folder Name" : "e.g. Study Materials 2026"}
+                                  onChange={(e) => updateLink(node.id, 'title', e.target.value)}
+                                />
+                              </div>
+                              {!isFolder && (
+                                <div>
+                                  <label className="block text-xs font-bold text-gray-600 mb-1 flex justify-between">
+                                    URL / Target
+                                    <button 
+                                      onClick={() => setShowFileSelectorFor(node.id)}
+                                      className="text-primary hover:text-secondary flex items-center gap-1"
+                                      title="Select uploaded file"
+                                    >
+                                      <FileSearch size={12} /> Select File
+                                    </button>
+                                  </label>
+                                  <input 
+                                    type="text" 
+                                    className="w-full border border-border-main p-2 text-sm bg-white" 
+                                    value={node.url}
+                                    placeholder="https://..."
+                                    onChange={(e) => updateLink(node.id, 'url', e.target.value)}
+                                  />
+                                </div>
+                              )}
+                              {!isFolder && (
+                                <div className="md:col-span-2">
+                                  {node.description || showDesc.has(node.id) ? (
+                                    <div>
+                                      <label className="block text-xs font-bold text-gray-600 mb-1 flex justify-between">
+                                        Description (Optional)
+                                        <button 
+                                          type="button" 
+                                          onClick={() => { updateLink(node.id, 'description', ''); toggleDesc(node.id); }} 
+                                          className="text-red-500 hover:underline font-normal"
+                                        >
+                                          Remove
+                                        </button>
+                                      </label>
+                                      <input 
+                                        type="text" 
+                                        className="w-full border border-border-main p-2 text-sm bg-white" 
+                                        value={node.description || ''}
+                                        placeholder="Brief description for this link..."
+                                        onChange={(e) => updateLink(node.id, 'description', e.target.value)}
+                                      />
+                                    </div>
+                                  ) : (
+                                    <button 
+                                      type="button"
+                                      onClick={() => toggleDesc(node.id)}
+                                      className="text-primary hover:underline text-xs font-bold"
+                                    >
+                                      + Add Description
+                                    </button>
+                                  )}
+                                </div>
+                              )}
+                            </div>
                             <button 
-                              type="button"
-                              onClick={() => toggleDesc(link.id)}
-                              className="text-primary hover:underline text-xs font-bold"
+                              onClick={() => removeLink(node.id)}
+                              className="p-2 text-red-500 hover:bg-red-50 rounded"
+                              title={isFolder ? "Remove Folder" : "Remove Link"}
                             >
-                              + Add Description
+                              <Trash2 size={18} />
                             </button>
+                          </div>
+                          {isFolder && node.children && node.children.length > 0 && (
+                            <div className="flex flex-col gap-2">
+                              {node.children.map(child => renderLinkNode(child, depth + 1))}
+                            </div>
                           )}
                         </div>
-                      </div>
-                      <button 
-                        onClick={() => removeLink(link.id)}
-                        className="p-2 text-red-500 hover:bg-red-50 rounded"
-                        title="Remove Link"
-                      >
-                        <Trash2 size={18} />
-                      </button>
-                    </div>
-                  ))
+                      );
+                    };
+                    return renderLinkNode(link, 0);
+                  })
                 )}
               </div>
             </div>
