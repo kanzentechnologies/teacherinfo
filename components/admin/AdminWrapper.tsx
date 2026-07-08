@@ -40,7 +40,7 @@ export function AdminWrapper({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="flex flex-col md:flex-row gap-6 w-full px-4 sm:px-6 lg:px-8">
+    <div className="flex flex-col md:flex-row gap-6 w-full">
       <AdminNav />
       <div className="flex-1 overflow-x-auto">
         {children}
