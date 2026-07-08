@@ -2,7 +2,6 @@ import { r2 } from '@/lib/r2';
 import { CopyObjectCommand, DeleteObjectCommand, ListObjectsV2Command } from '@aws-sdk/client-s3';
 import { NextResponse } from 'next/server';
 
-export const runtime = 'edge';
 
 export async function POST(request: Request) {
   try {

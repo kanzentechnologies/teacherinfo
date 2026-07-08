@@ -2,7 +2,6 @@ import { r2 } from '@/lib/r2';
 import { ListObjectsV2Command } from '@aws-sdk/client-s3';
 import { NextResponse } from 'next/server';
 
-export const runtime = 'edge';
 
 export async function GET() {
   try {
@@ -49,8 +48,8 @@ export async function GET() {
     });
 
     return NextResponse.json(files);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Failed to list files:', error);
-    return NextResponse.json({ error: 'Failed to list files' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to list files', details: error.message, stack: error.stack }, { status: 500 });
   }
 }
