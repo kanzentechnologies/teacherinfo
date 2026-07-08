@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { AdminWrapper } from '@/components/admin/AdminWrapper';
 import RichTextEditor from '@/components/admin/RichTextEditor';
 import { getPageById, savePage, PageItem } from '@/lib/pageStore';
-import { PlusCircle, Trash2, GripVertical, FileSearch, Upload } from 'lucide-react';
+import { PlusCircle, Trash2, GripVertical, FileSearch, Upload, ChevronDown, ChevronRight, Folder, Image as ImageIcon, FileText } from 'lucide-react';
 import * as xlsx from 'xlsx';
 import { TreeFileSelector } from '@/components/admin/TreeFileSelector';
 import { FileItem } from '@/lib/fileStore';
