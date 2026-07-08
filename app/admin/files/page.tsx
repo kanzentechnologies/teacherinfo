@@ -276,32 +276,36 @@ export default function FilesManagementPage() {
   const renderFileRow = (file: FileItem, depth: number = 0) => {
     const isSelected = selectedItems.has(JSON.stringify({ key: file.id, type: 'file' }));
     return (
-      <tr key={file.id} className="hover:bg-hover-bg">
-        <td className="px-4 py-3 font-medium text-text-main flex items-center gap-2" style={{ paddingLeft: `${depth * 1.5 + (depth > 0 ? 2.5 : 1)}rem` }}>
-          <input 
-            type="checkbox" 
-            checked={isSelected}
-            onChange={() => toggleSelection(file.id, 'file')}
-            className="cursor-pointer mr-1"
-          />
-          {file.type === 'Image' ? <ImageIcon size={16} className="text-blue-500 min-w-[16px]" /> : <FileText size={16} className="text-red-500 min-w-[16px]" />}
-          <a href={file.url} target="_blank" rel="noopener noreferrer" className="hover:underline text-primary break-words max-w-[150px] sm:max-w-sm truncate">
-            {file.name.split('/').pop()}
-          </a>
+      <tr key={file.id} className="hover:bg-gray-50 transition-colors">
+        <td className="px-4 py-3 font-medium text-text-main" style={{ paddingLeft: `${depth * 1.5 + (depth > 0 ? 2.5 : 1)}rem` }}>
+          <div className="flex items-center gap-2">
+            <input 
+              type="checkbox" 
+              checked={isSelected}
+              onChange={() => toggleSelection(file.id, 'file')}
+              className="cursor-pointer mr-1"
+            />
+            {file.type === 'Image' ? <ImageIcon size={16} className="text-blue-500 min-w-[16px]" /> : <FileText size={16} className="text-red-500 min-w-[16px]" />}
+            <a href={file.url} target="_blank" rel="noopener noreferrer" className="hover:underline text-primary break-words max-w-[150px] sm:max-w-sm truncate">
+              {file.name.split('/').pop()}
+            </a>
+          </div>
         </td>
         <td className="px-4 py-3 text-text-muted">{file.type}</td>
         <td className="px-4 py-3 text-text-muted">{formatSize(file.size)}</td>
         <td className="px-4 py-3 text-text-muted">{formatDate(file.created_at)}</td>
-        <td className="px-4 py-3 text-right whitespace-nowrap">
-          <button onClick={() => copyToClipboard(file.url)} className="text-secondary hover:underline mr-3 inline-flex items-center gap-1" title="Copy URL">
-            <Copy size={14}/> Copy
-          </button>
-          <button onClick={() => handleRename(file.id, false)} className="text-blue-600 hover:underline mr-3 inline-flex items-center gap-1" title="Rename File">
-            <Edit2 size={14}/> Rename
-          </button>
-          <button onClick={() => handleDelete(file.id, false)} className="text-red-600 hover:underline inline-flex items-center gap-1">
-            <Trash2 size={14}/> Del
-          </button>
+        <td className="px-4 py-3 text-right">
+          <div className="flex items-center justify-end gap-1">
+            <button onClick={() => copyToClipboard(file.url)} className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors" title="Copy URL">
+              <Copy size={16}/>
+            </button>
+            <button onClick={() => handleRename(file.id, false)} className="p-1.5 text-blue-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors" title="Rename File">
+              <Edit2 size={16}/>
+            </button>
+            <button onClick={() => handleDelete(file.id, false)} className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors" title="Delete File">
+              <Trash2 size={16}/>
+            </button>
+          </div>
         </td>
       </tr>
     );
@@ -329,29 +333,33 @@ export default function FilesManagementPage() {
       result.push(
         <tr 
           key={`folder-${fullPath}`}
-          className="bg-gray-50 hover:bg-gray-100 border-t border-border-main"
+          className="bg-gray-50 hover:bg-gray-100 border-t border-border-main transition-colors"
         >
-          <td colSpan={4} className="px-4 py-3 font-bold text-primary flex items-center gap-2" style={{ paddingLeft: `${depth * 1.5 + 1}rem` }}>
-            <input 
-              type="checkbox" 
-              checked={isSelected}
-              onChange={() => toggleSelection(fullPath, 'folder')}
-              className="cursor-pointer mr-1"
-            />
-            <div className="cursor-pointer flex items-center gap-2" onClick={() => toggleFolder(fullPath)}>
-              {isExpanded ? <ChevronDown size={18} className="min-w-[18px]" /> : <ChevronRight size={18} className="min-w-[18px]" />}
-              <Folder size={18} className="text-blue-500 min-w-[18px]" />
-              <span className="truncate max-w-[200px] sm:max-w-md">{folderName}</span> 
-              <span className="text-text-muted font-normal text-xs ml-2">({count} item{count !== 1 ? 's' : ''})</span>
+          <td colSpan={4} className="px-4 py-3 font-bold text-primary" style={{ paddingLeft: `${depth * 1.5 + 1}rem` }}>
+            <div className="flex items-center gap-2">
+              <input 
+                type="checkbox" 
+                checked={isSelected}
+                onChange={() => toggleSelection(fullPath, 'folder')}
+                className="cursor-pointer mr-1"
+              />
+              <div className="cursor-pointer flex items-center gap-2" onClick={() => toggleFolder(fullPath)}>
+                {isExpanded ? <ChevronDown size={18} className="min-w-[18px] text-gray-500" /> : <ChevronRight size={18} className="min-w-[18px] text-gray-500" />}
+                <Folder size={18} className="text-blue-500 min-w-[18px]" />
+                <span className="truncate max-w-[200px] sm:max-w-md">{folderName}</span> 
+                <span className="text-text-muted font-normal text-xs ml-2">({count} item{count !== 1 ? 's' : ''})</span>
+              </div>
             </div>
           </td>
-          <td className="px-4 py-3 text-right whitespace-nowrap">
-            <button onClick={() => handleRename(fullPath, true)} className="text-blue-600 hover:underline mr-3 inline-flex items-center gap-1" title="Rename Folder">
-              <Edit2 size={14}/> Rename
-            </button>
-            <button onClick={() => handleDelete(fullPath, true)} className="text-red-600 hover:underline inline-flex items-center gap-1">
-              <Trash2 size={14}/> Del
-            </button>
+          <td className="px-4 py-3 text-right">
+            <div className="flex items-center justify-end gap-1">
+              <button onClick={() => handleRename(fullPath, true)} className="p-1.5 text-blue-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors" title="Rename Folder">
+                <Edit2 size={16}/>
+              </button>
+              <button onClick={() => handleDelete(fullPath, true)} className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors" title="Delete Folder">
+                <Trash2 size={16}/>
+              </button>
+            </div>
           </td>
         </tr>
       );
