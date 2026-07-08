@@ -18,6 +18,8 @@ interface LinkItem {
   description?: string;
   type?: 'link' | 'folder';
   children?: LinkItem[];
+  fileType?: string;
+  fileSize?: number;
 }
 
 export default function EditContentClient() {
@@ -34,7 +36,21 @@ export default function EditContentClient() {
   const [showFolderSelector, setShowFolderSelector] = useState(false);
   const [selectedLinks, setSelectedLinks] = useState<Set<string>>(new Set());
   const [showDesc, setShowDesc] = useState<Set<string>>(new Set());
+  const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const toggleFolderExpand = (folderId: string) => {
+    const newExpanded = new Set(expandedFolders);
+    if (newExpanded.has(folderId)) newExpanded.delete(folderId);
+    else newExpanded.add(folderId);
+    setExpandedFolders(newExpanded);
+  };
+
+  const formatSize = (bytes: number) => {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  };
 
   useEffect(() => {
     const fetchItem = async () => {
@@ -226,7 +242,9 @@ export default function EditContentClient() {
         title: fileName,
         url: file.url,
         description: '',
-        type: 'link' as const
+        type: 'link' as const,
+        fileType: file.type,
+        fileSize: file.size
       };
     });
     
@@ -275,7 +293,9 @@ export default function EditContentClient() {
               title: fileName,
               url: file.url,
               description: '',
-              type: 'link'
+              type: 'link',
+              fileType: file.type,
+              fileSize: file.size
             };
             setLinks(prev => [...prev, newLink]);
             setShowFolderSelector(false);
@@ -369,110 +389,159 @@ export default function EditContentClient() {
                     No links added yet. Click &quot;Add Link&quot; to create one.
                   </div>
                 ) : (
-                  links.map(link => {
-                    const renderLinkNode = (node: LinkItem, depth: number = 0) => {
-                      const isFolder = node.type === 'folder';
-                      return (
-                        <div key={node.id} className="flex flex-col gap-2">
-                          <div 
-                            className={`border p-4 flex gap-4 items-start rounded relative group ${selectedLinks.has(node.id) ? 'border-primary bg-blue-50' : 'border-border-main bg-gray-50'}`}
-                            style={{ marginLeft: `${depth * 24}px` }}
-                          >
-                            <div className="pt-2 flex flex-col gap-3 items-center">
-                              <input 
-                                type="checkbox" 
-                                checked={selectedLinks.has(node.id)}
-                                onChange={() => toggleSelectLink(node.id)}
-                                className="rounded border-gray-300 text-primary focus:ring-primary mt-1 w-4 h-4"
-                              />
-                              <div className="cursor-grab text-gray-400 hover:text-gray-600">
-                                <GripVertical size={20} />
-                              </div>
-                            </div>
-                            <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
-                              <div className={isFolder ? "md:col-span-2" : ""}>
-                                <label className="block text-xs font-bold text-gray-600 mb-1">{isFolder ? 'Folder Name' : 'Link Title'}</label>
+                  <div className="border border-border-main rounded bg-white overflow-hidden">
+                    {links.map(link => {
+                      const renderLinkNode = (node: LinkItem, depth: number = 0) => {
+                        const isFolder = node.type === 'folder';
+                        const isImportedFile = node.type === 'link' && node.fileType;
+                        
+                        if (isFolder || isImportedFile) {
+                          return (
+                            <div key={node.id} className="flex flex-col border-b border-border-main last:border-b-0">
+                              <div 
+                                className={`flex items-center p-3 gap-3 hover:bg-gray-50 transition-colors ${selectedLinks.has(node.id) ? 'bg-blue-50/50' : 'bg-white'}`}
+                              >
+                                <div style={{ width: `${depth * 24}px` }} className="shrink-0" />
                                 <input 
-                                  type="text" 
-                                  className={`w-full border border-border-main p-2 text-sm bg-white ${isFolder ? 'font-bold' : ''}`} 
-                                  value={node.title}
-                                  placeholder={isFolder ? "Folder Name" : "e.g. Study Materials 2026"}
-                                  onChange={(e) => updateLink(node.id, 'title', e.target.value)}
+                                  type="checkbox" 
+                                  checked={selectedLinks.has(node.id)}
+                                  onChange={() => toggleSelectLink(node.id)}
+                                  className="rounded border-gray-300 text-primary focus:ring-primary w-4 h-4 shrink-0"
                                 />
+                                {isFolder ? (
+                                  <div className="flex items-center gap-2 flex-1 cursor-pointer select-none" onClick={() => toggleFolderExpand(node.id)}>
+                                     {expandedFolders.has(node.id) ? <ChevronDown size={18} className="text-gray-500 shrink-0" /> : <ChevronRight size={18} className="text-gray-500 shrink-0" />}
+                                     <Folder size={20} className="text-blue-600 shrink-0" />
+                                     <span className="font-bold text-primary uppercase text-sm truncate">{node.title}</span>
+                                     <span className="text-text-muted text-xs shrink-0">({node.children?.length || 0} items)</span>
+                                  </div>
+                                ) : (
+                                   <div className="flex items-center gap-3 flex-1 min-w-0">
+                                     <div className="w-[18px] shrink-0" />
+                                     {node.fileType === 'Image' ? <ImageIcon size={20} className="text-blue-500 shrink-0" /> : <FileText size={20} className="text-red-500 shrink-0" />}
+                                     <span className="font-bold text-primary text-sm truncate">{node.title}</span>
+                                   </div>
+                                )}
+                                
+                                {!isFolder && (
+                                  <>
+                                    <div className="w-24 text-text-muted text-xs hidden sm:block shrink-0">Document</div>
+                                    <div className="w-20 text-text-muted text-xs text-right hidden sm:block shrink-0">{formatSize(node.fileSize || 0)}</div>
+                                  </>
+                                )}
                               </div>
-                              {!isFolder && (
-                                <div>
-                                  <label className="block text-xs font-bold text-gray-600 mb-1 flex justify-between">
-                                    URL / Target
-                                    <button 
-                                      onClick={() => setShowFileSelectorFor(node.id)}
-                                      className="text-primary hover:text-secondary flex items-center gap-1"
-                                      title="Select uploaded file"
-                                    >
-                                      <FileSearch size={12} /> Select File
-                                    </button>
-                                  </label>
+                              {isFolder && expandedFolders.has(node.id) && node.children && node.children.length > 0 && (
+                                <div className="flex flex-col w-full bg-white">
+                                  {node.children.map(child => renderLinkNode(child, depth + 1))}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        }
+
+                        // Original Manual Link Rendering
+                        return (
+                          <div key={node.id} className="flex flex-col gap-2 p-4 border-b border-border-main last:border-b-0 bg-gray-50">
+                            <div 
+                              className={`flex gap-4 items-start relative group`}
+                              style={{ marginLeft: `${depth * 24}px` }}
+                            >
+                              <div className="pt-2 flex flex-col gap-3 items-center">
+                                <input 
+                                  type="checkbox" 
+                                  checked={selectedLinks.has(node.id)}
+                                  onChange={() => toggleSelectLink(node.id)}
+                                  className="rounded border-gray-300 text-primary focus:ring-primary mt-1 w-4 h-4"
+                                />
+                                <div className="cursor-grab text-gray-400 hover:text-gray-600">
+                                  <GripVertical size={20} />
+                                </div>
+                              </div>
+                              <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className={isFolder ? "md:col-span-2" : ""}>
+                                  <label className="block text-xs font-bold text-gray-600 mb-1">{isFolder ? 'Folder Name' : 'Link Title'}</label>
                                   <input 
                                     type="text" 
-                                    className="w-full border border-border-main p-2 text-sm bg-white" 
-                                    value={node.url}
-                                    placeholder="https://..."
-                                    onChange={(e) => updateLink(node.id, 'url', e.target.value)}
+                                    className={`w-full border border-border-main p-2 text-sm bg-white ${isFolder ? 'font-bold' : ''}`} 
+                                    value={node.title}
+                                    placeholder={isFolder ? "Folder Name" : "e.g. Study Materials 2026"}
+                                    onChange={(e) => updateLink(node.id, 'title', e.target.value)}
                                   />
                                 </div>
-                              )}
-                              {!isFolder && (
-                                <div className="md:col-span-2">
-                                  {node.description || showDesc.has(node.id) ? (
-                                    <div>
-                                      <label className="block text-xs font-bold text-gray-600 mb-1 flex justify-between">
-                                        Description (Optional)
-                                        <button 
-                                          type="button" 
-                                          onClick={() => { updateLink(node.id, 'description', ''); toggleDesc(node.id); }} 
-                                          className="text-red-500 hover:underline font-normal"
-                                        >
-                                          Remove
-                                        </button>
-                                      </label>
-                                      <input 
-                                        type="text" 
-                                        className="w-full border border-border-main p-2 text-sm bg-white" 
-                                        value={node.description || ''}
-                                        placeholder="Brief description for this link..."
-                                        onChange={(e) => updateLink(node.id, 'description', e.target.value)}
-                                      />
-                                    </div>
-                                  ) : (
-                                    <button 
-                                      type="button"
-                                      onClick={() => toggleDesc(node.id)}
-                                      className="text-primary hover:underline text-xs font-bold"
-                                    >
-                                      + Add Description
-                                    </button>
-                                  )}
-                                </div>
-                              )}
+                                {!isFolder && (
+                                  <div>
+                                    <label className="block text-xs font-bold text-gray-600 mb-1 flex justify-between">
+                                      URL / Target
+                                      <button 
+                                        onClick={() => setShowFileSelectorFor(node.id)}
+                                        className="text-primary hover:text-secondary flex items-center gap-1"
+                                        title="Select uploaded file"
+                                      >
+                                        <FileSearch size={12} /> Select File
+                                      </button>
+                                    </label>
+                                    <input 
+                                      type="text" 
+                                      className="w-full border border-border-main p-2 text-sm bg-white" 
+                                      value={node.url}
+                                      placeholder="https://..."
+                                      onChange={(e) => updateLink(node.id, 'url', e.target.value)}
+                                    />
+                                  </div>
+                                )}
+                                {!isFolder && (
+                                  <div className="md:col-span-2">
+                                    {node.description || showDesc.has(node.id) ? (
+                                      <div>
+                                        <label className="block text-xs font-bold text-gray-600 mb-1 flex justify-between">
+                                          Description (Optional)
+                                          <button 
+                                            type="button" 
+                                            onClick={() => { updateLink(node.id, 'description', ''); toggleDesc(node.id); }} 
+                                            className="text-red-500 hover:underline font-normal"
+                                          >
+                                            Remove
+                                          </button>
+                                        </label>
+                                        <input 
+                                          type="text" 
+                                          className="w-full border border-border-main p-2 text-sm bg-white" 
+                                          value={node.description || ''}
+                                          placeholder="Brief description for this link..."
+                                          onChange={(e) => updateLink(node.id, 'description', e.target.value)}
+                                        />
+                                      </div>
+                                    ) : (
+                                      <button 
+                                        type="button"
+                                        onClick={() => toggleDesc(node.id)}
+                                        className="text-primary hover:underline text-xs font-bold"
+                                      >
+                                        + Add Description
+                                      </button>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                              <button 
+                                onClick={() => removeLink(node.id)}
+                                className="p-2 text-red-500 hover:bg-red-50 rounded"
+                                title={isFolder ? "Remove Folder" : "Remove Link"}
+                              >
+                                <Trash2 size={18} />
+                              </button>
                             </div>
-                            <button 
-                              onClick={() => removeLink(node.id)}
-                              className="p-2 text-red-500 hover:bg-red-50 rounded"
-                              title={isFolder ? "Remove Folder" : "Remove Link"}
-                            >
-                              <Trash2 size={18} />
-                            </button>
+                            {isFolder && node.children && node.children.length > 0 && (
+                              <div className="flex flex-col gap-2">
+                                {node.children.map(child => renderLinkNode(child, depth + 1))}
+                              </div>
+                            )}
                           </div>
-                          {isFolder && node.children && node.children.length > 0 && (
-                            <div className="flex flex-col gap-2">
-                              {node.children.map(child => renderLinkNode(child, depth + 1))}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    };
-                    return renderLinkNode(link, 0);
-                  })
+                        );
+                      };
+                      return renderLinkNode(link, 0);
+                    })}
+                  </div>
                 )}
               </div>
             </div>
