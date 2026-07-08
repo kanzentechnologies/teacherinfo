@@ -10,6 +10,7 @@ export default function FilesManagementPage() {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<{current: number, total: number} | null>(null);
+  const [operationStatus, setOperationStatus] = useState<string | null>(null);
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   
@@ -47,6 +48,7 @@ export default function FilesManagementPage() {
       console.error('Failed to fetch files:', err);
     } finally {
       setLoading(false);
+      setOperationStatus(null);
       setSelectedItems(new Set());
     }
   };
@@ -142,6 +144,7 @@ export default function FilesManagementPage() {
     if (!confirm(msg)) return;
     
     try {
+      setOperationStatus(`Deleting ${isFolder ? 'folder' : 'file'}...`);
       const res = await fetch('/api/files/delete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -152,6 +155,7 @@ export default function FilesManagementPage() {
       await fetchFiles();
     } catch (err: any) {
       alert('Failed to delete: ' + err.message);
+      setOperationStatus(null);
     }
   };
 
@@ -169,7 +173,7 @@ export default function FilesManagementPage() {
     });
     
     try {
-      setLoading(true);
+      setOperationStatus(`Deleting ${selectedItems.size} selected item(s)...`);
       const res = await fetch('/api/files/delete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -179,7 +183,7 @@ export default function FilesManagementPage() {
       await fetchFiles();
     } catch (err: any) {
       alert('Failed to delete: ' + err.message);
-      setLoading(false);
+      setOperationStatus(null);
     }
   };
 
@@ -195,7 +199,7 @@ export default function FilesManagementPage() {
     if (oldKey === newKey) return;
     
     try {
-      setLoading(true);
+      setOperationStatus(`Renaming ${isFolder ? 'folder' : 'file'}...`);
       const res = await fetch('/api/files/rename', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -205,7 +209,7 @@ export default function FilesManagementPage() {
       await fetchFiles();
     } catch (err: any) {
       alert('Failed to rename: ' + err.message);
-      setLoading(false);
+      setOperationStatus(null);
     }
   };
 
@@ -411,9 +415,18 @@ export default function FilesManagementPage() {
           </div>
         </div>
 
-        <div className="bg-white border border-border-main">
-          {loading ? (
-            <div className="p-8 text-center text-text-muted">Loading files from R2...</div>
+        <div className="bg-white border border-border-main relative min-h-[200px]">
+          {operationStatus && (
+            <div className="absolute inset-0 bg-white/70 z-10 flex flex-col items-center justify-center backdrop-blur-sm">
+              <Loader2 size={32} className="animate-spin text-primary mb-3" />
+              <div className="text-lg font-bold text-primary">{operationStatus}</div>
+            </div>
+          )}
+          {loading && !operationStatus ? (
+            <div className="p-8 text-center text-text-muted flex flex-col items-center">
+              <Loader2 size={32} className="animate-spin text-gray-400 mb-3" />
+              Loading files from R2...
+            </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm text-left">
