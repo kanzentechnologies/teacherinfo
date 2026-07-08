@@ -280,7 +280,6 @@ export default function EditContentClient() {
         fileType: file.type,
         fileSize: file.size
       });
-      });
     });
 
     const sortTree = (node: LinkItem) => {
