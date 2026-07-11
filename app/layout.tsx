@@ -57,6 +57,9 @@ export const metadata: Metadata = {
     icon: 'https://pub-394d485f92444007bc7c08718b11be20.r2.dev/logo.png',
     apple: 'https://pub-394d485f92444007bc7c08718b11be20.r2.dev/logo.png',
   },
+  other: {
+    'google-adsense-account': 'ca-pub-5843738252123218'
+  },
   robots: {
     index: true,
     follow: true,
