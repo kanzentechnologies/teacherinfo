@@ -8,7 +8,7 @@ import { FileUpload } from '@/components/ui/FileUpload';
 import { Reorder } from 'motion/react';
 import Image from 'next/image';
 
-const generateId = () => Date.now();
+const generateId = () => parseInt(Date.now().toString().slice(-9));
 
 export default function ContactManagementPage() {
   const [contacts, setContacts] = useState<Contact[]>([]);

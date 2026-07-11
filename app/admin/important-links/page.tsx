@@ -9,7 +9,7 @@ import { Reorder } from 'motion/react';
 import { PageLinkSelector } from '@/components/admin/PageLinkSelector';
 import { OperationStatusOverlay } from '@/components/admin/OperationStatusOverlay';
 
-const generateId = () => Date.now();
+const generateId = () => parseInt(Date.now().toString().slice(-9));
 
 export default function ImportantLinksManagementPage() {
   const [links, setLinks] = useState<ImportantLink[]>([]);

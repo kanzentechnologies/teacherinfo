@@ -102,7 +102,7 @@ export default function EditContentClient() {
       if (postToAnnouncement) {
         setOperationStatus('Posting to announcements...');
         await saveAnnouncement({
-          id: Date.now(),
+          id: parseInt(Date.now().toString().slice(-9)),
           title: item.title,
           link: `/${item.slug}`,
           date: new Date().toISOString().split('T')[0],
