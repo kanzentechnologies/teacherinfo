@@ -154,14 +154,35 @@ export default function ContactManagementPage() {
                 />
               </div>
               <div className="md:col-span-2">
-                <FileUpload 
-                  onUploadSuccess={(url) => setImageUrl(url)} 
-                  label="Profile Image" 
-                  accept="image/*"
-                />
+                <label className="block text-sm font-bold text-primary mb-1">Profile Image</label>
+                <div className="flex flex-col md:flex-row gap-4 items-start">
+                  <div className="flex-1 w-full">
+                    <p className="text-xs text-text-muted mb-2 font-medium">Option 1: Enter Image URL directly</p>
+                    <input 
+                      type="url" 
+                      className="w-full border border-border-main p-2 text-sm" 
+                      placeholder="https://example.com/image.jpg" 
+                      value={imageUrl}
+                      onChange={(e) => setImageUrl(e.target.value)}
+                    />
+                  </div>
+                  <div className="flex-1 w-full">
+                    <p className="text-xs text-text-muted mb-2 font-medium">Option 2: Upload a new image</p>
+                    <FileUpload 
+                      onUploadSuccess={(url) => setImageUrl(url)} 
+                      label="" 
+                      accept="image/*"
+                    />
+                  </div>
+                </div>
                 {imageUrl && (
-                  <div className="mt-2 text-xs text-gray-500 break-all">
-                    Current URL: {imageUrl}
+                  <div className="mt-4 border border-border-main p-2 bg-gray-50 flex flex-col items-center">
+                    <span className="text-xs font-bold mb-2">Selected Image:</span>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={imageUrl} alt="Preview" className="max-h-32 object-contain" referrerPolicy="no-referrer" />
+                    <div className="mt-2 text-xs text-gray-500 break-all w-full text-center">
+                      {imageUrl}
+                    </div>
                   </div>
                 )}
               </div>
