@@ -159,7 +159,6 @@ export default function AdminDashboard() {
                   { title: 'Pages & Content', desc: 'Create and edit pages', icon: FileText, href: '/admin/pages', color: 'text-blue-600', bg: 'bg-blue-50' },
                   { title: 'Navigation Menu', desc: 'Organize site structure', icon: Layout, href: '/admin/navbar', color: 'text-purple-600', bg: 'bg-purple-50' },
                   { title: 'File Manager', desc: 'Upload documents & PDFs', icon: ImageIcon, href: '/admin/files', color: 'text-emerald-600', bg: 'bg-emerald-50' },
-                  { title: 'Site Settings', desc: 'Manage announcements & links', icon: Settings, href: '/admin/important-links', color: 'text-gray-600', bg: 'bg-gray-100' },
                 ].map((link, i) => (
                   <Link key={i} href={link.href} className="flex items-start gap-4 p-3 rounded-sm hover:bg-gray-50 border border-transparent hover:border-gray-200 transition-all group">
                     <div className={`p-2.5 rounded-sm ${link.bg} ${link.color} group-hover:scale-105 transition-transform`}>

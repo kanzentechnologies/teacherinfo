@@ -5,7 +5,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { AdminWrapper } from '@/components/admin/AdminWrapper';
 import RichTextEditor from '@/components/admin/RichTextEditor';
 import { getPageById, savePage, PageItem } from '@/lib/pageStore';
-import { PlusCircle, Trash2, GripVertical, FileSearch, Upload, ChevronDown, ChevronRight, Folder, Image as ImageIcon, FileText } from 'lucide-react';
+import { saveAnnouncement } from '@/lib/announcementStore';
+import { PlusCircle, Trash2, GripVertical, FileSearch, Upload, ChevronDown, ChevronRight, Folder, Image as ImageIcon, FileText, Bell } from 'lucide-react';
 import * as xlsx from 'xlsx';
 import { TreeFileSelector } from '@/components/admin/TreeFileSelector';
 import { FileItem } from '@/lib/fileStore';
@@ -34,6 +35,7 @@ export default function EditContentClient() {
   const [saving, setSaving] = useState(false);
   const [operationStatus, setOperationStatus] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState<{current: number, total: number} | null>(null);
+  const [postToAnnouncement, setPostToAnnouncement] = useState(false);
   const [showFileSelectorFor, setShowFileSelectorFor] = useState<string | null>(null);
   const [showFolderSelector, setShowFolderSelector] = useState(false);
   const [selectedLinks, setSelectedLinks] = useState<Set<string>>(new Set());
@@ -97,6 +99,18 @@ export default function EditContentClient() {
       const finalContent = item.layout === 'links' ? JSON.stringify(links) : content;
       await savePage({ ...item, content: finalContent });
       
+      if (postToAnnouncement) {
+        setOperationStatus('Posting to announcements...');
+        await saveAnnouncement({
+          id: Date.now(),
+          title: item.title,
+          link: `/${item.slug}`,
+          date: new Date().toISOString().split('T')[0],
+          priority: 'Normal',
+          status: 'Active',
+        });
+      }
+
       setUploadProgress({ current: 100, total: 100 });
       
       setTimeout(() => {
@@ -371,19 +385,30 @@ export default function EditContentClient() {
             <h1 className="text-2xl font-bold text-primary">Edit {item.layout === 'links' ? 'Links' : 'Content'}: {item.title}</h1>
             <p className="text-sm text-text-muted">Slug: /{item.slug}</p>
           </div>
-          <div className="flex gap-2">
-            <button 
-              onClick={() => router.push('/admin/pages')}
-              className="px-4 py-2 border border-border-main text-sm font-bold"
-            >
-              Cancel
-            </button>
-            <button 
-              onClick={handleSave}
-              className="bg-accent text-primary font-bold py-2 px-6 rounded-sm hover:bg-yellow-400 transition-colors"
-            >
-              Save {item.layout === 'links' ? 'Links' : 'Content'}
-            </button>
+          <div className="flex flex-wrap items-center gap-4">
+            <label className="flex items-center gap-2 text-sm text-text-muted cursor-pointer hover:text-primary transition-colors">
+              <input 
+                type="checkbox" 
+                checked={postToAnnouncement}
+                onChange={(e) => setPostToAnnouncement(e.target.checked)}
+                className="rounded-sm text-primary focus:ring-primary border-border-main"
+              />
+              <span className="flex items-center gap-1 font-medium"><Bell size={14} className={postToAnnouncement ? 'text-orange-500' : ''} /> Also add to Announcements</span>
+            </label>
+            <div className="flex gap-2">
+              <button 
+                onClick={() => router.push('/admin/pages')}
+                className="px-4 py-2 border border-border-main text-sm font-bold"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={handleSave}
+                className="bg-accent text-primary font-bold py-2 px-6 rounded-sm hover:bg-yellow-400 transition-colors"
+              >
+                Save {item.layout === 'links' ? 'Links' : 'Content'}
+              </button>
+            </div>
           </div>
         </div>
 
