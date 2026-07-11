@@ -26,11 +26,11 @@ export default function ContactPage() {
             {contacts.map((contact) => (
               <div key={contact.id} className="border border-border-main p-4 flex flex-col items-center text-center bg-gray-50 hover:shadow-md transition-shadow">
                 <div className="relative w-24 h-24 mb-4">
-                  <Image 
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img 
                     src={contact.imageUrl} 
                     alt={contact.name}
-                    fill
-                    className="rounded-full object-cover border-2 border-primary"
+                    className="w-24 h-24 rounded-full object-cover border-2 border-primary"
                     referrerPolicy="no-referrer"
                   />
                 </div>

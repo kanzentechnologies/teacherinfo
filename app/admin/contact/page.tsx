@@ -209,11 +209,11 @@ export default function ContactManagementPage() {
                         <GripVertical size={20} />
                       </div>
                       <div className="relative w-10 h-10 flex-shrink-0">
-                        <Image 
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img 
                           src={contact.imageUrl} 
                           alt={contact.name}
-                          fill
-                          className="rounded-full object-cover border border-border-main"
+                          className="w-10 h-10 rounded-full object-cover border border-border-main"
                           referrerPolicy="no-referrer"
                         />
                       </div>
