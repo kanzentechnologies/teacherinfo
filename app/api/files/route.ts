@@ -1,8 +1,8 @@
-import { getR2Client } from '@/lib/r2';
-import { ListObjectsV2Command } from '@aws-sdk/client-s3';
+import { r2ListAllObjects } from '@/lib/r2-edge';
 import { NextResponse } from 'next/server';
 
 export const runtime = 'edge';
+
 export async function GET() {
   try {
     const bucket = process.env.R2_BUCKET_NAME;
@@ -10,20 +10,7 @@ export async function GET() {
       return NextResponse.json({ error: 'Bucket not configured' }, { status: 500 });
     }
 
-    const command = new ListObjectsV2Command({ Bucket: bucket });
-    let isTruncated = true;
-    let continuationToken: string | undefined = undefined;
-    const allObjects = [];
-
-    while (isTruncated) {
-      command.input.ContinuationToken = continuationToken;
-      const response = await getR2Client().send(command);
-      if (response.Contents) {
-        allObjects.push(...response.Contents);
-      }
-      isTruncated = response.IsTruncated ?? false;
-      continuationToken = response.NextContinuationToken;
-    }
+    const allObjects = await r2ListAllObjects();
 
     const files = allObjects.map(obj => {
       const ext = obj.Key?.split('.').pop()?.toLowerCase();
@@ -31,14 +18,13 @@ export async function GET() {
       if (['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp'].includes(ext || '')) {
         type = 'Image';
       }
-
       return {
         id: obj.Key,
         name: obj.Key,
-        type: type,
+        type,
         size: obj.Size || 0,
-        url: `${process.env.NEXT_PUBLIC_R2_PUBLIC_URL}/${obj.Key?.split('/').map(encodeURIComponent).join('/')}`,
-        created_at: obj.LastModified?.toISOString(),
+        url: `${process.env.NEXT_PUBLIC_R2_PUBLIC_URL}/${obj.Key.split('/').map(encodeURIComponent).join('/')}`,
+        created_at: obj.LastModified,
       };
     });
 

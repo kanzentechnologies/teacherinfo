@@ -1,10 +1,8 @@
-import { getR2Client } from '@/lib/r2';
-import { DeleteObjectCommand, ListObjectsV2Command } from '@aws-sdk/client-s3';
+import { r2ListAllObjects, r2DeleteObject } from '@/lib/r2-edge';
 import { NextResponse } from 'next/server';
 import { getPages, savePage } from '@/lib/pageStore';
+
 export const runtime = 'edge';
-
-
 
 export async function POST(request: Request) {
   try {
@@ -17,35 +15,14 @@ export async function POST(request: Request) {
 
     // 1. Delete individual files
     for (const key of keys) {
-      await getR2Client().send(new DeleteObjectCommand({
-        Bucket: bucket,
-        Key: key,
-      }));
+      await r2DeleteObject(key);
     }
 
-    // 2. Delete folders (which means all files with that prefix)
+    // 2. Delete folders (all files with that prefix)
     for (const folder of folders) {
-      const command = new ListObjectsV2Command({ Bucket: bucket, Prefix: `${folder}/` });
-      let isTruncated = true;
-      let continuationToken: string | undefined = undefined;
-      const allObjects = [];
-
-      while (isTruncated) {
-        command.input.ContinuationToken = continuationToken;
-        const response = await getR2Client().send(command);
-        if (response.Contents) {
-          allObjects.push(...response.Contents);
-        }
-        isTruncated = response.IsTruncated ?? false;
-        continuationToken = response.NextContinuationToken;
-      }
-
+      const allObjects = await r2ListAllObjects(`${folder}/`);
       for (const obj of allObjects) {
-        if (!obj.Key) continue;
-        await getR2Client().send(new DeleteObjectCommand({
-          Bucket: bucket,
-          Key: obj.Key,
-        }));
+        await r2DeleteObject(obj.Key);
       }
     }
 
@@ -53,7 +30,7 @@ export async function POST(request: Request) {
     try {
       const pages = await getPages();
       const r2Url = process.env.NEXT_PUBLIC_R2_PUBLIC_URL || '';
-      
+
       for (const page of pages) {
         if (page.layout === 'links' && page.content) {
           try {
@@ -64,36 +41,27 @@ export async function POST(request: Request) {
               return nodes.filter(node => {
                 if (node.type !== 'folder') {
                   const url = node.url || '';
-                  
-                  // Check if file key is deleted
                   const isDeletedKey = keys.some((k: string) => {
                     const encodedKey = k.split('/').map(encodeURIComponent).join('/');
                     return url === `${r2Url}/${encodedKey}` || url.endsWith(`/${encodedKey}`);
                   });
-                  
-                  // Check if file is inside a deleted folder
                   const isDeletedFolder = folders.some((f: string) => {
                     const encodedFolder = f.split('/').map(encodeURIComponent).join('/');
                     return url.includes(`/${encodedFolder}/`);
                   });
-
                   if (isDeletedKey || isDeletedFolder) {
                     modified = true;
                     return false;
                   }
                 } else {
-                  // Check if folder is deleted directly
                   const isDeletedFolder = folders.some((f: string) => f === node.title || f.endsWith(`/${node.title}`));
                   if (isDeletedFolder) {
                     modified = true;
                     return false;
                   }
-
                   if (node.children) {
                     const newChildren = processTree(node.children);
-                    if (newChildren.length !== node.children.length) {
-                      modified = true;
-                    }
+                    if (newChildren.length !== node.children.length) modified = true;
                     node.children = newChildren;
                   }
                 }
@@ -102,7 +70,6 @@ export async function POST(request: Request) {
             };
 
             const newLinks = processTree(links);
-            
             if (modified) {
               page.content = JSON.stringify(newLinks);
               await savePage(page);
