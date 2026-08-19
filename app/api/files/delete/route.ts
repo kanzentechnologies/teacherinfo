@@ -1,7 +1,8 @@
-import { r2 } from '@/lib/r2';
+import { getR2Client } from '@/lib/r2';
 import { DeleteObjectCommand, ListObjectsV2Command } from '@aws-sdk/client-s3';
 import { NextResponse } from 'next/server';
 import { getPages, savePage } from '@/lib/pageStore';
+export const runtime = 'edge';
 
 
 
@@ -16,7 +17,7 @@ export async function POST(request: Request) {
 
     // 1. Delete individual files
     for (const key of keys) {
-      await r2.send(new DeleteObjectCommand({
+      await getR2Client().send(new DeleteObjectCommand({
         Bucket: bucket,
         Key: key,
       }));
@@ -31,7 +32,7 @@ export async function POST(request: Request) {
 
       while (isTruncated) {
         command.input.ContinuationToken = continuationToken;
-        const response = await r2.send(command);
+        const response = await getR2Client().send(command);
         if (response.Contents) {
           allObjects.push(...response.Contents);
         }
@@ -41,7 +42,7 @@ export async function POST(request: Request) {
 
       for (const obj of allObjects) {
         if (!obj.Key) continue;
-        await r2.send(new DeleteObjectCommand({
+        await getR2Client().send(new DeleteObjectCommand({
           Bucket: bucket,
           Key: obj.Key,
         }));

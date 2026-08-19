@@ -1,7 +1,8 @@
-import { r2 } from '@/lib/r2';
+import { getR2Client } from '@/lib/r2';
 import { PutObjectCommand } from '@aws-sdk/client-s3';
 import { NextResponse } from 'next/server';
 
+export const runtime = 'edge';
 
 
 export async function POST(request: Request) {
@@ -28,7 +29,7 @@ export async function POST(request: Request) {
       finalKey = file.name.replace(/[^a-zA-Z0-9.\s-()_]/g, '_');
     }
 
-    await r2.send(
+    await getR2Client().send(
       new PutObjectCommand({
         Bucket: process.env.R2_BUCKET_NAME,
         Key: finalKey,
